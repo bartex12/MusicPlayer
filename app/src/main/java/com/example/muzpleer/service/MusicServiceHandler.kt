@@ -1,13 +1,12 @@
 package com.example.muzpleer.service
 
 import android.content.Context
-import android.net.Uri
 import android.util.Log
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.MediaSession
-import com.example.muzpleer.model.MediaItem
+import com.example.muzpleer.model.MediaItemApp
 import com.example.muzpleer.ui.player.PlaybackState
 import com.example.muzpleer.util.ProgressState
 import kotlinx.coroutines.CoroutineScope
@@ -27,20 +26,20 @@ class MusicServiceHandler(
     //внешний колбэк для ViewModel
     private var playbackStateListener: ((PlaybackState) -> Unit)? = null
     private var progressUpdateJob: Job? = null
-    private var playlist: List<MediaItem> = emptyList()
+    private var playlist: List<MediaItemApp> = emptyList()
     private var currentIndex = 0
 
 //    private var currentPlaylist: List<MediaItem> = emptyList()
-//    private var trackChangeListener: ((MediaItem) -> Unit)? = null
+    private var trackEndListener: ((MediaItemApp) -> Unit)? = null
 
     // Устанавливаем плейлист один раз
-    fun setPlaylist(playlist: List<MediaItem>) {
+    fun setPlaylist(playlist: List<MediaItemApp>) {
         this.playlist = playlist
     }
 
-//    fun setTrackChangeListener(listener: (MediaItem) -> Unit) {
-//        this.trackChangeListener = listener
-//    }
+    fun setTrackEndListener(listener: (MediaItemApp) -> Unit) {
+        this.trackEndListener = listener
+    }
 
     fun startProgressUpdates(callback: (currentPos: Long, duration: Long) -> Unit) {
         progressUpdateJob?.cancel()
@@ -89,7 +88,7 @@ class MusicServiceHandler(
             val playbackState  = when {
                 player.isPlaying -> PlaybackState.PLAYING
                 player.playbackState == Player.STATE_READY -> {
-                    if (player?.isPlaying == true) PlaybackState.PLAYING
+                    if (player.isPlaying == true) PlaybackState.PLAYING
                     else PlaybackState.PAUSED
                 }
                 player.playbackState == Player.STATE_BUFFERING -> PlaybackState.BUFFERING
@@ -127,13 +126,19 @@ class MusicServiceHandler(
 
         currentIndex = index
 
+        val newItem = androidx.media3.common.MediaItem.fromUri(
+            "android.resource://${context.packageName}/${playlist[index].music}")
+
         player?.apply{
-            setMediaItem(
-                androidx.media3.common.MediaItem.fromUri(
-                    "android.resource://${context.packageName}/${playlist[index].music}"
-                )
-            )
+            setMediaItem(newItem )
         }
+        val newItemApp = MediaItemApp(
+            title = playlist[index].title,
+            artist = playlist[index].artist,
+            cover = playlist[index].cover,
+            music = playlist[index].music
+        )
+        trackEndListener?.invoke(newItemApp)
         player?.prepare()
         player?.play()
     }

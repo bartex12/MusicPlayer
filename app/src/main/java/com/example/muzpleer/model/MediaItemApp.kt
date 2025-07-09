@@ -1,12 +1,11 @@
 package com.example.muzpleer.model
 
-import android.net.Uri
 import android.os.Parcelable
 import com.example.muzpleer.R
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-data class MediaItem(
+data class MediaItemApp(
     //val id: String,
     val title: String,
     val artist: String,
@@ -22,8 +21,8 @@ data class MediaItem(
 
     companion object {
         // Создание MediaItem из URI
-        fun fromUri(uri: String, title: String = "Unknown", artist: String = "Unknown"): MediaItem {
-            return MediaItem(
+        fun fromUri(uri: String, title: String = "Unknown", artist: String = "Unknown"): MediaItemApp {
+            return MediaItemApp(
                 //id = Uri.parse(uri).lastPathSegment ?: System.currentTimeMillis().toString(),
                 title = title,
                 artist = artist,

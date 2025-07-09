@@ -14,7 +14,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.bumptech.glide.Glide
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentPlayerBinding
-import com.example.muzpleer.model.MediaItem
+import com.example.muzpleer.model.MediaItemApp
 import com.example.muzpleer.util.ProgressState
 import com.example.muzpleer.util.formatDuration
 import kotlinx.coroutines.launch
@@ -79,7 +79,7 @@ class PlayerFragment : Fragment() {
 
                 // Observe current media item
                 launch {
-                    viewModel.currentMediaItem.collect { mediaItem ->
+                    viewModel.currentMediaItemApp.collect { mediaItem ->
                         mediaItem?.let { updateTrackInfo(it) }
                     }
                 }
@@ -112,7 +112,7 @@ class PlayerFragment : Fragment() {
     }
 
     private fun handleArguments() {
-        arguments?.getParcelable<MediaItem>("mediaItem")?.let {mediaItem->
+        arguments?.getParcelable<MediaItemApp>("mediaItem")?.let { mediaItem->
             viewModel.playMedia(mediaItem) // Передаем выбранный трек
             Log.d(TAG, "PlayerFragment handleArguments: mediaItem = ${mediaItem.title} ")
         } ?: run {
@@ -120,14 +120,14 @@ class PlayerFragment : Fragment() {
         }
     }
 
-    private fun updateTrackInfo(mediaItem: MediaItem) {
+    private fun updateTrackInfo(mediaItemApp: MediaItemApp) {
         with(binding) {
-            titleTextView.text = mediaItem.title
-            artistTextView.text = mediaItem.artist
+            titleTextView.text = mediaItemApp.title
+            artistTextView.text = mediaItemApp.artist
             // Здесь можно загрузить обложку, если она есть
             //Glide.with(artworkImageView).load(mediaItem.artworkUri).into(artworkImageView)
         Glide.with(binding.artworkImageView)
-            .load(mediaItem.cover)
+            .load(mediaItemApp.cover)
             .into(binding.artworkImageView)
         }
     }

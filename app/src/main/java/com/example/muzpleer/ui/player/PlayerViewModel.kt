@@ -3,7 +3,7 @@ package com.example.muzpleer.ui.player
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.muzpleer.model.MediaItem
+import com.example.muzpleer.model.MediaItemApp
 import com.example.muzpleer.model.PlaylistRepository
 import com.example.muzpleer.service.MusicServiceHandler
 import com.example.muzpleer.util.ProgressState
@@ -11,7 +11,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class PlayerViewModel(
@@ -22,8 +21,8 @@ class PlayerViewModel(
     private val _isInitialized = MutableStateFlow(false)
     val isInitialized: StateFlow<Boolean> = _isInitialized
 
-    private val _currentMediaItem = MutableStateFlow<MediaItem?>(null)
-    val currentMediaItem: StateFlow<MediaItem?> = _currentMediaItem
+    private val _currentMediaItemApp = MutableStateFlow<MediaItemApp?>(null)
+    val currentMediaItemApp: StateFlow<MediaItemApp?> = _currentMediaItemApp
 
     private val _playbackState = MutableStateFlow<PlaybackState>(PlaybackState.IDLE)
     val playbackState: StateFlow<PlaybackState> = _playbackState
@@ -36,16 +35,14 @@ class PlayerViewModel(
 
     private var progressUpdateJob: Job? = null
 
-    private val _playlist = MutableStateFlow<List<MediaItem>>(emptyList()) ///
+    private val _playlist = MutableStateFlow<List<MediaItemApp>>(emptyList()) ///
     private val _currentPosition = MutableStateFlow(0)
-    private val _currentIndex = MutableStateFlow(0) ///
-
-
-
-
-
 
     init {
+        musicServiceHandler.setTrackEndListener { itemApp->
+            _currentMediaItemApp.value = itemApp
+        }
+
         musicServiceHandler.setPlaybackStateListener { state ->
             when (state) {
                 PlaybackState.ENDED -> {
@@ -72,20 +69,18 @@ class PlayerViewModel(
         }
     }
 
-    fun playMedia(mediaItem: MediaItem) {
-        val index = _playlist.value.indexOfFirst { it.music == mediaItem.music  }
+    fun playMedia(mediaItemApp: MediaItemApp) {
+        val index = _playlist.value.indexOfFirst { it.music == mediaItemApp.music  }
         if (index != -1) {
-            _currentIndex.value = index
+            // Обновляем позицию в плейлисте
             _currentPosition.value = index
-            _currentMediaItem.value = mediaItem
+            //фиксируем MediaItem
+            _currentMediaItemApp.value = mediaItemApp
             musicServiceHandler.playMedia(index)
         }
         else {
             _errorMessage.value = "Track not found in playlist"
         }
-        // Обновляем позицию в плейлисте
-        _currentPosition.value = _playlist.value.indexOfFirst { it.music == mediaItem.music }
-            .takeIf { it != -1 } ?: _currentPosition.value
         // Обновляем состояние
         _playbackState.value = PlaybackState.PLAYING
     }
@@ -123,7 +118,7 @@ class PlayerViewModel(
                     }
 
                     PlaybackState.PAUSED -> {
-                        currentMediaItem.value?.let {
+                        currentMediaItemApp.value?.let {
                             musicServiceHandler.play()
                         } ?: run {
                             _errorMessage.value = "No media item selected"
@@ -132,7 +127,7 @@ class PlayerViewModel(
 
                     PlaybackState.IDLE,
                     PlaybackState.ENDED -> {
-                        currentMediaItem.value?.let {mediaItem->
+                        currentMediaItemApp.value?.let { mediaItem->
                             val index = _playlist.value.indexOfFirst { it.music == mediaItem.music }
                             if (index != -1) {
                                 musicServiceHandler.playMedia(index)
@@ -166,13 +161,11 @@ class PlayerViewModel(
     }
 
     fun skipToNext() {
-        val currentIndex = _playlist.value.indexOfFirst { it.music == _currentMediaItem.value?.music }
+        val currentIndex = _playlist.value.indexOfFirst { it.music == _currentMediaItemApp.value?.music }
         if (currentIndex != -1) {
             val nextIndex = (currentIndex + 1) % _playlist.value.size
             playMedia(nextIndex)
         }
-
-
         val nextPos = (_currentPosition.value + 1) % _playlist.value.size
         _playlist.value.getOrNull(nextPos)?.let { mediaItem ->
             _currentPosition.value = nextPos
