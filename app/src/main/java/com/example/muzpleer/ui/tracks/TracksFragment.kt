@@ -39,8 +39,6 @@ class TracksFragment : Fragment() {
             adapter = this@TracksFragment.adapter
         }
 
-        viewModel.loadData()
-
         viewModel.tracks.observe(viewLifecycleOwner) { tracks ->
             adapter.data = tracks
         }

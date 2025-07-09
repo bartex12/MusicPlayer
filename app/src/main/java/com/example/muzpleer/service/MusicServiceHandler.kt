@@ -29,7 +29,6 @@ class MusicServiceHandler(
     private var playlist: List<MediaItemApp> = emptyList()
     private var currentIndex = 0
 
-//    private var currentPlaylist: List<MediaItem> = emptyList()
     private var trackEndListener: ((MediaItemApp) -> Unit)? = null
 
     // Устанавливаем плейлист один раз

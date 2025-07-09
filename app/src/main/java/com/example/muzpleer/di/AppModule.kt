@@ -14,7 +14,7 @@ val appModule = module {
     single { MusicServiceHandler(get()) }
     single { PlaylistRepository()}
 
-    viewModel { TracksViewModel() }
+    viewModel { TracksViewModel(get()) }
     viewModel { PlayerViewModel(get(), get()) }
     //viewModel { PlaylistViewModel(get()) }
 }

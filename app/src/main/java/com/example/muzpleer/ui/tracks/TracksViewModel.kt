@@ -3,13 +3,18 @@ package com.example.muzpleer.ui.tracks
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.muzpleer.model.MediaItemApp
-import com.example.muzpleer.model.getPlayList
+import com.example.muzpleer.model.PlaylistRepository
 
-class TracksViewModel: ViewModel(){
+
+class TracksViewModel(val repository: PlaylistRepository): ViewModel(){
 
     var tracks: MutableLiveData<List<MediaItemApp>> = MutableLiveData()
 
+    init{
+        loadData ()
+    }
+
     fun loadData (){
-        tracks.value = getPlayList()
+        tracks.value  = repository.getPlaylist()
     }
 }
