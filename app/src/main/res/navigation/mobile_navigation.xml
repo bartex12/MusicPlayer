@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mobile_navigation"
+    app:startDestination="@id/tracksFragment">
+
+    <fragment
+        android:id="@+id/tracksFragment"
+        android:name="com.example.muzpleer.ui.tracks.TracksFragment"
+        android:label="TracksFragment" >
+        <action
+            android:id="@+id/action_tracksFragment_to_playerFragment"
+            app:destination="@id/playerFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/playerFragment"
+        android:name="com.example.muzpleer.ui.player.PlayerFragment"
+        android:label="PlayerFragment" >
+        <action
+            android:id="@+id/action_playerFragment_to_tracksFragment"
+            app:destination="@id/tracksFragment" />
+    </fragment>
+
+
+</navigation>
