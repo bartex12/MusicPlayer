@@ -67,29 +67,6 @@ class MusicServiceHandler(
             .build()
     }
 
-//    private fun createPlayerListener() = object : Player.Listener {
-//        override fun onPlaybackStateChanged(state: Int) {
-//            updatePlaybackState()
-//        }
-//
-//        override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
-//            updatePlaybackState()
-//        }
-//
-//        private fun updatePlaybackState() {
-//            player?.let { player ->
-//                val state = when (player.playbackState) {
-//                    Player.STATE_BUFFERING -> PlaybackState.BUFFERING
-//                    Player.STATE_READY -> if (player.playWhenReady) PlaybackState.PLAYING else PlaybackState.PAUSED
-//                    Player.STATE_ENDED -> PlaybackState.ENDED
-//                    else -> PlaybackState.IDLE
-//                }
-//                playbackStateListener?.invoke(state)
-//            }
-//        }
-//    }
-
-
     fun playMedia(mediaItem: MediaItem) {
         try {
             player?.apply {

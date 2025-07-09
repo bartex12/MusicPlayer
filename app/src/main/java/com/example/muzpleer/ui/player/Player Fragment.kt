@@ -16,6 +16,7 @@ import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentPlayerBinding
 import com.example.muzpleer.model.MediaItem
 import com.example.muzpleer.util.PlaybackProgress
+import com.example.muzpleer.util.formatDuration
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
@@ -49,7 +50,7 @@ class PlayerFragment : Fragment() {
             seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
                 override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
                     if (fromUser) {
-                        currentTimeTextView.text = formatDuration(progress.toLong())
+                        currentTimeTextView.text = progress.toLong().formatDuration()
                     }
                 }
 
@@ -147,8 +148,8 @@ class PlayerFragment : Fragment() {
         with(binding) {
             seekBar.max = progress.duration.toInt()
             seekBar.progress = progress.currentPosition.toInt()
-            currentTimeTextView.text = formatDuration(progress.currentPosition)
-            durationTextView.text = formatDuration(progress.duration)
+            currentTimeTextView.text = progress.currentPosition.formatDuration()
+            durationTextView.text = progress.duration.formatDuration()
         }
     }
 
@@ -159,10 +160,6 @@ class PlayerFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
-    }
-    private fun formatDuration(millis: Long): String {
-        // Format to mm:ss
-        return ""
     }
 
     companion object {

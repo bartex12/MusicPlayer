@@ -136,7 +136,6 @@ class PlayerViewModel(
         progressUpdateJob = viewModelScope.launch {
             while (true) {
                 updateProgressImmediately()
-                //updatePlaybackState()
                 delay(PROGRESS_UPDATE_INTERVAL)
             }
         }
