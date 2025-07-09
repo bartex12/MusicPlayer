@@ -7,7 +7,7 @@ import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class MediaItem(
-   // val id: String,
+    //val id: String,
     val title: String,
     val artist: String,
     val cover:Int,

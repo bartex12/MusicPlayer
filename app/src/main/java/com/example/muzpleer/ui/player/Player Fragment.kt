@@ -15,7 +15,7 @@ import com.bumptech.glide.Glide
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentPlayerBinding
 import com.example.muzpleer.model.MediaItem
-import com.example.muzpleer.util.PlaybackProgress
+import com.example.muzpleer.util.ProgressState
 import com.example.muzpleer.util.formatDuration
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -80,7 +80,7 @@ class PlayerFragment : Fragment() {
                 // Observe current media item
                 launch {
                     viewModel.currentMediaItem.collect { mediaItem ->
-                        mediaItem?.let { updateMediaInfo(it) }
+                        mediaItem?.let { updateTrackInfo(it) }
                     }
                 }
 
@@ -112,15 +112,15 @@ class PlayerFragment : Fragment() {
     }
 
     private fun handleArguments() {
-        arguments?.getParcelable<MediaItem>("mediaItem")?.let {
-            viewModel.setMediaItem(it)
-            Log.d(TAG, "PlayerFragment handleArguments: mediaItem = ${it.title} ")
+        arguments?.getParcelable<MediaItem>("mediaItem")?.let {mediaItem->
+            viewModel.playMedia(mediaItem) // Передаем выбранный трек
+            Log.d(TAG, "PlayerFragment handleArguments: mediaItem = ${mediaItem.title} ")
         } ?: run {
             showError("No media item provided")
         }
     }
 
-    private fun updateMediaInfo(mediaItem: MediaItem) {
+    private fun updateTrackInfo(mediaItem: MediaItem) {
         with(binding) {
             titleTextView.text = mediaItem.title
             artistTextView.text = mediaItem.artist
@@ -144,7 +144,7 @@ class PlayerFragment : Fragment() {
         }
     }
 
-    private fun updateProgress(progress: PlaybackProgress) {
+    private fun updateProgress(progress: ProgressState) {
         with(binding) {
             seekBar.max = progress.duration.toInt()
             seekBar.progress = progress.currentPosition.toInt()

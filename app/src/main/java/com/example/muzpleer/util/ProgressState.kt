@@ -1,6 +1,6 @@
 package com.example.muzpleer.util
 
-data class PlaybackProgress(
+data class ProgressState(
     val currentPosition: Long,
     val duration: Long
 )

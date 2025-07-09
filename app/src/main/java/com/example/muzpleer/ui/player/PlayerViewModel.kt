@@ -4,8 +4,9 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.muzpleer.model.MediaItem
+import com.example.muzpleer.model.PlaylistRepository
 import com.example.muzpleer.service.MusicServiceHandler
-import com.example.muzpleer.util.PlaybackProgress
+import com.example.muzpleer.util.ProgressState
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,7 +15,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class PlayerViewModel(
-    private val musicServiceHandler: MusicServiceHandler
+    private val musicServiceHandler: MusicServiceHandler,
+    private val repository: PlaylistRepository  // Инжектированный репозиторий
 ) : ViewModel() {
 
     private val _isInitialized = MutableStateFlow(false)
@@ -26,19 +28,70 @@ class PlayerViewModel(
     private val _playbackState = MutableStateFlow<PlaybackState>(PlaybackState.IDLE)
     val playbackState: StateFlow<PlaybackState> = _playbackState
 
-    private val _progress = MutableStateFlow(PlaybackProgress(0L, 0L))
-    val progress: StateFlow<PlaybackProgress> = _progress.asStateFlow()
+    private val _progress = MutableStateFlow(ProgressState(0L, 0L))
+    val progress: StateFlow<ProgressState> = _progress
 
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage
 
     private var progressUpdateJob: Job? = null
 
+    private val _playlist = MutableStateFlow<List<MediaItem>>(emptyList()) ///
+    private val _currentPosition = MutableStateFlow(0)
+    private val _currentIndex = MutableStateFlow(0) ///
+
+
+
+
+
+
     init {
         musicServiceHandler.setPlaybackStateListener { state ->
-            _playbackState.value = state
+            when (state) {
+                PlaybackState.ENDED -> {
+                    viewModelScope.launch {
+                        delay(300) // Небольшая задержка перед переходом
+                        musicServiceHandler.playNext()
+                    }
+                }
+                else -> _playbackState.value = state
+            }
+        }
+        musicServiceHandler.startProgressUpdates { currentPos, duration ->
+            _progress.value = ProgressState(currentPos, duration)
         }
         initializePlayer()
+        loadPlaylist() // Загружаем плейлист при создании ViewModel
+    }
+
+    private fun loadPlaylist() {
+        viewModelScope.launch {
+            val playlist = repository.getPlaylist()
+            _playlist.value = playlist
+            musicServiceHandler.setPlaylist(playlist) // Передаем плейлист в сервис
+        }
+    }
+
+    fun playMedia(mediaItem: MediaItem) {
+        val index = _playlist.value.indexOfFirst { it.music == mediaItem.music  }
+        if (index != -1) {
+            _currentIndex.value = index
+            _currentPosition.value = index
+            _currentMediaItem.value = mediaItem
+            musicServiceHandler.playMedia(index)
+        }
+        else {
+            _errorMessage.value = "Track not found in playlist"
+        }
+        // Обновляем позицию в плейлисте
+        _currentPosition.value = _playlist.value.indexOfFirst { it.music == mediaItem.music }
+            .takeIf { it != -1 } ?: _currentPosition.value
+        // Обновляем состояние
+        _playbackState.value = PlaybackState.PLAYING
+    }
+
+    fun playMedia(index: Int) {
+        musicServiceHandler.playMedia(index)
     }
 
     private fun initializePlayer() {
@@ -50,22 +103,6 @@ class PlayerViewModel(
             } catch (e: Exception) {
                 _errorMessage.value = "Failed to initialize player: ${e.message}"
                 Log.d(TAG, "PlayerViewModel initializePlayer - Player initialization error = ${e.message}")
-            }
-        }
-    }
-
-    fun setMediaItem(mediaItem: MediaItem?) {
-        mediaItem?.let { item ->
-            viewModelScope.launch {
-                try {
-                    _currentMediaItem.value = item
-                    musicServiceHandler.playMedia(item)
-                    _errorMessage.value = null
-                    startProgressUpdates()
-                } catch (e: Exception) {
-                    Log.d(TAG, "PlayerViewModel setMediaItem Error setting media item")
-                    _errorMessage.value = "Failed to play: ${e.localizedMessage}"
-                }
             }
         }
     }
@@ -95,8 +132,13 @@ class PlayerViewModel(
 
                     PlaybackState.IDLE,
                     PlaybackState.ENDED -> {
-                        currentMediaItem.value?.let {
-                            musicServiceHandler.playMedia(it)
+                        currentMediaItem.value?.let {mediaItem->
+                            val index = _playlist.value.indexOfFirst { it.music == mediaItem.music }
+                            if (index != -1) {
+                                musicServiceHandler.playMedia(index)
+                            } else {
+                                _errorMessage.value = "Track not found in playlist"
+                            }
                         } ?: run {
                             _errorMessage.value = "No media item selected"
                         }
@@ -115,14 +157,27 @@ class PlayerViewModel(
     }
 
     fun skipToPrevious() {
-        // Implement actual skip logic based on playlist
-        musicServiceHandler.skipToPrevious()
+        val prevPos = (_currentPosition.value - 1).mod(_playlist.value.size)
+        _playlist.value.getOrNull(prevPos)?.let { mediaItem ->
+            _currentPosition.value = prevPos
+            playMedia(mediaItem) // Вызов для предыдущего трека
+        }
         updatePlaybackState()
     }
 
     fun skipToNext() {
-        // Implement actual skip logic based on playlist
-        musicServiceHandler.skipToNext()
+        val currentIndex = _playlist.value.indexOfFirst { it.music == _currentMediaItem.value?.music }
+        if (currentIndex != -1) {
+            val nextIndex = (currentIndex + 1) % _playlist.value.size
+            playMedia(nextIndex)
+        }
+
+
+        val nextPos = (_currentPosition.value + 1) % _playlist.value.size
+        _playlist.value.getOrNull(nextPos)?.let { mediaItem ->
+            _currentPosition.value = nextPos
+            playMedia(mediaItem) // Вызов для следующего трека
+        }
         updatePlaybackState()
     }
 
@@ -143,7 +198,7 @@ class PlayerViewModel(
 
     private fun updateProgressImmediately() {
         musicServiceHandler.getProgress()?.let {
-            _progress.value = PlaybackProgress(
+            _progress.value = ProgressState(
                 currentPosition = it.currentPosition,
                 duration = it.duration
             )
@@ -162,6 +217,7 @@ class PlayerViewModel(
     override fun onCleared() {
         super.onCleared()
         progressUpdateJob?.cancel()
+        musicServiceHandler.stopProgressUpdates()
         musicServiceHandler.releasePlayer()
         Log.d(TAG, "Player released from ViewModel")
     }
