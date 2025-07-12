@@ -3,6 +3,7 @@ package com.example.muzpleer.service
 import android.content.Context
 import android.util.Log
 import androidx.media3.common.AudioAttributes
+import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.MediaSession
@@ -40,6 +41,11 @@ class MusicServiceHandler(
         this.trackEndListener = listener
     }
 
+    // Устанавливаем внешний колбэк для ViewModel
+    fun setPlaybackStateListener(listener: (PlaybackState) -> Unit) {
+        this.playbackStateListener = listener
+    }
+
     fun startProgressUpdates(callback: (currentPos: Long, duration: Long) -> Unit) {
         progressUpdateJob?.cancel()
         progressUpdateJob = CoroutineScope(Dispatchers.Main).launch {
@@ -56,16 +62,14 @@ class MusicServiceHandler(
         progressUpdateJob?.cancel()
     }
 
-    // Устанавливаем внешний колбэк для ViewModel
-    fun setPlaybackStateListener(listener: (PlaybackState) -> Unit) {
-        this.playbackStateListener = listener
-    }
-
     // Слушатель событий плеера (private, не путать с внешним колбэком playbackStateListener)
     private val playerListener = object : Player.Listener {
 
+        //Вызывается при переходе воспроизведения к медиа-элементу или начале повтора медиа-элемента
+        // в соответствии с текущим режимом повтора
         override fun onMediaItemTransition(mediaItem: androidx.media3.common.MediaItem?, reason: Int) {
             when (reason) {
+                //Воспроизведение автоматически переключилось на следующий медиафайл...
                 Player.MEDIA_ITEM_TRANSITION_REASON_AUTO-> {
                     currentIndex = (currentIndex + 1) % playlist.size
                     playbackStateListener?.invoke(PlaybackState.PLAYING)
@@ -73,10 +77,12 @@ class MusicServiceHandler(
             }
         }
 
+        //Вызывается при изменении значения, возвращаемого функцией getPlaybackState().
         override fun onPlaybackStateChanged(state: Int) {
             updatePlaybackState()
         }
 
+        //Вызывается при изменении значения, возвращаемого функцией getPlayWhenReady().
         override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
             updatePlaybackState()
         }
@@ -113,7 +119,7 @@ class MusicServiceHandler(
             .build()
             .apply {
                 setAudioAttributes(AudioAttributes.DEFAULT, true) // Использование аудиофокуса
-                addListener(playerListener)
+                addListener(playerListener) //регистрируем слушатель событий
         }
         mediaSession = MediaSession.Builder(context, player!!)
             .setId(System.currentTimeMillis().toString()) // Уникальный ID
@@ -125,7 +131,7 @@ class MusicServiceHandler(
 
         currentIndex = index
 
-        val newItem = androidx.media3.common.MediaItem.fromUri(
+        val newItem = MediaItem.fromUri(
             "android.resource://${context.packageName}/${playlist[index].music}")
 
         player?.apply{
@@ -138,7 +144,7 @@ class MusicServiceHandler(
             music = playlist[index].music
         )
         trackEndListener?.invoke(newItemApp)
-        player?.prepare()
+        player?.prepare() // начать загрузку мультимедиа и получить необходимые ресурсы.
         player?.play()
     }
 
