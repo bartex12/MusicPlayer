@@ -47,13 +47,12 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.lifecycle.livedata.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.9.0")
+    implementation(libs.androidx.lifecycle.runtime.ktx)
+    //implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.9.0") //переделал на libs
     implementation("androidx.media3:media3-exoplayer:1.7.1")
     implementation("androidx.media3:media3-ui:1.7.1")
     implementation("androidx.media3:media3-session:1.7.1")
 
-
-   // implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:3.5.0")
     // Koin
     implementation ("io.insert-koin:koin-core:3.5.0")
     implementation("io.insert-koin:koin-android:3.5.0")
