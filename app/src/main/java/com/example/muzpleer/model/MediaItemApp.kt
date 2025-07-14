@@ -6,16 +6,12 @@ import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class MediaItemApp(
-    //val id: String,
+    //val id,
     val title: String,
     val artist: String,
     val cover:Int,
     val music:Int,
-    //val album: String? = null,
-    //val duration: Long,
-    //val mediaUri: String,
-    //val isLocal: Boolean,
-    //val artworkUri: String? = null
+
 
 ): Parcelable{
 
@@ -26,11 +22,8 @@ data class MediaItemApp(
                 //id = Uri.parse(uri).lastPathSegment ?: System.currentTimeMillis().toString(),
                 title = title,
                 artist = artist,
-                cover = R.drawable.bohemian,
-                music = R.raw.bohemian,
-               // duration = 0,
-               // mediaUri = uri,
-               // isLocal = uri.startsWith("content://") || uri.startsWith("file://")
+                cover = R.drawable.blowball,
+                music = R.raw.blowball,
             )
         }
     }

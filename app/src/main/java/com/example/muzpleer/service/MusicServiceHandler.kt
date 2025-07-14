@@ -173,6 +173,10 @@ class MusicServiceHandler(
         player?.seekToNext()
     }
 
+    fun getCurrentPosition(): Long? {
+        return player?.currentPosition
+    }
+
     fun seekTo(position: Long) {
         player?.seekTo(position)
     }

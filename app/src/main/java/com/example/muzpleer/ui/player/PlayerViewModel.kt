@@ -102,6 +102,15 @@ class PlayerViewModel(
         }
     }
 
+    fun seekRelative(offsetMs: Long) {
+        viewModelScope.launch {
+            musicServiceHandler.getCurrentPosition()?.let { currentPos ->
+                val newPosition = (currentPos + offsetMs).coerceAtLeast(0)
+                musicServiceHandler.seekTo(newPosition)
+            }
+        }
+    }
+
     fun togglePlayPause() {
         viewModelScope.launch {
             try {

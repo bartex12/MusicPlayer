@@ -1,6 +1,7 @@
 package com.example.muzpleer.ui.player
 
 import android.os.Bundle
+import android.provider.MediaStore
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -36,10 +37,18 @@ class PlayerFragment : Fragment() {
         setupUI()
         handleArguments()
         observeViewModel()
+        MediaStore.Audio.Media.TITLE
     }
 
     private fun setupUI() {
         with(binding) {
+            binding.rewindBackButton.setOnClickListener {
+                viewModel.seekRelative(-5000) // -5 секунд
+            }
+            binding.rewindForwardButton.setOnClickListener {
+                viewModel.seekRelative(15000) // +15 секунд
+            }
+
             playPauseButton.setOnClickListener {
                 //Log.d(TAG, "PlayerFragment setupUI: playPauseButton = Click ")
                 viewModel.togglePlayPause()

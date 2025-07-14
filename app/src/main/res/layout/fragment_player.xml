@@ -99,50 +99,65 @@
         android:id="@+id/previousButton"
         android:layout_width="48dp"
         android:layout_height="48dp"
-        android:layout_marginStart="64dp"
-        android:scaleType="fitCenter"
+        android:layout_marginStart="32dp"
+        android:layout_marginEnd="16dp"
         android:background="?attr/selectableItemBackgroundBorderless"
+        android:scaleType="fitCenter"
         android:src="@drawable/ic_previous"
         app:layout_constraintBottom_toBottomOf="@+id/playPauseButton"
+        app:layout_constraintEnd_toStartOf="@+id/rewindBackButton"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/playPauseButton"
-       />
+        app:layout_constraintTop_toTopOf="@+id/playPauseButton" />
 
     <ImageButton
         android:id="@+id/playPauseButton"
         android:layout_width="72dp"
         android:layout_height="72dp"
+        android:layout_marginStart="16dp"
         android:layout_marginTop="92dp"
+        android:layout_marginEnd="16dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
         android:scaleType="fitCenter"
         android:src="@drawable/ic_play"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        app:layout_constraintEnd_toStartOf="@+id/nextButton"
-        app:layout_constraintStart_toEndOf="@+id/previousButton"
-        app:layout_constraintTop_toBottomOf="@+id/seekBar"
-       />
+        app:layout_constraintEnd_toStartOf="@+id/rewindForwardButton"
+        app:layout_constraintStart_toEndOf="@+id/rewindBackButton"
+        app:layout_constraintTop_toBottomOf="@+id/seekBar" />
 
     <ImageButton
         android:id="@+id/nextButton"
         android:layout_width="48dp"
         android:layout_height="48dp"
-        android:layout_marginEnd="64dp"
-        android:scaleType="fitCenter"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="32dp"
         android:background="?attr/selectableItemBackgroundBorderless"
+        android:scaleType="fitCenter"
         android:src="@drawable/ic_next"
         app:layout_constraintBottom_toBottomOf="@+id/playPauseButton"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/playPauseButton"
-        />
+        app:layout_constraintStart_toEndOf="@+id/rewindForwardButton"
+        app:layout_constraintTop_toTopOf="@+id/playPauseButton" />
 
     <ImageButton
-        android:id="@+id/addToPlaylistButton"
+        android:id="@+id/rewindBackButton"
         android:layout_width="40dp"
         android:layout_height="40dp"
-        android:layout_margin="16dp"
         android:background="?attr/selectableItemBackgroundBorderless"
-        android:src="@drawable/baseline_add_24"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:tint="@color/white" />
+        android:src="@drawable/ic_rewind_back"
+        app:layout_constraintBottom_toBottomOf="@id/playPauseButton"
+        app:layout_constraintEnd_toStartOf="@+id/playPauseButton"
+        app:layout_constraintStart_toEndOf="@id/previousButton"
+        app:layout_constraintTop_toTopOf="@id/playPauseButton" />
+
+    <ImageButton
+        android:id="@+id/rewindForwardButton"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:src="@drawable/ic_rewind_forward"
+        app:layout_constraintBottom_toBottomOf="@id/playPauseButton"
+        app:layout_constraintEnd_toStartOf="@+id/nextButton"
+        app:layout_constraintStart_toEndOf="@id/playPauseButton"
+        app:layout_constraintTop_toTopOf="@id/playPauseButton" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>
