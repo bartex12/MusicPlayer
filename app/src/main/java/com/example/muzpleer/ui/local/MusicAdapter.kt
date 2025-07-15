@@ -58,11 +58,9 @@ class MusicAdapter(
             track.artworkUri?.takeIf { it.isNotEmpty() }?.let { uri ->
                 Glide.with(itemView)
                     .load(uri)
-                    .placeholder(R.drawable.placeholder1024)
+                    .placeholder(R.drawable.placeholder2)
                     .into(artwork)
-            } ?: run {
-                artwork.setImageResource(R.drawable.placeholder1024)
-            }
+            }?:artwork.setImageResource(R.drawable.placeholder2)
 
             itemView.setOnClickListener { onItemClick(track) }
         }

@@ -152,9 +152,9 @@ class PlayerFragment : Fragment() {
                     Glide.with(requireContext())
                         .load(uri)
                         .centerCrop()
-                        .placeholder(R.drawable.gimme)
+                        .placeholder(R.drawable.placeholder2)
                         .into(artworkImageView)
-                }
+                }?:artworkImageView.setImageResource(R.drawable.placeholder2)
             } else {
                 Glide.with(requireContext())
                     .load(track.cover)

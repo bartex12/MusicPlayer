@@ -83,11 +83,11 @@ class LocalFragment : Fragment() {
                 showPermissionRationale()
             }
             else -> {
-//потом убрать //todo
-                viewModel.setPermissionGranted(true)
                 Log.d(TAG, "LocalFragment checkPermissions:  requestPermissions ")
+                //потом убрать //todo
+                viewModel.setPermissionGranted(true)
                 requestPermissions(
-                    arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.READ_MEDIA_AUDIO),
+                    arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),
                     PERMISSION_REQUEST_CODE
                 )
             }
@@ -101,7 +101,7 @@ class LocalFragment : Fragment() {
             .setPositiveButton("Хорошо") { _, _ ->
                 // Повторный запрос разрешения после объяснения
                 requestPermissions(
-                    arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.READ_MEDIA_AUDIO),
+                    arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),
                     PERMISSION_REQUEST_CODE
                 )
             }
@@ -109,6 +109,7 @@ class LocalFragment : Fragment() {
             .show()
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
