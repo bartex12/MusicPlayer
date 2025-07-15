@@ -146,7 +146,7 @@ class MusicServiceHandler(
                MediaItem.fromUri(uri.toUri())
             } ?: throw IllegalArgumentException("Resource ID is null")
         }
-
+        Log.d(TAG, "MusicServiceHandler playMedia newMediaItem = $newMediaItem ")
         player?.apply{
             setMediaItem(newMediaItem )
         }
@@ -159,8 +159,11 @@ class MusicServiceHandler(
              isLocal= playlist[index].isLocal,
              artworkUri  = playlist[index].artworkUri,
              album=  playlist[index].album,
+             cover = playlist[index].cover,
              resourceId= playlist[index].resourceId// Для треков из ресурсов приложения
         )
+        Log.d(TAG, "MusicServiceHandler playMedia duration = ${playlist[index].duration}," +
+                " mediaUri = ${playlist[index].mediaUri}")
         trackEndListener?.invoke(newMusicTrack)
         player?.prepare() // начать загрузку мультимедиа и получить необходимые ресурсы.
         player?.play()

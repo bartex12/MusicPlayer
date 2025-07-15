@@ -3,6 +3,7 @@ package com.example.muzpleer.ui.local
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -24,6 +25,7 @@ import com.example.muzpleer.SharedViewModel
 import kotlin.getValue
 
 class LocalFragment : Fragment() {
+
 
     private var _binding: FragmentLocalBinding? = null
     private val binding get() = _binding!!
@@ -68,19 +70,24 @@ class LocalFragment : Fragment() {
     }
 
     private fun checkPermissions() {
+        Log.d(TAG, "LocalFragment checkPermissions:  ")
         when {
             ContextCompat.checkSelfPermission(
                 requireContext(),
                 Manifest.permission.READ_EXTERNAL_STORAGE
             ) == PackageManager.PERMISSION_GRANTED -> {
+                Log.d(TAG, "LocalFragment checkPermissions: true ")
                 viewModel.setPermissionGranted(true)
             }
             shouldShowRequestPermissionRationale(Manifest.permission.READ_EXTERNAL_STORAGE) -> {
                 showPermissionRationale()
             }
             else -> {
+//потом убрать //todo
+                viewModel.setPermissionGranted(true)
+                Log.d(TAG, "LocalFragment checkPermissions:  requestPermissions ")
                 requestPermissions(
-                    arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),
+                    arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.READ_MEDIA_AUDIO),
                     PERMISSION_REQUEST_CODE
                 )
             }
@@ -94,7 +101,7 @@ class LocalFragment : Fragment() {
             .setPositiveButton("Хорошо") { _, _ ->
                 // Повторный запрос разрешения после объяснения
                 requestPermissions(
-                    arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),
+                    arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.READ_MEDIA_AUDIO),
                     PERMISSION_REQUEST_CODE
                 )
             }
@@ -118,5 +125,6 @@ class LocalFragment : Fragment() {
 
     companion object {
         private const val PERMISSION_REQUEST_CODE = 1001
+        const val TAG = "33333"
     }
 }

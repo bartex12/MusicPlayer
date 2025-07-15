@@ -1,5 +1,6 @@
 package com.example.muzpleer.ui.local
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.muzpleer.model.MusicTrack
@@ -14,6 +15,10 @@ class LocalMusicViewModel(
     private val mediaScanner: MediaScanner
 ) : ViewModel() {
 
+companion object{
+    const val TAG ="33333"
+}
+
     private val _musicList = MutableStateFlow<List<MusicTrack>>(emptyList())
     val musicList: StateFlow<List<MusicTrack>> = _musicList
 
@@ -22,6 +27,7 @@ class LocalMusicViewModel(
 
     fun setPermissionGranted(granted: Boolean) {
         _permissionGranted.value = granted
+        Log.d(TAG, "LocalMusicViewModel setPermissionGranted:granted = $granted  ")
         if (granted) {
             loadLocalMusic()
         }

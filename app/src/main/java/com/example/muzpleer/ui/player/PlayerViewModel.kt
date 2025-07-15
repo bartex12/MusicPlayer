@@ -41,6 +41,7 @@ class PlayerViewModel(
 
     init {
         musicServiceHandler.setTrackEndListener { itemMusicTrack->
+            //Log.d(TAG, "@@@!!!PlayerViewModel init : cover = ${itemMusicTrack.cover } ")
             _currentMediaItemApp.value = itemMusicTrack
         }
 
@@ -59,6 +60,11 @@ class PlayerViewModel(
             _progress.value = ProgressState(currentPos, duration)
         }
         initializePlayer()
+    }
+
+    fun setCurrentMediaItem(track: MusicTrack){
+        _currentMediaItemApp.value = track
+        Log.d(TAG, "@@@PlayerViewModel setCurrentMediaItem : cover = ${track.cover } ")
     }
 
     fun setPlayList(playlist:List<MusicTrack>){
@@ -81,7 +87,7 @@ class PlayerViewModel(
             // Обновляем позицию в плейлисте
             _currentPosition.value = index
             //фиксируем MediaItem
-            _currentMediaItemApp.value = musicTrack
+            //_currentMediaItemApp.value = musicTrack
             musicServiceHandler.playMedia(index)
         }
         else {

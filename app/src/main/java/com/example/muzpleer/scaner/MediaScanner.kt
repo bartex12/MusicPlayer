@@ -53,8 +53,8 @@ class MediaScanner(private val context: Context) {
                     album = album
                 )
                 musicList.add(track)
-                Log.d(TAG, "***MediaScanner scanDeviceForMusic : " +
-                        "${track.title} //${track.artist} /*/ size = ${musicList.size} ")
+//                Log.d(TAG, "*@#MS title=${track.title}//artist=${track.artist}//duration=${track.duration} //mediaUri=${track.mediaUri} " +
+//                        "//artworkUri=${track.artworkUri} //album=${track.album}")
             }
         }
         return musicList

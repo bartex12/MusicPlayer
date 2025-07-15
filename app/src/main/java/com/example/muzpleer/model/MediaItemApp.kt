@@ -15,7 +15,7 @@ data class MusicTrack(
     val artworkUri: String? = null,
     val album: String? = null,
     val cover: Int? = null,
-    val resourceId: Int? = null // Для треков из ресурсов приложения
+    val resourceId: Int? = null // мп3 для треков из ресурсов приложения
 ): Parcelable{
 
 //    companion object {

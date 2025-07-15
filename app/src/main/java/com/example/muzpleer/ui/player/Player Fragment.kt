@@ -38,8 +38,8 @@ class PlayerFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        handleArguments()
         setupUI()
+        handleArguments()
         observeViewModel()
     }
 
@@ -93,7 +93,9 @@ class PlayerFragment : Fragment() {
                 // Observe current media item
                 launch {
                     viewModel.currentMediaItemApp.collect { mediaItem ->
-                        mediaItem?.let { updateTrackInfo(it) }
+                        mediaItem?.let {
+                            Log.d(TAG, "!@! PlayerFragment observeViewModel: cover = ${it.cover} ")
+                            updateTrackInfo(it) }
                     }
                 }
 
@@ -127,19 +129,24 @@ class PlayerFragment : Fragment() {
     private fun handleArguments() {
         arguments?.getParcelable<MusicTrack>("mediaItem")?.let { mediaItem ->
             viewModel.setPlayList(sharedViewModel.getPlaylist())
-            viewModel.playMedia(mediaItem) // Передаем выбранный трек
-            Log.d(TAG, "PlayerFragment handleArguments: mediaItem = ${mediaItem.title} ")
+            viewModel.setCurrentMediaItem(mediaItem) //делаем трек текущим
+            viewModel.playMedia(mediaItem) // Передаем выбранный трек для проигрывания
+            Log.d(TAG, "---PlayerFragment handleArguments: title = ${mediaItem.title}" +
+                    " cover = ${mediaItem.cover}  mediaUri = ${mediaItem.mediaUri}")
         } ?: run {
             showError("No media item provided")
         }
     }
 
     private fun updateTrackInfo(track: MusicTrack) {
-        Log.d(TAG, "PlayerFragment updateTrackInfo: title = ${track.title} isLocal = ${track.isLocal} ")
+        //Log.d(TAG, "PlayerFragment updateTrackInfo: title = ${track.title} isLocal = ${track.isLocal} ")
         with(binding) {
             titleTextView.text = track.title
             artistTextView.text = track.artist
-            if(track.isLocal){
+            durationTextView.text = track.duration.formatDuration()
+            Log.d(TAG, "PlayerFragment updateTrackInfo: duration= ${track.duration}")
+            //track.cover?.let{artworkImageView.setImageResource(it)} //Без библиотеки
+            if (track.isLocal) {
                 // Загрузка обложки
                 track.artworkUri?.let { uri ->
                     Glide.with(requireContext())
@@ -148,7 +155,7 @@ class PlayerFragment : Fragment() {
                         .placeholder(R.drawable.gimme)
                         .into(artworkImageView)
                 }
-            }else{
+            } else {
                 Glide.with(requireContext())
                     .load(track.cover)
                     .centerCrop()
