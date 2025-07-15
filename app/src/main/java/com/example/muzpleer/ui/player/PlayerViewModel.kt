@@ -3,7 +3,7 @@ package com.example.muzpleer.ui.player
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.muzpleer.model.MediaItemApp
+import com.example.muzpleer.model.MusicTrack
 import com.example.muzpleer.model.PlaylistRepository
 import com.example.muzpleer.service.MusicServiceHandler
 import com.example.muzpleer.util.ProgressState
@@ -21,8 +21,8 @@ class PlayerViewModel(
     private val _isInitialized = MutableStateFlow(false)
     val isInitialized: StateFlow<Boolean> = _isInitialized
 
-    private val _currentMediaItemApp = MutableStateFlow<MediaItemApp?>(null)
-    val currentMediaItemApp: StateFlow<MediaItemApp?> = _currentMediaItemApp
+    private val _currentMediaItemApp = MutableStateFlow<MusicTrack?>(null)
+    val currentMediaItemApp: StateFlow<MusicTrack?> = _currentMediaItemApp
 
     private val _playbackState = MutableStateFlow<PlaybackState>(PlaybackState.IDLE)
     val playbackState: StateFlow<PlaybackState> = _playbackState
@@ -35,12 +35,13 @@ class PlayerViewModel(
 
     private var progressUpdateJob: Job? = null
 
-    private val _playlist = MutableStateFlow<List<MediaItemApp>>(emptyList()) ///
+    private val _playlist = MutableStateFlow<List<MusicTrack>>(emptyList()) ///
+    val playlist:StateFlow<List<MusicTrack>> = _playlist
     private val _currentPosition = MutableStateFlow(0)
 
     init {
-        musicServiceHandler.setTrackEndListener { itemApp->
-            _currentMediaItemApp.value = itemApp
+        musicServiceHandler.setTrackEndListener { itemMusicTrack->
+            _currentMediaItemApp.value = itemMusicTrack
         }
 
         musicServiceHandler.setPlaybackStateListener { state ->
@@ -58,28 +59,33 @@ class PlayerViewModel(
             _progress.value = ProgressState(currentPos, duration)
         }
         initializePlayer()
-        loadPlaylist() // Загружаем плейлист при создании ViewModel
     }
 
-    private fun loadPlaylist() {
-        viewModelScope.launch {
-            val playlist = repository.getPlaylist()
-            _playlist.value = playlist
-            musicServiceHandler.setPlaylist(playlist) // Передаем плейлист в сервис
+    fun setPlayList(playlist:List<MusicTrack>){
+        _playlist.value = playlist  //запоминаем плейлист
+        musicServiceHandler.setPlaylist(playlist) // Передаем плейлист в сервис
+    }
+
+    fun playMedia(musicTrack: MusicTrack) {
+        val index = if (musicTrack.isLocal){
+            Log.d(TAG, "@@@PlayerViewModel playMedia Local: title = ${musicTrack.title } ")
+            _playlist.value.indexOfFirst { it.mediaUri == musicTrack.mediaUri  }
+        }else{
+            _playlist.value.indexOfFirst {
+                Log.d(TAG, "@@@PlayerViewModel playMedia notLocal: title=${musicTrack.title } ")
+                it.resourceId == musicTrack.resourceId  }
         }
-    }
 
-    fun playMedia(mediaItemApp: MediaItemApp) {
-        val index = _playlist.value.indexOfFirst { it.music == mediaItemApp.music  }
+        Log.d(TAG, "@@@PlayerViewModel playMedia index = $index ")
         if (index != -1) {
             // Обновляем позицию в плейлисте
             _currentPosition.value = index
             //фиксируем MediaItem
-            _currentMediaItemApp.value = mediaItemApp
+            _currentMediaItemApp.value = musicTrack
             musicServiceHandler.playMedia(index)
         }
         else {
-            _errorMessage.value = "Track not found in playlist"
+            _errorMessage.value = "@@@ Track not found in playlist"
         }
         // Обновляем состояние
         _playbackState.value = PlaybackState.PLAYING
@@ -136,8 +142,14 @@ class PlayerViewModel(
 
                     PlaybackState.IDLE,
                     PlaybackState.ENDED -> {
-                        currentMediaItemApp.value?.let { mediaItem->
-                            val index = _playlist.value.indexOfFirst { it.music == mediaItem.music }
+                        currentMediaItemApp.value?.let { musicTrack->
+
+                            val index = if (musicTrack.isLocal){
+                                _playlist.value.indexOfFirst { it.mediaUri == musicTrack.mediaUri  }
+                            }else{
+                                _playlist.value.indexOfFirst { it.resourceId == musicTrack.resourceId  }
+                            }
+
                             if (index != -1) {
                                 musicServiceHandler.playMedia(index)
                             } else {
@@ -170,7 +182,14 @@ class PlayerViewModel(
     }
 
     fun skipToNext() {
-        val currentIndex = _playlist.value.indexOfFirst { it.music == _currentMediaItemApp.value?.music }
+        //val currentIndex = _playlist.value.indexOfFirst { it.music == _currentMediaItemApp.value?.music }
+
+        val currentIndex = if (_currentMediaItemApp.value?.isLocal == true){
+            _playlist.value.indexOfFirst { it.mediaUri == _currentMediaItemApp.value?.mediaUri  }
+        }else{
+            _playlist.value.indexOfFirst { it.resourceId == _currentMediaItemApp.value?.resourceId  }
+        }
+
         if (currentIndex != -1) {
             val nextIndex = (currentIndex + 1) % _playlist.value.size
             playMedia(nextIndex)

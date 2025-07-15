@@ -12,6 +12,9 @@
         <action
             android:id="@+id/action_tracksFragment_to_playerFragment"
             app:destination="@id/playerFragment" />
+        <action
+            android:id="@+id/action_tracksFragment_to_localFragment"
+            app:destination="@id/localFragment" />
     </fragment>
     <fragment
         android:id="@+id/playerFragment"
@@ -20,6 +23,14 @@
         <action
             android:id="@+id/action_playerFragment_to_tracksFragment"
             app:destination="@id/tracksFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/localFragment"
+        android:name="com.example.muzpleer.ui.local.LocalFragment"
+        android:label="LocalFragment" >
+        <action
+            android:id="@+id/action_localFragment_to_playerFragment"
+            app:destination="@id/playerFragment" />
     </fragment>
 
 

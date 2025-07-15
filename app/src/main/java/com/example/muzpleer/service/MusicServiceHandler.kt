@@ -1,13 +1,14 @@
 package com.example.muzpleer.service
 
 import android.content.Context
+import android.net.Uri
 import android.util.Log
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.MediaSession
-import com.example.muzpleer.model.MediaItemApp
+import com.example.muzpleer.model.MusicTrack
 import com.example.muzpleer.ui.player.PlaybackState
 import com.example.muzpleer.util.ProgressState
 import kotlinx.coroutines.CoroutineScope
@@ -15,6 +16,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import androidx.core.net.toUri
+import kotlin.String
 
 class MusicServiceHandler(
     private val context: Context
@@ -27,17 +30,18 @@ class MusicServiceHandler(
     //внешний колбэк для ViewModel
     private var playbackStateListener: ((PlaybackState) -> Unit)? = null
     private var progressUpdateJob: Job? = null
-    private var playlist: List<MediaItemApp> = emptyList()
+    private var playlist: List<MusicTrack> = emptyList()
     private var currentIndex = 0
 
-    private var trackEndListener: ((MediaItemApp) -> Unit)? = null
+    private var trackEndListener: ((MusicTrack) -> Unit)? = null
 
     // Устанавливаем плейлист один раз
-    fun setPlaylist(playlist: List<MediaItemApp>) {
+    fun setPlaylist(playlist: List<MusicTrack>) {
+        Log.d(TAG, " *+*  MusicServiceHandler setPlaylist: size = ${playlist.size}  ")
         this.playlist = playlist
     }
 
-    fun setTrackEndListener(listener: (MediaItemApp) -> Unit) {
+    fun setTrackEndListener(listener: (MusicTrack) -> Unit) {
         this.trackEndListener = listener
     }
 
@@ -130,20 +134,34 @@ class MusicServiceHandler(
         if (index !in playlist.indices) return
 
         currentIndex = index
+        val track = playlist[index]
 
-        val newItem = MediaItem.fromUri(
-            "android.resource://${context.packageName}/${playlist[index].music}")
+        val newMediaItem = if (track.isLocal){
+            // Для локальных файлов
+            MediaItem.fromUri(track.mediaUri.toUri())
+        }else{
+            // Для ресурсов приложения
+            track.resourceId?.let { resId ->
+                val uri = "android.resource://${context.packageName}/$resId"
+               MediaItem.fromUri(uri.toUri())
+            } ?: throw IllegalArgumentException("Resource ID is null")
+        }
 
         player?.apply{
-            setMediaItem(newItem )
+            setMediaItem(newMediaItem )
         }
-        val newItemApp = MediaItemApp(
-            title = playlist[index].title,
-            artist = playlist[index].artist,
-            cover = playlist[index].cover,
-            music = playlist[index].music
+        val newMusicTrack =  MusicTrack(
+             id= playlist[index].id,
+             title= playlist[index].title,
+             artist= playlist[index].artist,
+             duration= playlist[index].duration,
+             mediaUri= playlist[index].mediaUri,
+             isLocal= playlist[index].isLocal,
+             artworkUri  = playlist[index].artworkUri,
+             album=  playlist[index].album,
+             resourceId= playlist[index].resourceId// Для треков из ресурсов приложения
         )
-        trackEndListener?.invoke(newItemApp)
+        trackEndListener?.invoke(newMusicTrack)
         player?.prepare() // начать загрузку мультимедиа и получить необходимые ресурсы.
         player?.play()
     }

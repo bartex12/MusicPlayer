@@ -9,22 +9,26 @@ import android.view.ViewGroup
 import android.widget.SeekBar
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.bumptech.glide.Glide
+import com.example.muzpleer.SharedViewModel
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentPlayerBinding
-import com.example.muzpleer.model.MediaItemApp
+import com.example.muzpleer.model.MusicTrack
 import com.example.muzpleer.util.ProgressState
 import com.example.muzpleer.util.formatDuration
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import kotlin.getValue
 
 class PlayerFragment : Fragment() {
     private var _binding: FragmentPlayerBinding? = null
     private val binding get() = _binding!!
     private val viewModel: PlayerViewModel by viewModel()
+    private val sharedViewModel: SharedViewModel by activityViewModels()
     private var isSeeking = false
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -34,10 +38,9 @@ class PlayerFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        setupUI()
         handleArguments()
+        setupUI()
         observeViewModel()
-        MediaStore.Audio.Media.TITLE
     }
 
     private fun setupUI() {
@@ -76,10 +79,11 @@ class PlayerFragment : Fragment() {
     }
 
     private fun observeViewModel() {
+
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch {
-                   // Закончилась ли инициализация плеера
+                    // Закончилась ли инициализация плеера
                     viewModel.isInitialized.collect { isReady ->
                         binding.playPauseButton.isEnabled = isReady
                         //if (!isReady) //showLoadingIndicator()
@@ -121,7 +125,8 @@ class PlayerFragment : Fragment() {
     }
 
     private fun handleArguments() {
-        arguments?.getParcelable<MediaItemApp>("mediaItem")?.let { mediaItem->
+        arguments?.getParcelable<MusicTrack>("mediaItem")?.let { mediaItem ->
+            viewModel.setPlayList(sharedViewModel.getPlaylist())
             viewModel.playMedia(mediaItem) // Передаем выбранный трек
             Log.d(TAG, "PlayerFragment handleArguments: mediaItem = ${mediaItem.title} ")
         } ?: run {
@@ -129,15 +134,27 @@ class PlayerFragment : Fragment() {
         }
     }
 
-    private fun updateTrackInfo(mediaItemApp: MediaItemApp) {
+    private fun updateTrackInfo(track: MusicTrack) {
+        Log.d(TAG, "PlayerFragment updateTrackInfo: title = ${track.title} isLocal = ${track.isLocal} ")
         with(binding) {
-            titleTextView.text = mediaItemApp.title
-            artistTextView.text = mediaItemApp.artist
-            // Здесь можно загрузить обложку, если она есть
-            //Glide.with(artworkImageView).load(mediaItem.artworkUri).into(artworkImageView)
-        Glide.with(binding.artworkImageView)
-            .load(mediaItemApp.cover)
-            .into(binding.artworkImageView)
+            titleTextView.text = track.title
+            artistTextView.text = track.artist
+            if(track.isLocal){
+                // Загрузка обложки
+                track.artworkUri?.let { uri ->
+                    Glide.with(requireContext())
+                        .load(uri)
+                        .centerCrop()
+                        .placeholder(R.drawable.gimme)
+                        .into(artworkImageView)
+                }
+            }else{
+                Glide.with(requireContext())
+                    .load(track.cover)
+                    .centerCrop()
+                    .placeholder(R.drawable.gimme)
+                    .into(artworkImageView)
+            }
         }
     }
 

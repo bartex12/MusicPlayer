@@ -3,7 +3,7 @@ package com.example.muzpleer
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
-import com.google.android.material.snackbar.Snackbar
+import androidx.activity.viewModels
 import com.google.android.material.navigation.NavigationView
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
@@ -12,15 +12,16 @@ import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.appcompat.app.AppCompatActivity
-import androidx.navigation.ui.NavigationUI
 import com.example.muzpleer.databinding.ActivityMainBinding
 import com.example.muzpleer.service.MusicServiceHandler
 import org.koin.android.ext.android.getKoin
+import kotlin.getValue
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var binding: ActivityMainBinding
+    val sharedViewModel: SharedViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,7 +47,7 @@ class MainActivity : AppCompatActivity() {
 //            .build()
         appBarConfiguration = AppBarConfiguration(
             setOf(
-                R.id.tracksFragment, R.id.playerFragment
+                R.id.tracksFragment, R.id.playerFragment, R.id.localFragment
             ), drawerLayout
         )
 
