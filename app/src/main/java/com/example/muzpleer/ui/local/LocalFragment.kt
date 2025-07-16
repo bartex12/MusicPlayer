@@ -72,7 +72,10 @@ class LocalFragment : Fragment() {
                 }
             }
         }
-        checkPermissions()
+
+        //todo убрать
+        viewModel.loadLocalMusic()
+        //checkPermissions()
     }
 
     private fun checkPermissions() {

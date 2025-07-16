@@ -135,14 +135,13 @@ class PlayerFragment : Fragment() {
                     " cover = ${mediaItem.cover}  mediaUri = ${mediaItem.mediaUri}")
         } ?: run {showError("No media item provided")}
     }
-
     private fun updateTrackInfo(track: MusicTrack) {
         //Log.d(TAG, "PlayerFragment updateTrackInfo: title = ${track.title} isLocal = ${track.isLocal} ")
         with(binding) {
             titleTextView.text = track.title
             artistTextView.text = track.artist
             durationTextView.text = track.duration.formatDuration()
-            Log.d(TAG, "PlayerFragment updateTrackInfo: duration= ${track.duration}")
+            Log.d(TAG, "PlayerFragment updateTrackInfo: duration= ${track.duration.formatDuration()}")
             //track.cover?.let{artworkImageView.setImageResource(it)} //Без библиотеки
             if (track.isLocal) {
                 // Загрузка обложки
