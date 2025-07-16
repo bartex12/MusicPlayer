@@ -43,6 +43,7 @@ class LocalFragment : Fragment() {
     ): View {
         _binding = FragmentLocalBinding.inflate(inflater, container, false)
         return binding.root
+
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
