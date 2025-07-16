@@ -22,17 +22,6 @@ companion object{
     private val _musicList = MutableStateFlow<List<MusicTrack>>(emptyList())
     val musicList: StateFlow<List<MusicTrack>> = _musicList
 
-    private val _permissionGranted = MutableStateFlow(false)
-    val permissionGranted: StateFlow<Boolean> = _permissionGranted
-
-    fun setPermissionGranted(granted: Boolean) {
-        _permissionGranted.value = granted
-        Log.d(TAG, "LocalMusicViewModel setPermissionGranted:granted = $granted  ")
-        if (granted) {
-            loadLocalMusic()
-        }
-    }
-
     fun loadLocalMusic() {
         viewModelScope.launch {
             _musicList.value = mediaScanner.scanDeviceForMusic()

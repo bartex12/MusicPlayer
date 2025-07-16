@@ -8,10 +8,24 @@
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/localRecyclerView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         android:clipToPadding="false"
-        android:paddingBottom="8dp"/>
+        android:paddingBottom="8dp"
+        app:layout_constraintBottom_toTopOf="@id/telefonMusicButton"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <Button
+        android:id="@+id/telefonMusicButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Найти свою музыку"
+        app:layout_constraintTop_toBottomOf="@+id/localRecyclerView"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
 
     <TextView
         android:id="@+id/tvEmpty"
