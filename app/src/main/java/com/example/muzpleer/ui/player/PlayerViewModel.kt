@@ -42,7 +42,7 @@ class PlayerViewModel(
     init {
         musicServiceHandler.setTrackEndListener { itemMusicTrack->
             //Log.d(TAG, "@@@!!!PlayerViewModel init : cover = ${itemMusicTrack.cover } ")
-            //_currentMediaItemApp.value = itemMusicTrack
+            _currentMediaItemApp.value = itemMusicTrack
         }
 
         musicServiceHandler.setPlaybackStateListener { state ->
