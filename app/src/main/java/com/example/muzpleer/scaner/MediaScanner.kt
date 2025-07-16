@@ -20,12 +20,20 @@ class MediaScanner(private val context: Context) {
         val uri: Uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
         val selection = "${MediaStore.Audio.Media.IS_MUSIC} != 0"
         val sortOrder = "${MediaStore.Audio.Media.TITLE} ASC"
-
+        val projection = arrayOf(
+            MediaStore.Audio.Media._ID,
+            MediaStore.Audio.Media.TITLE,
+            MediaStore.Audio.Media.ARTIST,
+            MediaStore.Audio.Media.DURATION,
+            MediaStore.Audio.Media.DATA,
+            MediaStore.Audio.Media.ALBUM_ID,
+            MediaStore.Audio.Media.ALBUM
+        )
         Log.d(TAG, "MediaScanner scanDeviceForMusic uri = ${uri.toString()}:  ")
 
         val cursor: Cursor? = resolver.query(
             uri,
-            null,
+            projection,
             selection,
             null,
             sortOrder
@@ -35,6 +43,7 @@ class MediaScanner(private val context: Context) {
 
         cursor?.use {
             while (it.moveToNext()) {
+                val idColumn = it.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)
                 val title = it.getString(it.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE))
                 val artist = it.getString(it.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST))
                 val duration = it.getLong(it.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION))
@@ -43,7 +52,7 @@ class MediaScanner(private val context: Context) {
                 val album = it.getString(it.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM))
 
                 val track =  MusicTrack(
-                    id = data.hashCode().toString(),
+                    id = idColumn,
                     title = title ?: "Unknown",
                     artist = artist ?: "Unknown",
                     duration = duration,

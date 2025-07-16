@@ -9,5 +9,6 @@
 
     <string name="menu_tracks">tracksFragment</string>
     <string name="menu_player">playerFragment</string>
+    <string name="not_permission">Разрешение отклонено. Функционал ограничен</string>
 
 </resources>

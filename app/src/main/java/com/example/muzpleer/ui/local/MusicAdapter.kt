@@ -1,5 +1,8 @@
 package com.example.muzpleer.ui.local
 
+import android.annotation.SuppressLint
+import android.content.ContentUris
+import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -8,29 +11,33 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.muzpleer.R
+import com.example.muzpleer.databinding.ItemMusicBinding
 import com.example.muzpleer.model.MusicTrack
-import com.example.muzpleer.ui.local.MusicAdapter.ViewHolder
-import com.example.muzpleer.ui.tracks.TracksAdapter
+import androidx.core.net.toUri
 
 class MusicAdapter(
     private val onItemClick: (MusicTrack) -> Unit
-) : RecyclerView.Adapter<ViewHolder>() {
+) : RecyclerView.Adapter<MusicAdapter.MusicViewHolder>() {
 
     var data:List<MusicTrack> = listOf()
+        @SuppressLint("NotifyDataSetChanged")
         set(value){
             field = value
             notifyDataSetChanged()
         }
 
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_music_track, parent, false)
-        return ViewHolder(view, onItemClick)
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MusicViewHolder {
+        val binding = ItemMusicBinding.inflate(
+            LayoutInflater.from(parent.context),
+            parent,
+            false
+        )
+        return MusicViewHolder(binding)
     }
 
     override fun onBindViewHolder(
-        holder: ViewHolder,
+        holder: MusicViewHolder,
         position: Int
     ) {
         holder.bind(data[position])
@@ -40,31 +47,30 @@ class MusicAdapter(
         return data.size
     }
 
-    class ViewHolder(
-        itemView: View,
-        private val onItemClick: (MusicTrack) -> Unit
-    ) : RecyclerView.ViewHolder(itemView) {
-        private val artwork: ImageView = itemView.findViewById(R.id.trackArtwork)
-        private val title: TextView = itemView.findViewById(R.id.trackTitle)
-        private val artist: TextView = itemView.findViewById(R.id.trackArtist)
-        private val duration: TextView = itemView.findViewById(R.id.trackDuration)
+    inner class MusicViewHolder(private val binding: ItemMusicBinding) :
+        RecyclerView.ViewHolder(binding.root) {
 
         fun bind(track: MusicTrack) {
-            title.text = track.title
-            artist.text = track.artist
-            duration.text = track.duration.formatAsTime()
+            binding.trackTitle.text = track.title
+            binding.trackArtist.text = track.artist
+            binding.trackDuration.text = track.duration.formatAsTime()
 
+            // Загружаем обложку, если есть
+            val albumArtUri = ContentUris.withAppendedId(
+                "content://media/external/audio/albumart".toUri(),
+                track.id.toLong()
+            )
             // Загрузка обложки
-            track.artworkUri?.takeIf { it.isNotEmpty() }?.let { uri ->
-                Glide.with(itemView)
-                    .load(uri)
+                Glide.with(binding.root.context)
+                    .load(albumArtUri)
                     .placeholder(R.drawable.placeholder2)
-                    .into(artwork)
-            }?:artwork.setImageResource(R.drawable.placeholder2)
+                    .error(R.drawable.placeholder2)
+                    .into(binding.trackArtwork)
 
-            itemView.setOnClickListener { onItemClick(track) }
+            binding.root.setOnClickListener { onItemClick(track) }
         }
 
+        @SuppressLint("DefaultLocale")
         private fun Long.formatAsTime(): String {
             val seconds = this / 1000
             val minutes = seconds / 60

@@ -133,9 +133,7 @@ class PlayerFragment : Fragment() {
             viewModel.playMedia(mediaItem) // Передаем выбранный трек для проигрывания
             Log.d(TAG, "---PlayerFragment handleArguments: title = ${mediaItem.title}" +
                     " cover = ${mediaItem.cover}  mediaUri = ${mediaItem.mediaUri}")
-        } ?: run {
-            showError("No media item provided")
-        }
+        } ?: run {showError("No media item provided")}
     }
 
     private fun updateTrackInfo(track: MusicTrack) {

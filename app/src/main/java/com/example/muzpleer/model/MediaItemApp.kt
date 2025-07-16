@@ -6,15 +6,15 @@ import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class MusicTrack(
-    val id: String,
-    val title: String,
-    val artist: String,
-    val duration: Long,
-    val mediaUri: String,
-    val isLocal: Boolean,
-    val artworkUri: String? = null,
-    val album: String? = null,
-    val cover: Int? = null,
+    val id: Int,  //id
+    val title: String, //название
+    val artist: String, //исполнитель
+    val duration: Long,  //длительность трека
+    val mediaUri: String,  // мп3 для треков из local
+    val isLocal: Boolean,  //из ресурсов или local?
+    val artworkUri: String? = null, //обложка из local
+    val album: String? = null, //название альбома из local
+    val cover: Int? = null, //обложка из ресурсов
     val resourceId: Int? = null // мп3 для треков из ресурсов приложения
 ): Parcelable{
 

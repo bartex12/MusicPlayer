@@ -33,7 +33,7 @@ companion object{
         }
     }
 
-    private fun loadLocalMusic() {
+    fun loadLocalMusic() {
         viewModelScope.launch {
             _musicList.value = mediaScanner.scanDeviceForMusic()
         }
