@@ -18,8 +18,8 @@ class PlayerViewModel(
     private val repository: PlaylistRepository  // Инжектированный репозиторий
 ) : ViewModel() {
 
-    private val _isInitialized = MutableStateFlow(false)
-    val isInitialized: StateFlow<Boolean> = _isInitialized
+//    private val _isInitialized = MutableStateFlow(false)
+//    val isInitialized: StateFlow<Boolean> = _isInitialized
 
     private val _currentMediaItemApp = MutableStateFlow<MusicTrack?>(null)
     val currentMediaItemApp: StateFlow<MusicTrack?> = _currentMediaItemApp
@@ -40,9 +40,9 @@ class PlayerViewModel(
     private val _currentPosition = MutableStateFlow(0)
 
     init {
-        musicServiceHandler.setTrackEndListener { itemMusicTrack->
-            //Log.d(TAG, "@@@!!!PlayerViewModel init : cover = ${itemMusicTrack.cover } ")
-            _currentMediaItemApp.value = itemMusicTrack
+        musicServiceHandler.setCurrentTrackListener { currentTrack->
+            Log.d(TAG, "@@@!!!PlayerViewModel init : title = ${currentTrack.title } ")
+            _currentMediaItemApp.value = currentTrack
         }
 
         musicServiceHandler.setPlaybackStateListener { state ->
@@ -52,6 +52,7 @@ class PlayerViewModel(
                         delay(300) // Небольшая задержка перед переходом
                         musicServiceHandler.playNext()
                     }
+                    _playbackState.value = PlaybackState.PLAYING
                 }
                 else -> _playbackState.value = state
             }
@@ -62,9 +63,10 @@ class PlayerViewModel(
         initializePlayer()
     }
 
+    //в этом методе делаем выбранный при клике трек текущим
     fun setCurrentMediaItem(track: MusicTrack){
-        _currentMediaItemApp.value = track
-        Log.d(TAG, "@@@PlayerViewModel setCurrentMediaItem : cover = ${track.cover } ")
+        _currentMediaItemApp.value = track //делаем трек текущим
+        Log.d(TAG, "@@@PlayerViewModel setCurrentMediaItem : cover = ${track.title } ")
     }
 
     fun setPlayList(playlist:List<MusicTrack>){
@@ -97,6 +99,11 @@ class PlayerViewModel(
         _playbackState.value = PlaybackState.PLAYING
     }
 
+    //вызывается из фрагмента
+    fun playMedia2(musicTrack: MusicTrack){
+        musicServiceHandler.playMedia2(musicTrack)
+    }
+
     fun playMedia(index: Int) {
         musicServiceHandler.playMedia(index)
     }
@@ -105,7 +112,7 @@ class PlayerViewModel(
         viewModelScope.launch {
             try {
                 musicServiceHandler.initializePlayer()
-                _isInitialized.value = true
+               // _isInitialized.value = true
                 Log.d(TAG, "PlayerViewModel initializePlayer -Player initialized successfully")
             } catch (e: Exception) {
                 _errorMessage.value = "Failed to initialize player: ${e.message}"
@@ -126,10 +133,10 @@ class PlayerViewModel(
     fun togglePlayPause() {
         viewModelScope.launch {
             try {
-                if (!_isInitialized.value) {
-                    _errorMessage.value = "Player is not ready yet"
-                    return@launch
-                }
+//                if (!_isInitialized.value) {
+//                    _errorMessage.value = "Player is not ready yet"
+//                    return@launch
+//                }
 
                 when (_playbackState.value) {
                     PlaybackState.PLAYING -> {

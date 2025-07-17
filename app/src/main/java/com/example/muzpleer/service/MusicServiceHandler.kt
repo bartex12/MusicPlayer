@@ -1,7 +1,6 @@
 package com.example.muzpleer.service
 
 import android.content.Context
-import android.net.Uri
 import android.util.Log
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.MediaItem
@@ -17,23 +16,23 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import androidx.core.net.toUri
-import kotlin.String
 
 class MusicServiceHandler(
     private val context: Context
 ) {
-    companion object{
+    companion object {
         const val TAG = "33333"
     }
+
     private var player: ExoPlayer? = null
     private var mediaSession: MediaSession? = null
+
     //внешний колбэк для ViewModel
     private var playbackStateListener: ((PlaybackState) -> Unit)? = null
     private var progressUpdateJob: Job? = null
     private var playlist: List<MusicTrack> = emptyList()
     private var currentIndex = 0
-
-    private var trackEndListener: ((MusicTrack) -> Unit)? = null
+    private var currentTrackListener: ((MusicTrack) -> Unit)? = null
 
     // Устанавливаем плейлист один раз
     fun setPlaylist(playlist: List<MusicTrack>) {
@@ -41,8 +40,8 @@ class MusicServiceHandler(
         this.playlist = playlist
     }
 
-    fun setTrackEndListener(listener: (MusicTrack) -> Unit) {
-        this.trackEndListener = listener
+    fun setCurrentTrackListener(listener: (MusicTrack) -> Unit) {
+        this.currentTrackListener = listener
     }
 
     // Устанавливаем внешний колбэк для ViewModel
@@ -68,33 +67,43 @@ class MusicServiceHandler(
 
     // Слушатель событий плеера (private, не путать с внешним колбэком playbackStateListener)
     private val playerListener = object : Player.Listener {
-
         //Вызывается при переходе воспроизведения к медиа-элементу или начале повтора медиа-элемента
         // в соответствии с текущим режимом повтора
-        override fun onMediaItemTransition(mediaItem: androidx.media3.common.MediaItem?, reason: Int) {
+        override fun onMediaItemTransition(
+            mediaItem:MediaItem?,
+            reason: Int
+        ) {
+            Log.d(TAG, "+++MusicServiceHandler onMediaItemTransition mediaItem = $mediaItem}" )
+
             when (reason) {
                 //Воспроизведение автоматически переключилось на следующий медиафайл...
-                Player.MEDIA_ITEM_TRANSITION_REASON_AUTO-> {
-                    currentIndex = (currentIndex + 1) % playlist.size
-                    playbackStateListener?.invoke(PlaybackState.PLAYING)
+                Player.MEDIA_ITEM_TRANSITION_REASON_AUTO -> {
+                    //playMedia3(mediaItem)
+                    Log.d(TAG, "MusicServiceHandler onMediaItemTransition mediaItem = $mediaItem}" )
+//                    currentIndex = (currentIndex + 1) % playlist.size
+//                    playbackStateListener?.invoke(PlaybackState.PLAYING)
                 }
             }
         }
 
         //Вызывается при изменении значения, возвращаемого функцией getPlaybackState().
         override fun onPlaybackStateChanged(state: Int) {
+            //playbackStateListener?.invoke(state )
+            Log.d(TAG, " %%% Сработал onPlaybackStateChanged:  ")
             updatePlaybackState()
+
         }
 
         //Вызывается при изменении значения, возвращаемого функцией getPlayWhenReady().
         override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
-            updatePlaybackState()
+            Log.d(TAG, " %%% Сработал onPlayWhenReadyChanged:  ")
+            //updatePlaybackState()
         }
     }
 
     private fun updatePlaybackState() {
         player?.let { player ->
-            val playbackState  = when {
+            val playbackState = when {
                 player.isPlaying -> PlaybackState.PLAYING
                 player.playbackState == Player.STATE_READY -> {
                     if (player.isPlaying == true) PlaybackState.PLAYING
@@ -102,18 +111,20 @@ class MusicServiceHandler(
                 }
                 player.playbackState == Player.STATE_BUFFERING -> PlaybackState.BUFFERING
                 player.playbackState == Player.STATE_ENDED -> {
-                    if (playlist.isNotEmpty())
-                        playNext()  // Автопереключение при окончании трека
-                        PlaybackState.PLAYING
+                    PlaybackState.ENDED
+//                    if (playlist.isNotEmpty())
+//                        playNext()  // Автопереключение при окончании трека
+//                    PlaybackState.PLAYING
                 }
                 else -> PlaybackState.IDLE
             }
-            playbackStateListener?.invoke(playbackState )
+            playbackStateListener?.invoke(playbackState)
         }
     }
 
     fun playNext() {
         val nextIndex = (currentIndex + 1) % playlist.size
+        currentIndex = nextIndex
         playMedia(nextIndex)
     }
 
@@ -124,51 +135,91 @@ class MusicServiceHandler(
             .apply {
                 setAudioAttributes(AudioAttributes.DEFAULT, true) // Использование аудиофокуса
                 addListener(playerListener) //регистрируем слушатель событий
-        }
+            }
         mediaSession = MediaSession.Builder(context, player!!)
             .setId(System.currentTimeMillis().toString()) // Уникальный ID
             .build()
     }
 
     fun playMedia(index: Int) {
+        player?.release()
+        player = ExoPlayer.Builder(context).build()
         if (index !in playlist.indices) return
-
-        currentIndex = index
+        //currentIndex = index
         val track = playlist[index]
 
-        val newMediaItem = if (track.isLocal){
+        val newMediaItem = if (track.isLocal) {
             // Для локальных файлов
             MediaItem.fromUri(track.mediaUri.toUri())
-        }else{
+        } else {
             // Для ресурсов приложения
             track.resourceId?.let { resId ->
                 val uri = "android.resource://${context.packageName}/$resId"
-               MediaItem.fromUri(uri.toUri())
+                MediaItem.fromUri(uri.toUri())
             } ?: throw IllegalArgumentException("Resource ID is null")
         }
         Log.d(TAG, "MusicServiceHandler playMedia newMediaItem = $newMediaItem ")
-        player?.apply{
-            setMediaItem(newMediaItem )
+        player?.apply {
+            setMediaItem(newMediaItem)
         }
-        val newMusicTrack =  MusicTrack(
-             id= playlist[index].id,
-             title= playlist[index].title,
-             artist= playlist[index].artist,
-             duration= playlist[index].duration,
-             mediaUri= playlist[index].mediaUri,
-             isLocal= playlist[index].isLocal,
-             artworkUri  = playlist[index].artworkUri,
-             album=  playlist[index].album,
-             cover = playlist[index].cover,
-             resourceId= playlist[index].resourceId// Для треков из ресурсов приложения
-        )
-        Log.d(TAG, "MusicServiceHandler playMedia duration = ${playlist[index].duration}," +
-                " mediaUri = ${playlist[index].mediaUri}")
-        trackEndListener?.invoke(newMusicTrack)
+
         player?.prepare() // начать загрузку мультимедиа и получить необходимые ресурсы.
+        Log.d(TAG, "1-MusicServiceHandler playMedia state =  = ${player?.playbackState} ")
+        player?.play()
+        Log.d(TAG, "2-MusicServiceHandler playMedia state =  = ${player?.playbackState} ")
+    }
+
+    //вызывается из ViewModel
+    fun playMedia2(musicTrack: MusicTrack) {
+
+        val mediaItem: MediaItem = if (musicTrack.isLocal) {
+            MediaItem.fromUri(musicTrack.getContentUri())
+        } else {
+            val uri = "android.resource://${context.packageName}/${musicTrack.resourceId}"
+            MediaItem.fromUri(uri.toUri())
+        }
+        Log.d(TAG,"!!//!!MusicServiceHandler playMedia2 mediaItem = $mediaItem  id = ${musicTrack.id}")
+        player?.setMediaItem(mediaItem)
+
+        //обновляем текущий индекс
+        currentIndex = getTruckIndex(musicTrack, playlist)
+        Log.d(TAG,"!!//!!MusicServiceHandler playMedia2 currentIndex = $currentIndex ")
+
+//        //todo сомнительно, что это нужно
+//        val newMusicTrack = mediaItemToMusicTrack(musicTrack, playlist)
+//        currentTrackListener?.invoke(newMusicTrack)
+
+        player?.prepare()
         player?.play()
     }
 
+    fun mediaItemToMusicTrack(musicTrack:MusicTrack, playlist:List<MusicTrack>): MusicTrack{
+        val index = getTruckIndex(musicTrack, playlist)
+
+        return MusicTrack(
+            id = playlist[index].id,
+            title = playlist[index].title,
+            artist = playlist[index].artist,
+            duration = playlist[index].duration,
+            mediaUri = playlist[index].mediaUri,// музыка для треков из телефона
+            isLocal = playlist[index].isLocal,
+            artworkUri = playlist[index].artworkUri,  //обложка для треков из телефона
+            album = playlist[index].album,
+            cover = playlist[index].cover, //обложка для треков из ресурсов приложения
+            resourceId = playlist[index].resourceId// музыка для треков из ресурсов приложения
+        )
+    }
+
+    fun getTruckIndex(musicTrack:MusicTrack, playlist:List<MusicTrack>):Int{
+        return if (musicTrack.isLocal){
+            Log.d(TAG, "MusicServiceHandler getTruckIndex Local: title = ${musicTrack.title } ")
+            playlist.indexOfFirst { it.mediaUri == musicTrack.mediaUri  }
+        }else{
+            playlist.indexOfFirst {
+                Log.d(TAG, "MusicServiceHandler getTruckIndex notLocal: title=${musicTrack.title } ")
+                it.resourceId == musicTrack.resourceId  }
+        }
+    }
 
     fun play() {
         Log.d(TAG, "MusicServiceHandler play()  ")

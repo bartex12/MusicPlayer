@@ -64,21 +64,45 @@ class LocalFragment : Fragment() {
                 R.id.action_localFragment_to_tracksFragment)
         }
 
+            viewModel.progress.observe(viewLifecycleOwner) {isShow ->
+                if(isShow){
+                    Log.d(TAG, " 1 LocalFragment onViewCreated observe: progress= $isShow  ")
+                    binding.progressBar.visibility = View.VISIBLE
+                }else{
+//                    Log.d(TAG, " 2 LocalFragment onViewCreated observe: progress= $isShow   ")
+//                    binding.progressBar.visibility = View.GONE
+                }
+            }
+
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.musicList.collect { tracks ->
-                    if (tracks.isEmpty()) {
-                        binding.tvEmpty.visibility = View.VISIBLE
+                launch {
+                    viewModel.musicList.collect { tracks ->
+                        Log.d(TAG, "3 LocalFragment onViewCreated musicList.collect: tracks.size= ${tracks.size} ")
+                        if (tracks.isEmpty()) {
+                            binding.progressBar.visibility = View.VISIBLE
+                            binding.imageHolder3.visibility = View.VISIBLE
+                            Log.d(TAG, "4 LocalFragment onViewCreated musicList.collect: progressBar.visibility = View.VISIBLE ")
+                        }else{
+                            binding.progressBar.visibility = View.GONE
+                            binding.imageHolder3.visibility = View.GONE
+                        }
+                        adapter.data = tracks  //передаём данные в адаптер
+                        viewModel.setProgress(false)
+                        sharedViewModel.setPlaylist(tracks)  //передаём плейлист в sharedViewModel
                     }
-                    adapter.data = tracks  //передаём данные в адаптер
-                    sharedViewModel.setPlaylist(tracks)  //передаём плейлист в sharedViewModel
                 }
             }
         }
         viewModel.loadLocalMusic()
     }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+
     companion object {
-        private const val PERMISSION_REQUEST_CODE = 1001
         const val TAG = "33333"
     }
 }

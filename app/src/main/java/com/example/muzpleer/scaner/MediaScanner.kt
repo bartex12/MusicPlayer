@@ -1,11 +1,9 @@
 package com.example.muzpleer.scaner
 
-import android.content.ContentResolver
 import android.content.Context
-import android.database.Cursor
-import android.net.Uri
+import android.os.Build
 import android.provider.MediaStore
-import android.util.Log
+import androidx.annotation.RequiresApi
 import com.example.muzpleer.model.MusicTrack
 
 
@@ -15,57 +13,130 @@ class MediaScanner(private val context: Context) {
     }
 
     fun scanDeviceForMusic(): List<MusicTrack> {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            scanMusicApi29Plus(context)
+        } else {
+            scanMusicLegacy(context)
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.Q)
+    private fun scanMusicApi29Plus(context: Context): List<MusicTrack> {
         val musicList = mutableListOf<MusicTrack>()
-        val resolver: ContentResolver = context.contentResolver
-        val uri: Uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
-        val selection = "${MediaStore.Audio.Media.IS_MUSIC} != 0"
-        val sortOrder = "${MediaStore.Audio.Media.TITLE} ASC"
+        val collection = MediaStore.Audio.Media.getContentUri(
+            MediaStore.VOLUME_EXTERNAL
+        )
+
         val projection = arrayOf(
             MediaStore.Audio.Media._ID,
             MediaStore.Audio.Media.TITLE,
             MediaStore.Audio.Media.ARTIST,
             MediaStore.Audio.Media.DURATION,
             MediaStore.Audio.Media.DATA,
-            MediaStore.Audio.Media.ALBUM_ID,
-            MediaStore.Audio.Media.ALBUM
+            MediaStore.Audio.Media.ALBUM,
+            MediaStore.Audio.Media.ALBUM_ID
         )
-        Log.d(TAG, "MediaScanner scanDeviceForMusic uri = ${uri.toString()}:  ")
 
-        val cursor: Cursor? = resolver.query(
+        val selection = "${MediaStore.Audio.Media.IS_MUSIC} != 0"
+        val sortOrder = "${MediaStore.Audio.Media.TITLE} ASC"
+
+        context.contentResolver.query(
+            collection,
+            projection,
+            selection,
+            null,
+            sortOrder
+        )?.use { cursor ->
+            val idColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)
+            val titleColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE)
+            val artistColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST)
+            val durationColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION)
+            val pathColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA)
+            val albumColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM)
+            val albumIdColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM_ID)
+
+            while (cursor.moveToNext()) {
+                val id = cursor.getLong(idColumn)
+                val title = cursor.getString(titleColumn) ?: "Неизвестно"
+                val artist = cursor.getString(artistColumn) ?: "Неизвестно"
+                val duration = cursor.getLong(durationColumn)
+                val path = cursor.getString(pathColumn)
+                val album = cursor.getString(albumColumn) ?: "Неизвестно"
+                val albumId = cursor.getLong(albumIdColumn)
+
+                musicList.add(
+                    MusicTrack(
+                        id = id,
+                        title = title,
+                        artist = artist,
+                        duration = duration,
+                        mediaUri = path,
+                        isLocal = true,
+                        artworkUri = getAlbumArtUri(albumId),
+                        album = album
+                    )
+                )
+            }
+        }
+
+        return musicList
+    }
+
+    private fun scanMusicLegacy(context: Context): List<MusicTrack> {
+        val musicList = mutableListOf<MusicTrack>()
+        val uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
+        val projection = arrayOf(
+            MediaStore.Audio.Media._ID,
+            MediaStore.Audio.Media.TITLE,
+            MediaStore.Audio.Media.ARTIST,
+            MediaStore.Audio.Media.DURATION,
+            MediaStore.Audio.Media.DATA,
+            MediaStore.Audio.Media.ALBUM,
+            MediaStore.Audio.Media.ALBUM_ID
+        )
+
+        val selection = "${MediaStore.Audio.Media.IS_MUSIC} != 0"
+        val sortOrder = "${MediaStore.Audio.Media.TITLE} ASC"
+
+        context.contentResolver.query(
             uri,
             projection,
             selection,
             null,
             sortOrder
-        )
+        )?.use { cursor ->
+            val idColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)
+            val titleColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE)
+            val artistColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST)
+            val durationColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION)
+            val pathColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA)
+            val albumColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM)
+            val albumIdColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM_ID)
 
-        Log.d(TAG, "MediaScanner scanDeviceForMusic cursor size = ${cursor?.count}:  ")
+            while (cursor.moveToNext()) {
+                val id = cursor.getLong(idColumn)
+                val title = cursor.getString(titleColumn) ?: "Неизвестно"
+                val artist = cursor.getString(artistColumn) ?: "Неизвестно"
+                val duration = cursor.getLong(durationColumn)
+                val path = cursor.getString(pathColumn)
+                val album = cursor.getString(albumColumn) ?: "Неизвестно"
+                val albumId = cursor.getLong(albumIdColumn)
 
-        cursor?.use {
-            while (it.moveToNext()) {
-                val idColumn = it.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)
-                val title = it.getString(it.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE))
-                val artist = it.getString(it.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST))
-                val duration = it.getLong(it.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION))
-                val data = it.getString(it.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA))
-                val albumId = it.getLong(it.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM_ID))
-                val album = it.getString(it.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM))
-
-                val track =  MusicTrack(
-                    id = idColumn,
-                    title = title ?: "Unknown",
-                    artist = artist ?: "Unknown",
-                    duration = duration,
-                    mediaUri = data,
-                    isLocal = true,
-                    artworkUri = getAlbumArtUri(albumId),
-                    album = album
+                musicList.add(
+                    MusicTrack(
+                        id = id,
+                        title = title,
+                        artist = artist,
+                        duration = duration,
+                        mediaUri = path,
+                        isLocal = true,
+                        artworkUri = getAlbumArtUri(albumId),
+                        album = album
+                    )
                 )
-                musicList.add(track)
-//                Log.d(TAG, "*@#MS title=${track.title}//artist=${track.artist}//duration=${track.duration} //mediaUri=${track.mediaUri} " +
-//                        "//artworkUri=${track.artworkUri} //album=${track.album}")
             }
         }
+
         return musicList
     }
 

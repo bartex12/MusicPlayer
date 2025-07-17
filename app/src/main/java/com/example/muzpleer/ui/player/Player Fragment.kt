@@ -82,19 +82,20 @@ class PlayerFragment : Fragment() {
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                launch {
-                    // Закончилась ли инициализация плеера
-                    viewModel.isInitialized.collect { isReady ->
-                        binding.playPauseButton.isEnabled = isReady
-                        //if (!isReady) //showLoadingIndicator()
-                    }
-                }
+//                launch {
+//                    // Закончилась ли инициализация плеера
+//                    viewModel.isInitialized.collect { isReady ->
+//                        Log.d(TAG, "***PlayerFragment isInitialized.collect isReady = $isReady ")
+//                        binding.playPauseButton.isEnabled = isReady
+//                        //if (!isReady) //showLoadingIndicator()
+//                    }
+//                }
 
                 // Observe current media item
                 launch {
                     viewModel.currentMediaItemApp.collect { mediaItem ->
                         mediaItem?.let {
-                            Log.d(TAG, "!@! PlayerFragment observeViewModel: cover = ${it.cover} ")
+                            Log.d(TAG, "!@! PlayerFragment observeViewModel: title = ${it.title} ")
                             updateTrackInfo(it) }
                     }
                 }
@@ -128,9 +129,10 @@ class PlayerFragment : Fragment() {
 
     private fun handleArguments() {
         arguments?.getParcelable<MusicTrack>("mediaItem")?.let { mediaItem ->
-            viewModel.setPlayList(sharedViewModel.getPlaylist())
-            viewModel.setCurrentMediaItem(mediaItem) //делаем трек текущим
-            viewModel.playMedia(mediaItem) // Передаем выбранный трек для проигрывания
+            viewModel.setPlayList(sharedViewModel.getPlaylist())  //запоминаем плейлист
+            viewModel.setCurrentMediaItem(mediaItem) //запоминаем текущий трек во viewModel
+           // viewModel.playMedia(mediaItem) // Передаем выбранный трек для проигрывания
+            viewModel.playMedia2(mediaItem) // Передаем выбранный трек плееру для проигрывания
             Log.d(TAG, "---PlayerFragment handleArguments: title = ${mediaItem.title}" +
                     " cover = ${mediaItem.cover}  mediaUri = ${mediaItem.mediaUri}")
         } ?: run {showError("No media item provided")}

@@ -14,11 +14,11 @@ class SharedViewModel():ViewModel(){
 
     fun setPlaylist(tracks:List<MusicTrack>){
         _playlist.value = tracks
-        Log.d(TAG, "### MainViewModel setPlaylist: size = ${playlist.value?.size} ")
+        Log.d(TAG, "### SharedViewModel setPlaylist: size = ${playlist.value?.size} ")
     }
 
     fun getPlaylist():List<MusicTrack> {
-        Log.d(TAG, "### MainViewModel getPlaylist: size = ${playlist.value?.size} ")
+        Log.d(TAG, "### SharedViewModel getPlaylist: size = ${playlist.value?.size} ")
         return playlist.value
     }
 }

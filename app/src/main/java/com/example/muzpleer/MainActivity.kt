@@ -6,10 +6,12 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Environment
 import android.provider.Settings
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import com.google.android.material.navigation.NavigationView
@@ -26,6 +28,7 @@ import com.example.muzpleer.databinding.ActivityMainBinding
 import com.example.muzpleer.service.MusicServiceHandler
 import org.koin.android.ext.android.getKoin
 import kotlin.getValue
+import androidx.core.net.toUri
 
 class MainActivity : AppCompatActivity() {
 
@@ -33,6 +36,26 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private val PERMISSION_REQUEST_CODE = 1001
     val sharedViewModel: SharedViewModel by viewModels()
+
+    private val storagePermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            scanForMusic()
+        } else {
+            handlePermissionDenied()
+        }
+    }
+
+    private val manageStorageLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) {
+        if (hasStoragePermission()) {
+            scanForMusic()
+        } else {
+            handlePermissionDenied()
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -69,80 +92,84 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun checkPermissions() {
-        val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        when {
+            hasStoragePermission() -> {
+                scanForMusic()
+            }
+            shouldShowRequestPermissionRationale(getRequiredPermission()) -> {
+                showPermissionRationale()
+            }
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && !Environment.isExternalStorageManager() -> {
+                requestManageExternalStorage()
+            }
+            else -> {
+                requestStoragePermission()
+            }
+        }
+    }
+
+    private fun hasStoragePermission(): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            Environment.isExternalStorageManager() ||
+                    ContextCompat.checkSelfPermission(
+                        this,
+                        Manifest.permission.READ_MEDIA_AUDIO
+                    ) == PackageManager.PERMISSION_GRANTED
+        } else {
+            ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.READ_EXTERNAL_STORAGE
+            ) == PackageManager.PERMISSION_GRANTED
+        }
+    }
+
+    private fun getRequiredPermission(): String {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             Manifest.permission.READ_MEDIA_AUDIO
         } else {
             Manifest.permission.READ_EXTERNAL_STORAGE
         }
+    }
 
-        when {
-            ContextCompat.checkSelfPermission(
-                this,
-                permission
-            ) == PackageManager.PERMISSION_GRANTED -> {
-                // Разрешение уже дано - сканируем музыку
-                scanForMusic()
-            }
-            shouldShowRequestPermissionRationale(permission) -> {
-                // Показываем объяснение, зачем нужно разрешение
-                showPermissionRationale()
-            }
-            else -> {
-                // Запрашиваем разрешение впервые
-                ActivityCompat.requestPermissions(
-                    this,
-                    arrayOf(permission),
-                    PERMISSION_REQUEST_CODE
-                )
-            }
+    private fun requestStoragePermission() {
+        storagePermissionLauncher.launch(getRequiredPermission())
+    }
+
+    private fun requestManageExternalStorage() {
+        try {
+            val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
+            intent.data = "package:$packageName".toUri()
+            manageStorageLauncher.launch(intent)
+        } catch (e: Exception) {
+            val intent = Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)
+            manageStorageLauncher.launch(intent)
         }
     }
 
     private fun showPermissionRationale() {
         AlertDialog.Builder(this)
-            .setTitle("Нужен доступ к медиафайлам")
+            .setTitle("Требуется разрешение")
             .setMessage("Для поиска музыкальных треков приложению нужен доступ к вашим аудиофайлам")
             .setPositiveButton("Разрешить") { _, _ ->
-                val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    Manifest.permission.READ_MEDIA_AUDIO
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    requestManageExternalStorage()
                 } else {
-                    Manifest.permission.READ_EXTERNAL_STORAGE
+                    requestStoragePermission()
                 }
-                ActivityCompat.requestPermissions(
-                    this,
-                    arrayOf(permission),
-                    PERMISSION_REQUEST_CODE
-                )
             }
             .setNegativeButton("Отмена", null)
             .show()
     }
 
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        when (requestCode) {
-            PERMISSION_REQUEST_CODE -> {
-                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    // Разрешение получено - сканируем музыку
-                    scanForMusic()
-                } else {
-                    // Пользователь отказал
-                    if (!shouldShowRequestPermissionRationale(permissions[0])) {
-                        // Пользователь выбрал "Больше не спрашивать"
-                        showOpenSettingsDialog()
-                    } else {
-                        Toast.makeText(
-                            this,
-                            "Разрешение отклонено. Функционал ограничен",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                }
-            }
+    private fun handlePermissionDenied() {
+        if (!shouldShowRequestPermissionRationale(getRequiredPermission())) {
+            showOpenSettingsDialog()
+        } else {
+            Toast.makeText(
+                this,
+                "Разрешение отклонено. Функционал ограничен",
+                Toast.LENGTH_SHORT
+            ).show()
         }
     }
 
@@ -159,10 +186,10 @@ class MainActivity : AppCompatActivity() {
 
     private fun openAppSettings() {
         val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-        val uri = Uri.fromParts("package", packageName, null)
-        intent.data = uri
+        intent.data = Uri.fromParts("package", packageName, null)
         startActivity(intent)
     }
+
 
     private fun scanForMusic() {
         setSupportActionBar(binding.appBarMain.toolbar)
