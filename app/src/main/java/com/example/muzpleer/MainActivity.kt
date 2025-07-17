@@ -25,7 +25,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.example.muzpleer.databinding.ActivityMainBinding
-import com.example.muzpleer.service.MusicServiceHandler
 import org.koin.android.ext.android.getKoin
 import kotlin.getValue
 import androidx.core.net.toUri
@@ -62,7 +61,9 @@ class MainActivity : AppCompatActivity() {
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        checkPermissions()
+        //todo восстановить разрешения
+        //checkPermissions()
+        scanForMusic()
     }
 
 
@@ -85,9 +86,9 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         // Только если не происходит смена конфигурации
-        if (!isChangingConfigurations) {
-            getKoin().get<MusicServiceHandler>().releasePlayer()
-        }
+//        if (!isChangingConfigurations) {
+//            getKoin().get<MusicServiceHandler>().releasePlayer()
+//        }
         super.onDestroy()
     }
 

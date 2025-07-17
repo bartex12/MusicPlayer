@@ -8,11 +8,13 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.SeekBar
 import android.widget.Toast
+import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.fragment.navArgs
 import com.bumptech.glide.Glide
 import com.example.muzpleer.SharedViewModel
 import com.example.muzpleer.R
@@ -28,165 +30,112 @@ class PlayerFragment : Fragment() {
     private var _binding: FragmentPlayerBinding? = null
     private val binding get() = _binding!!
     private val viewModel: PlayerViewModel by viewModel()
-    private val sharedViewModel: SharedViewModel by activityViewModels()
-    private var isSeeking = false
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+//    private lateinit var currentTrack: MusicTrack
+//    private lateinit var playlist: List<MusicTrack>
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
         _binding = FragmentPlayerBinding.inflate(inflater, container, false)
         return binding.root
     }
 
+//    override fun onCreate(savedInstanceState: Bundle?) {
+//        super.onCreate(savedInstanceState)
+//        arguments?.let {
+//            currentTrack = it.getParcelable(ARG_TRACK) ?: throw IllegalStateException(
+//                "Track argument is required"
+//            )
+//            playlist = it.getParcelableArrayList(ARG_PLAYLIST) ?: listOf(currentTrack)
+//        }
+//    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        setupUI()
-        handleArguments()
-        observeViewModel()
-    }
 
-    private fun setupUI() {
-        with(binding) {
-            binding.rewindBackButton.setOnClickListener {
-                viewModel.seekRelative(-5000) // -5 секунд
-            }
-            binding.rewindForwardButton.setOnClickListener {
-                viewModel.seekRelative(15000) // +15 секунд
-            }
+        arguments?.let { bundle ->
+            val track = bundle.getParcelable<MusicTrack>(ARG_TRACK) ?: return@let
+            val playlist = bundle.getParcelableArrayList<MusicTrack>(ARG_PLAYLIST) ?: listOf(track)
 
-            playPauseButton.setOnClickListener {
-                //Log.d(TAG, "PlayerFragment setupUI: playPauseButton = Click ")
-                viewModel.togglePlayPause()
-            }
-            previousButton.setOnClickListener { viewModel.skipToPrevious() }
-            nextButton.setOnClickListener { viewModel.skipToNext() }
-
-            seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-                override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
-                    if (fromUser) {
-                        currentTimeTextView.text = progress.toLong().formatDuration()
-                    }
-                }
-
-                override fun onStartTrackingTouch(seekBar: SeekBar) {
-                    isSeeking = true
-                }
-
-                override fun onStopTrackingTouch(seekBar: SeekBar) {
-                    viewModel.seekTo(seekBar.progress.toLong())
-                    isSeeking = false
-                }
-            })
+            viewModel.setPlaylist(playlist, playlist.indexOfFirst { it.mediaUri == track.mediaUri  })
         }
+        setupControls()
+        observeViewModel()
     }
 
     private fun observeViewModel() {
 
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-//                launch {
-//                    // Закончилась ли инициализация плеера
-//                    viewModel.isInitialized.collect { isReady ->
-//                        Log.d(TAG, "***PlayerFragment isInitialized.collect isReady = $isReady ")
-//                        binding.playPauseButton.isEnabled = isReady
-//                        //if (!isReady) //showLoadingIndicator()
-//                    }
-//                }
+        viewModel.currentTrack.observe(viewLifecycleOwner) { track ->
+            track?.let {
+                binding.titleTextView.text = it.title
+                binding.artistTextView.text = it.artist
 
-                // Observe current media item
-                launch {
-                    viewModel.currentMediaItemApp.collect { mediaItem ->
-                        mediaItem?.let {
-                            Log.d(TAG, "!@! PlayerFragment observeViewModel: title = ${it.title} ")
-                            updateTrackInfo(it) }
-                    }
-                }
-
-                // Observe playback state
-                launch {
-                    viewModel.playbackState.collect { state ->
-                        Log.d(TAG, "PlayerFragment observeViewModel: state = $state ")
-                        updatePlaybackStateUI(state)
-                    }
-                }
-
-                // Observe progress
-                launch {
-                    viewModel.progress.collect { progress ->
-                        if (!isSeeking) {
-                            updateProgress(progress)
-                        }
-                    }
-                }
-
-                // Observe errors
-                launch {
-                    viewModel.errorMessage.collect { error ->
-                        error?.let { showError(it) }
-                    }
-                }
-            }
-        }
-    }
-
-    private fun handleArguments() {
-        arguments?.getParcelable<MusicTrack>("mediaItem")?.let { mediaItem ->
-            viewModel.setPlayList(sharedViewModel.getPlaylist())  //запоминаем плейлист
-            viewModel.setCurrentMediaItem(mediaItem) //запоминаем текущий трек во viewModel
-           // viewModel.playMedia(mediaItem) // Передаем выбранный трек для проигрывания
-            viewModel.playMedia2(mediaItem) // Передаем выбранный трек плееру для проигрывания
-            Log.d(TAG, "---PlayerFragment handleArguments: title = ${mediaItem.title}" +
-                    " cover = ${mediaItem.cover}  mediaUri = ${mediaItem.mediaUri}")
-        } ?: run {showError("No media item provided")}
-    }
-    private fun updateTrackInfo(track: MusicTrack) {
-        //Log.d(TAG, "PlayerFragment updateTrackInfo: title = ${track.title} isLocal = ${track.isLocal} ")
-        with(binding) {
-            titleTextView.text = track.title
-            artistTextView.text = track.artist
-            durationTextView.text = track.duration.formatDuration()
-            Log.d(TAG, "PlayerFragment updateTrackInfo: duration= ${track.duration.formatDuration()}")
-            //track.cover?.let{artworkImageView.setImageResource(it)} //Без библиотеки
-            if (track.isLocal) {
-                // Загрузка обложки
-                track.artworkUri?.let { uri ->
-                    Glide.with(requireContext())
-                        .load(uri)
-                        .centerCrop()
-                        .placeholder(R.drawable.placeholder2)
-                        .into(artworkImageView)
-                }?:artworkImageView.setImageResource(R.drawable.placeholder2)
-            } else {
                 Glide.with(requireContext())
-                    .load(track.cover)
-                    .centerCrop()
-                    .placeholder(R.drawable.gimme)
-                    .into(artworkImageView)
+                    .load(it.artworkUri)
+                    .placeholder(R.drawable.placeholder2)
+                    .into(binding.artworkImageView)
             }
         }
-    }
 
-    private fun updatePlaybackStateUI(state: PlaybackState) {
-        with(binding) {
-            //Log.d(TAG, "PlayerFragment updatePlaybackStateUI: state = ${state.toString()} ")
-            playPauseButton.setImageResource(
-                when (state) {
-                    PlaybackState.PLAYING -> R.drawable.ic_pause
-                    else -> R.drawable.ic_play
-                }
+        viewModel.isPlaying.observe(viewLifecycleOwner) { isPlaying ->
+            binding.playPauseButton.setImageResource(
+                if (isPlaying) R.drawable.ic_pause else R.drawable.ic_play
             )
         }
-    }
 
-    private fun updateProgress(progress: ProgressState) {
-        with(binding) {
-            seekBar.max = progress.duration.toInt()
-            seekBar.progress = progress.currentPosition.toInt()
-            currentTimeTextView.text = progress.currentPosition.formatDuration()
-            durationTextView.text = progress.duration.formatDuration()
+        viewModel.currentPosition.observe(viewLifecycleOwner) { position ->
+            binding.currentTimeTextView.text = formatTime(position)
+            binding.seekBar.progress = position.toInt()
+        }
+
+        viewModel.duration.observe(viewLifecycleOwner) { duration ->
+            binding.durationTextView.text = formatTime(duration)
+            binding.seekBar.max = duration.toInt()
         }
     }
 
-    private fun showError(message: String) {
-        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
+
+    private fun setupControls() {
+        binding.playPauseButton.setOnClickListener {
+            viewModel.togglePlayPause()
+        }
+
+        binding.previousButton.setOnClickListener {
+            // Переход к предыдущему треку
+            viewModel.playPrevious()
+        }
+
+        binding.nextButton.setOnClickListener {
+            // Переход к следующему треку
+            viewModel.playNext()
+        }
+
+        binding.seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
+                if (fromUser) {
+                    viewModel.seekTo(progress.toLong())
+                }
+            }
+
+            override fun onStartTrackingTouch(seekBar: SeekBar) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar) {}
+        })
+    }
+
+//    private fun setupPlayer() {
+//        // Получаем список треков из предыдущего фрагмент
+//        val initialIndex = playlist.indexOfFirst { it.mediaUri == currentTrack.mediaUri }
+//
+//        viewModel.setPlaylist(playlist, initialIndex)
+//    }
+
+    private fun formatTime(millis: Long): String {
+        val seconds = (millis / 1000) % 60
+        val minutes = (millis / (1000 * 60)) % 60
+        return String.format("%02d:%02d", minutes, seconds)
     }
 
     override fun onDestroyView() {
@@ -194,7 +143,24 @@ class PlayerFragment : Fragment() {
         _binding = null
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        // Освобождаем ресурсы плеера
+        viewModel.releasePlayer()
+    }
+
     companion object {
         const val TAG = "33333"
+        private const val ARG_TRACK = "track"
+        private const val ARG_PLAYLIST = "playlist"
+
+        fun newInstance(track: MusicTrack, playlist: List<MusicTrack>): PlayerFragment {
+            return PlayerFragment().apply {
+                arguments = bundleOf(
+                    ARG_TRACK to track,
+                    ARG_PLAYLIST to ArrayList(playlist))
+            }
+        }
     }
 }
+

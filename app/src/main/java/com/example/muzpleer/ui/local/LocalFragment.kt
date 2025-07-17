@@ -25,6 +25,7 @@ import androidx.core.os.bundleOf
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.muzpleer.SharedViewModel
+import com.example.muzpleer.ui.player.PlayerFragment
 import kotlin.getValue
 
 class LocalFragment : Fragment() {
@@ -47,10 +48,11 @@ class LocalFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         adapter = MusicAdapter { track ->
+            val playlist = viewModel.musicList.value
             // Обработка клика по треку
             findNavController().navigate(
                 R.id.action_localFragment_to_playerFragment,
-                bundleOf("mediaItem" to track)
+                PlayerFragment.newInstance(track, playlist).arguments
             )
         }
 
