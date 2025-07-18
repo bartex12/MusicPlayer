@@ -44,7 +44,11 @@ class PlayerFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val indexOfTrack = playlist.indexOfFirst { it.mediaUri == track.mediaUri}
+        val indexOfTrack =if(track.isLocal){
+            playlist.indexOfFirst { it.mediaUri == track.mediaUri}
+        }else{
+            playlist.indexOfFirst { it.resourceId == track.resourceId}
+        }
         Log.d(TAG, "PlayerFragmentonViewCreated: track = ${track.title} " +
                 "playlist size =${playlist.size} индекс = $indexOfTrack")
         viewModel.setPlaylist(playlist, indexOfTrack)

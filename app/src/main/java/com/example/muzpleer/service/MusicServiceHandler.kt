@@ -1,6 +1,7 @@
 package com.example.muzpleer.service
 
 import android.content.Context
+import androidx.core.net.toUri
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
@@ -75,7 +76,14 @@ class MusicServiceHandler(
         val track = playlist[index]
 
         player?.let { p ->
-            p.setMediaItem(MediaItem.fromUri(track.getContentUri()))
+
+            val mediaItem = if(track.isLocal) {
+                MediaItem.fromUri(track.getContentUri())
+            }else{
+                val uri = "android.resource://${context.packageName}/${track.resourceId}"
+                MediaItem.fromUri(uri.toUri())
+                }
+            p.setMediaItem(mediaItem)
             p.prepare()
             p.play()
             callback.onTrackChanged(track)
