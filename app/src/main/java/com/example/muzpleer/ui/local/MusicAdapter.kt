@@ -2,18 +2,14 @@ package com.example.muzpleer.ui.local
 
 import android.annotation.SuppressLint
 import android.content.ContentUris
-import android.net.Uri
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
-import android.widget.TextView
+import androidx.core.net.toUri
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.ItemMusicBinding
 import com.example.muzpleer.model.MusicTrack
-import androidx.core.net.toUri
 
 class MusicAdapter(
     private val onItemClick: (MusicTrack) -> Unit

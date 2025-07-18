@@ -23,7 +23,7 @@
 
     <!-- Track Title -->
     <TextView
-        android:id="@+id/titleTextView"
+        android:id="@+id/tv_title"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:ellipsize="end"
@@ -32,15 +32,15 @@
         android:text="Gimme, gimme"
         android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
         android:textColor="@color/black"
-        app:layout_constraintBottom_toTopOf="@id/artistTextView"
-        app:layout_constraintEnd_toStartOf="@id/durationTextView"
+        app:layout_constraintBottom_toTopOf="@id/tv_artist"
+        app:layout_constraintEnd_toStartOf="@id/tv_total_time"
         app:layout_constraintStart_toEndOf="@id/artworkImageView"
         app:layout_constraintTop_toTopOf="parent"
        />
 
     <!-- Artist & Album Info -->
     <TextView
-        android:id="@+id/artistTextView"
+        android:id="@+id/tv_artist"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:ellipsize="end"
@@ -50,14 +50,14 @@
         android:textAppearance="@style/TextAppearance.AppCompat.Caption"
         android:textColor="@color/black"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/durationTextView"
+        app:layout_constraintEnd_toStartOf="@id/tv_total_time"
         app:layout_constraintStart_toEndOf="@id/artworkImageView"
-        app:layout_constraintTop_toBottomOf="@id/titleTextView"
+        app:layout_constraintTop_toBottomOf="@id/tv_title"
         />
 
     <!-- Track Duration -->
     <TextView
-        android:id="@+id/durationTextView"
+        android:id="@+id/tv_total_time"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"

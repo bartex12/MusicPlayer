@@ -23,8 +23,8 @@ class TracksAdapter(
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         fun bind(item: MusicTrack) {
             itemView.apply {
-                findViewById<TextView>(R.id.titleTextView).text = item.title
-                findViewById<TextView>(R.id.artistTextView).text = item.artist
+                findViewById<TextView>(R.id.tv_title).text = item.title
+                findViewById<TextView>(R.id.tv_artist).text = item.artist
 
                 //загружаем картинки обложек
                 Glide.with(context)
