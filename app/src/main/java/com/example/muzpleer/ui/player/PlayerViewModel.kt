@@ -1,24 +1,12 @@
 package com.example.muzpleer.ui.player
 
 import android.app.Application
-import android.content.Context
-import android.net.Uri
-import android.os.Build
 import android.util.Log
-import androidx.core.content.FileProvider
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.viewModelScope
-import androidx.media3.common.MediaItem
-import androidx.media3.common.Player
-import androidx.media3.exoplayer.ExoPlayer
 import com.example.muzpleer.model.MusicTrack
 import com.example.muzpleer.service.MusicServiceHandler
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import java.io.File
 
 class PlayerViewModel(
     application: Application,
@@ -40,11 +28,9 @@ class PlayerViewModel(
     private val _errorMessage = MutableLiveData<String?>()
     val errorMessage: LiveData<String?> = _errorMessage
 
-   // private var playerHandler: MusicServiceHandler? = null
-
     init {
-        Log.d(TAG, "PlayerViewModel init: playerHandler =$playerHandler ")
         playerHandler.callback = this
+        Log.d(TAG, "PlayerViewModel init: playerHandler =$playerHandler ")
     }
 
     override fun onTrackChanged(track: MusicTrack) {

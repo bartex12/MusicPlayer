@@ -8,7 +8,6 @@ import android.view.ViewGroup
 import android.widget.SeekBar
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
 import com.bumptech.glide.Glide
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentPlayerBinding

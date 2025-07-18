@@ -1,21 +1,16 @@
 package com.example.muzpleer.service
 
 import android.content.Context
-import android.util.Log
-import androidx.media3.common.AudioAttributes
 import androidx.media3.common.MediaItem
+import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.session.MediaSession
 import com.example.muzpleer.model.MusicTrack
-import com.example.muzpleer.util.ProgressState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import androidx.core.net.toUri
-import androidx.media3.common.PlaybackException
 
 
 class MusicServiceHandler(
