@@ -35,6 +35,7 @@ class MusicServiceHandler(
 
     private fun initializePlayer() {
         player = ExoPlayer.Builder(context).build().apply {
+
             addListener(object : Player.Listener {
                 override fun onIsPlayingChanged(isPlaying: Boolean) {
                     callback.onPlaybackStateChanged(isPlaying)
@@ -48,6 +49,15 @@ class MusicServiceHandler(
 
                 override fun onPlayerError(error: PlaybackException) {
                     callback.onError("Playback error: ${error.message}")
+                }
+
+                override fun onPlaybackStateChanged(playbackState: Int) {
+                    when(playbackState){
+                        // Автопереключение при окончании трека
+                        Player.STATE_ENDED ->{
+                            playNext()
+                        }
+                    }
                 }
             })
         }
