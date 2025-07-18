@@ -27,7 +27,7 @@ class PlayerViewModel(
     val currentTrack: LiveData<MusicTrack?> = _currentTrack
 
     private val _playlist = MutableLiveData<List<MusicTrack>>(emptyList())
-    val playlist: LiveData<List<MusicTrack>> = _playlist
+    //val playlist: LiveData<List<MusicTrack>> = _playlist
 
     var currentIndex = -1
 
