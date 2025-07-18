@@ -11,6 +11,8 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentTracksBinding
+import com.example.muzpleer.model.MusicTrack
+import com.example.muzpleer.ui.player.PlayerFragment
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class TracksFragment : Fragment() {
@@ -27,12 +29,12 @@ class TracksFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        adapter = TracksAdapter { mediaItem ->
+        adapter = TracksAdapter { track ->
+            val playlist:List<MusicTrack> = viewModel.tracks.value?:listOf()
             // Navigate to player
             findNavController().navigate(
                 R.id.action_tracksFragment_to_playerFragment,
-                bundleOf("mediaItem" to mediaItem)
-            )
+                PlayerFragment.newInstance(track, playlist).arguments)
         }
 
         binding.tracksRecyclerView.apply {

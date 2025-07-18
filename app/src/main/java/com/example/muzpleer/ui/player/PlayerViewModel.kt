@@ -54,15 +54,6 @@ class PlayerViewModel(
         playerHandler.setPlaylist(playlist, initialIndex)
     }
 
-//    fun playTrack(track: MusicTrack) {
-//        playerHandler.let { handler ->
-//            val index = handler.playlist.indexOfFirst { it.id == track.id }
-//            if (index != -1) {
-//                handler.playTrack(index)
-//            }
-//        }
-//    }
-
     fun togglePlayPause() {
         playerHandler.togglePlayPause()
     }

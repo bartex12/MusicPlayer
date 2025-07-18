@@ -82,14 +82,6 @@ class MusicServiceHandler(
         }
     }
 
-//    fun play() {
-//        player?.play()
-//    }
-//
-//    fun pause() {
-//        player?.pause()
-//    }
-
     fun togglePlayPause() {
         player?.let {
             if (it.isPlaying) it.pause() else it.play()
