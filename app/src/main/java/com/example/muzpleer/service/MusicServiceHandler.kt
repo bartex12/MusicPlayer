@@ -29,9 +29,7 @@ class MusicServiceHandler(
         fun onError(message: String)
     }
 
-    init {
-        initializePlayer()
-    }
+    init {  initializePlayer() }
 
     private fun initializePlayer() {
         player = ExoPlayer.Builder(context).build().apply {
@@ -84,13 +82,13 @@ class MusicServiceHandler(
         }
     }
 
-    fun play() {
-        player?.play()
-    }
-
-    fun pause() {
-        player?.pause()
-    }
+//    fun play() {
+//        player?.play()
+//    }
+//
+//    fun pause() {
+//        player?.pause()
+//    }
 
     fun togglePlayPause() {
         player?.let {
@@ -118,9 +116,9 @@ class MusicServiceHandler(
 
     fun getCurrentPosition(): Long = player?.currentPosition ?: 0
 
-    fun getDuration(): Long = player?.duration ?: 0
-
-    fun isPlaying(): Boolean = player?.isPlaying ?: false
+//    fun getDuration(): Long = player?.duration ?: 0
+//
+//    fun isPlaying(): Boolean = player?.isPlaying == true
 
     private fun startPositionUpdates() {
         positionUpdateJob?.cancel()

@@ -51,32 +51,32 @@ class PlayerViewModel(
     }
 
     fun setPlaylist(playlist: List<MusicTrack>, initialIndex: Int = 0) {
-        playerHandler?.setPlaylist(playlist, initialIndex)
+        playerHandler.setPlaylist(playlist, initialIndex)
     }
 
-    fun playTrack(track: MusicTrack) {
-        playerHandler?.let { handler ->
-            val index = handler.playlist.indexOfFirst { it.id == track.id }
-            if (index != -1) {
-                handler.playTrack(index)
-            }
-        }
-    }
+//    fun playTrack(track: MusicTrack) {
+//        playerHandler.let { handler ->
+//            val index = handler.playlist.indexOfFirst { it.id == track.id }
+//            if (index != -1) {
+//                handler.playTrack(index)
+//            }
+//        }
+//    }
 
     fun togglePlayPause() {
-        playerHandler?.togglePlayPause()
+        playerHandler.togglePlayPause()
     }
 
     fun playNext() {
-        playerHandler?.playNext()
+        playerHandler.playNext()
     }
 
     fun playPrevious() {
-        playerHandler?.playPrevious()
+        playerHandler.playPrevious()
     }
 
     fun seekTo(position: Long) {
-        playerHandler?.seekTo(position)
+        playerHandler.seekTo(position)
     }
 
     fun seekRelative(offsetMs: Long) {
@@ -86,13 +86,17 @@ class PlayerViewModel(
         }
     }
 
-
     fun clearError() {
         _errorMessage.value = null
     }
 
-
     companion object{
         const val TAG ="33333"
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        //если этого не сделать - треки будут накладываться
+        playerHandler.release()
     }
 }
