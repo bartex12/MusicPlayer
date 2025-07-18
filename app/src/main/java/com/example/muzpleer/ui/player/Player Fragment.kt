@@ -31,9 +31,6 @@ class PlayerFragment : Fragment() {
     private val binding get() = _binding!!
     private val viewModel: PlayerViewModel by viewModel()
 
-//    private lateinit var currentTrack: MusicTrack
-//    private lateinit var playlist: List<MusicTrack>
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -42,16 +39,6 @@ class PlayerFragment : Fragment() {
         _binding = FragmentPlayerBinding.inflate(inflater, container, false)
         return binding.root
     }
-
-//    override fun onCreate(savedInstanceState: Bundle?) {
-//        super.onCreate(savedInstanceState)
-//        arguments?.let {
-//            currentTrack = it.getParcelable(ARG_TRACK) ?: throw IllegalStateException(
-//                "Track argument is required"
-//            )
-//            playlist = it.getParcelableArrayList(ARG_PLAYLIST) ?: listOf(currentTrack)
-//        }
-//    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)

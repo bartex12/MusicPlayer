@@ -1,6 +1,9 @@
 package com.example.muzpleer.ui.player
 
+import android.net.Uri
+import android.os.Build
 import android.util.Log
+import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -14,6 +17,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import java.io.File
 
 class PlayerViewModel(
     private val player: ExoPlayer
@@ -26,11 +30,7 @@ class PlayerViewModel(
     private val _playlist = MutableLiveData<List<MusicTrack>>(emptyList())
     val playlist: LiveData<List<MusicTrack>> = _playlist
 
-//    private val _currentIndex = MutableLiveData<Int>()
-//    val currentIndex: LiveData<Int> = _currentIndex
-
     var currentIndex = -1
-
 
     private val _isPlaying = MutableLiveData<Boolean>()
     val isPlaying: LiveData<Boolean> = _isPlaying
@@ -84,21 +84,91 @@ class PlayerViewModel(
     fun playTrack(track: MusicTrack) {
         viewModelScope.launch (Dispatchers.Main) {
             _currentTrack.value = track
-            val mediaItem = MediaItem.fromUri(track.mediaUri.toUri())
-            Log.d(TAG,"1@!@#PlayerViewModel playTrack ")
+            //val mediaItem = MediaItem.fromUri(track.mediaUri.toUri())
+
+            // Проверяем доступность Uri
+            if (!isUriAccessible(track.getContentUri())) {
+                // Если Uri недоступен, пробуем прямой путь
+                if (!tryPlayWithDirectPath(track)) {
+                    showError("Не удалось получить доступ к файлу")
+                    return@launch
+                }
+                return@launch
+            }
+
             try{
-                player.setMediaItem(mediaItem)
-                Log.d(TAG,"2@!@#PlayerViewModel playTrack ")
+                player.setMediaItem(MediaItem.fromUri(track.getContentUri()))
                 player.prepare()
-                Log.d(TAG,"3@!@#PlayerViewModel playTrack ")
                 player.play()
-                Log.d(TAG,"4@!@#PlayerViewModel playTrack ")
-                _duration.value = player.duration
+                _duration.postValue(player.duration)
                 Log.d(TAG,"5@!@#PlayerViewModel playTrack ")
             }catch (e: IllegalStateException) {
                 // Обработка ошибки, если поток умер
-                Log.d(TAG,"@!@#PlayerViewModel playTrack  - Error playing track ${e.message}")
+                Log.d(TAG,"6@!@#PlayerViewModel playTrack  - Error playing track ${e.message}")
+                // Попробуем использовать прямой путь как fallback
+                tryFallbackPlay(track)
             }
+        }
+    }
+
+    private fun isUriAccessible(uri: Uri): Boolean {
+        return try {
+            val cursor = context.contentResolver.query(
+                uri,
+                null,
+                null,
+                null,
+                null
+            )
+            cursor?.close()
+            cursor != null
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    private fun tryPlayWithDirectPath(track: MusicTrack): Boolean {
+        return try {
+            val file = File(track.mediaUri)
+            if (!file.exists() || !file.canRead()) return false
+
+            val uri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                FileProvider.getUriForFile(
+                    context,
+                    "${context.packageName}.provider",
+                    file
+                )
+            } else {
+                Uri.fromFile(file)
+            }
+
+            player.setMediaItem(MediaItem.fromUri(uri))
+            player.prepare()
+            player.play()
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    private fun tryFallbackPlay(track: MusicTrack) {
+        try {
+            // Для Android 10+ используем FileProvider
+            val uri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                FileProvider.getUriForFile(
+                    context,
+                    "${context.packageName}.provider",
+                    File(track.mediaUri)
+                )
+            } else {
+                Uri.fromFile(File(track.mediaUri))
+            }
+
+            player.setMediaItem(MediaItem.fromUri(uri))
+            player.prepare()
+            player.play()
+        } catch (e: Exception) {
+            Log.e("PlayerViewModel", "Fallback play failed", e)
         }
     }
 

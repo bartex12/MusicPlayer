@@ -1,32 +1,23 @@
 package com.example.muzpleer.ui.local
 
-import android.Manifest
-import android.content.pm.PackageManager
-import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
-import com.example.muzpleer.R
 import androidx.fragment.app.Fragment
-import org.koin.androidx.viewmodel.ext.android.viewModel
-import androidx.navigation.fragment.findNavController
-import com.example.muzpleer.databinding.FragmentLocalBinding
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import kotlinx.coroutines.launch
-import androidx.core.os.bundleOf
-import androidx.fragment.app.activityViewModels
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.muzpleer.R
 import com.example.muzpleer.SharedViewModel
+import com.example.muzpleer.databinding.FragmentLocalBinding
 import com.example.muzpleer.ui.player.PlayerFragment
-import kotlin.getValue
+import kotlinx.coroutines.launch
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class LocalFragment : Fragment() {
     private var _binding: FragmentLocalBinding? = null
