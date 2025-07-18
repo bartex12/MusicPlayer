@@ -79,11 +79,13 @@ class PlayerViewModel(
         playerHandler?.seekTo(position)
     }
 
-    override fun onCleared() {
-        super.onCleared()
-        playerHandler?.release()
-        Log.d(TAG, "PlayerViewModel onCleared: playerHandler =$playerHandler ")
+    fun seekRelative(offsetMs: Long) {
+        playerHandler.getCurrentPosition().let { currentPos ->
+            val newPosition = (currentPos + offsetMs).coerceAtLeast(0)
+            playerHandler.seekTo(newPosition)
+        }
     }
+
 
     fun clearError() {
         _errorMessage.value = null

@@ -53,20 +53,6 @@ class PlayerFragment : Fragment() {
         observeViewModel()
     }
 
-//    override fun onResume() {
-//        super.onResume()
-//        // Восстанавливаем воспроизведение при возвращении на фрагмент
-//        viewModel.currentTrack.value?.let {
-//            viewModel.playTrack(it)
-//        }
-//    }
-//
-//    override fun onPause() {
-//        super.onPause()
-//        // Приостанавливаем воспроизведение при уходе с фрагмента
-//        viewModel.togglePlayPause()
-//    }
-
     private fun setupControls() {
         binding.playPauseButton.setOnClickListener {
             viewModel.togglePlayPause()
@@ -80,6 +66,13 @@ class PlayerFragment : Fragment() {
         binding.nextButton.setOnClickListener {
             // Переход к следующему треку
             viewModel.playNext()
+        }
+
+        binding.rewindBackButton.setOnClickListener {
+            viewModel.seekRelative(-5000) // -5 секунд
+        }
+        binding.rewindForwardButton.setOnClickListener {
+            viewModel.seekRelative(15000) // +15 секунд
         }
 
         binding.seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
