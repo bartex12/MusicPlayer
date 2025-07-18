@@ -40,7 +40,6 @@ class PlayerViewModel(
     private val _duration = MutableLiveData<Long>()
     val duration: LiveData<Long> = _duration
 
-
     init {
         _playlist.value = emptyList()
         _isPlaying.value = false
