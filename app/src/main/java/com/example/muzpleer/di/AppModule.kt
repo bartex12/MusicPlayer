@@ -18,7 +18,7 @@ val appModule = module {
     single { MediaScanner(get()) }
     single { PlaylistRepository()}
     single { provideExoPlayer(get()) }
-    single {
+    factory {
         MusicServiceHandler(
             context = androidContext(),
             callback = get() // Получаем реализацию колбэка из контейнера
