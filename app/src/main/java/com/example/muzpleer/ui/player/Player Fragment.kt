@@ -99,7 +99,7 @@ class PlayerFragment : Fragment() {
                 binding.tvArtist.text = it.artist
 
                 Glide.with(requireContext())
-                    .load(it.artworkUri)
+                    .load(if (track.isLocal) it.artworkUri else it.cover)
                     .placeholder(R.drawable.placeholder2)
                     .into(binding.artworkImageView)
             }

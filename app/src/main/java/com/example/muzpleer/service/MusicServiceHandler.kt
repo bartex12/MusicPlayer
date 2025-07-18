@@ -76,7 +76,6 @@ class MusicServiceHandler(
         val track = playlist[index]
 
         player?.let { p ->
-
             val mediaItem = if(track.isLocal) {
                 MediaItem.fromUri(track.getContentUri())
             }else{

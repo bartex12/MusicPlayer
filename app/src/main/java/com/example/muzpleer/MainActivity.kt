@@ -33,8 +33,6 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var binding: ActivityMainBinding
-    private val PERMISSION_REQUEST_CODE = 1001
-    val sharedViewModel: SharedViewModel by viewModels()
 
     private val storagePermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -62,8 +60,8 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         //todo восстановить разрешения
-        //checkPermissions()
-        scanForMusic()
+        checkPermissions()
+        //scanForMusic()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -203,7 +201,7 @@ class MainActivity : AppCompatActivity() {
                 R.id.tracksFragment, R.id.playerFragment, R.id.localFragment
             ), drawerLayout
         )
-
+        navController.navigate(R.id.localFragment)
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
     }
