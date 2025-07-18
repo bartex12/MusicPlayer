@@ -23,7 +23,6 @@ class PlayerViewModel(
     private val player: ExoPlayer
 ) : ViewModel() {
 
-
     private val _currentTrack = MutableLiveData<MusicTrack?>()
     val currentTrack: LiveData<MusicTrack?> = _currentTrack
 
