@@ -2,7 +2,6 @@ package com.example.muzpleer.di
 
 import android.content.Context
 import androidx.media3.exoplayer.ExoPlayer
-import com.example.muzpleer.SharedViewModel
 import com.example.muzpleer.model.PlaylistRepository
 import com.example.muzpleer.scaner.MediaScanner
 import com.example.muzpleer.ui.local.LocalMusicViewModel
@@ -18,9 +17,8 @@ val appModule = module {
 
 
     viewModel { TracksViewModel(get()) }
-    viewModel { PlayerViewModel(get()) }
+    viewModel { PlayerViewModel(get(), get()) }
     viewModel { LocalMusicViewModel(get()) }
-    viewModel { SharedViewModel() }
 }
 
 private fun provideExoPlayer(context: Context): ExoPlayer {

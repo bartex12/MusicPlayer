@@ -9,7 +9,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.muzpleer.SharedViewModel
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentTracksBinding
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -18,8 +17,6 @@ class TracksFragment : Fragment() {
     private var _binding: FragmentTracksBinding? = null
     private val binding get() = _binding!!
     private val viewModel: TracksViewModel by viewModel()
-    // Получаем SharedViewModel из родительской Activity
-    private val sharedViewModel: SharedViewModel by activityViewModels()
     private lateinit var adapter: TracksAdapter
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -50,7 +47,6 @@ class TracksFragment : Fragment() {
 
         viewModel.tracks.observe(viewLifecycleOwner) { tracks ->
             adapter.data = tracks //передаём данные в адаптер
-            sharedViewModel.setPlaylist(tracks) //передаём плейлист в sharedViewModel
         }
     }
 

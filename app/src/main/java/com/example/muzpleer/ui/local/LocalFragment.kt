@@ -13,7 +13,6 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.muzpleer.R
-import com.example.muzpleer.SharedViewModel
 import com.example.muzpleer.databinding.FragmentLocalBinding
 import com.example.muzpleer.ui.player.PlayerFragment
 import kotlinx.coroutines.launch
@@ -23,7 +22,6 @@ class LocalFragment : Fragment() {
     private var _binding: FragmentLocalBinding? = null
     private val binding get() = _binding!!
     private val viewModel: LocalMusicViewModel by viewModel()
-    private val sharedViewModel: SharedViewModel by activityViewModels()
     private lateinit var adapter: MusicAdapter
 
     override fun onCreateView(
@@ -82,7 +80,6 @@ class LocalFragment : Fragment() {
                         }
                         adapter.data = tracks  //передаём данные в адаптер
                         viewModel.setProgress(false)
-                        sharedViewModel.setPlaylist(tracks)  //передаём плейлист в sharedViewModel
                     }
                 }
             }

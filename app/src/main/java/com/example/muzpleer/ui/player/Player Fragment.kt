@@ -1,35 +1,30 @@
 package com.example.muzpleer.ui.player
 
 import android.os.Bundle
-import android.provider.MediaStore
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.SeekBar
-import android.widget.Toast
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
-import androidx.navigation.fragment.navArgs
+import androidx.lifecycle.ViewModelProvider
+import androidx.media3.exoplayer.ExoPlayer
 import com.bumptech.glide.Glide
-import com.example.muzpleer.SharedViewModel
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentPlayerBinding
 import com.example.muzpleer.model.MusicTrack
-import com.example.muzpleer.util.ProgressState
-import com.example.muzpleer.util.formatDuration
-import kotlinx.coroutines.launch
-import org.koin.androidx.viewmodel.ext.android.viewModel
-import kotlin.getValue
+import com.google.android.material.snackbar.Snackbar
+import org.koin.android.ext.android.inject
 
 class PlayerFragment : Fragment() {
     private var _binding: FragmentPlayerBinding? = null
     private val binding get() = _binding!!
-    private val viewModel: PlayerViewModel by viewModel()
+    private lateinit var viewModel: PlayerViewModel
+    private val exoPlayer: ExoPlayer by inject()
+
+    private lateinit var track: MusicTrack
+    private lateinit var playlist: List<MusicTrack>
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -40,17 +35,42 @@ class PlayerFragment : Fragment() {
         return binding.root
     }
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        arguments?.let {
+            track = it.getParcelable("track") ?: throw IllegalStateException("Track argument is required")
+            playlist = it.getParcelableArrayList("playlist") ?: listOf(track)
+        }
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        arguments?.let { bundle ->
-            val track = bundle.getParcelable<MusicTrack>(ARG_TRACK) ?: return@let
-            val playlist = bundle.getParcelableArrayList<MusicTrack>(ARG_PLAYLIST) ?: listOf(track)
+        // Инициализируем ViewModel с контекстом приложения
+        viewModel = ViewModelProvider(
+            this,
+            PlayerViewModelFactory(requireActivity().application, exoPlayer)
+        )[PlayerViewModel::class.java]
 
-            viewModel.setPlaylist(playlist, playlist.indexOfFirst { it.mediaUri == track.mediaUri  })
-        }
+        viewModel.setPlaylist(playlist, playlist.indexOfFirst { it.mediaUri == track.mediaUri  })
+
         setupControls()
         observeViewModel()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Восстанавливаем воспроизведение при возвращении на фрагмент
+        viewModel.currentTrack.value?.let {
+            viewModel.playTrack(it)
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        // Приостанавливаем воспроизведение при уходе с фрагмента
+        viewModel.togglePlayPause()
     }
 
     private fun observeViewModel() {
@@ -82,6 +102,13 @@ class PlayerFragment : Fragment() {
             binding.durationTextView.text = formatTime(duration)
             binding.seekBar.max = duration.toInt()
         }
+
+        viewModel.errorMessage.observe(viewLifecycleOwner) { message ->
+            message?.let {
+                Snackbar.make(binding.root, it, Snackbar.LENGTH_LONG).show()
+                viewModel.clearError()
+            }
+        }
     }
 
 
@@ -112,13 +139,6 @@ class PlayerFragment : Fragment() {
         })
     }
 
-//    private fun setupPlayer() {
-//        // Получаем список треков из предыдущего фрагмент
-//        val initialIndex = playlist.indexOfFirst { it.mediaUri == currentTrack.mediaUri }
-//
-//        viewModel.setPlaylist(playlist, initialIndex)
-//    }
-
     private fun formatTime(millis: Long): String {
         val seconds = (millis / 1000) % 60
         val minutes = (millis / (1000 * 60)) % 60
@@ -132,6 +152,7 @@ class PlayerFragment : Fragment() {
 
     override fun onDestroy() {
         super.onDestroy()
+        Log.d(TAG, "PlayerFragment onDestroy:  ")
         // Освобождаем ресурсы плеера
         viewModel.releasePlayer()
     }

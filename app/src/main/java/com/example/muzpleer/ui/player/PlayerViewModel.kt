@@ -1,54 +1,57 @@
 package com.example.muzpleer.ui.player
 
+import android.app.Application
+import android.content.Context
 import android.net.Uri
 import android.os.Build
 import android.util.Log
 import androidx.core.content.FileProvider
-import androidx.core.net.toUri
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import com.example.muzpleer.model.MusicTrack
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 
 class PlayerViewModel(
+    application: Application,
     private val player: ExoPlayer
-) : ViewModel() {
+) : AndroidViewModel(application) {
 
     private val _currentTrack = MutableLiveData<MusicTrack?>()
     val currentTrack: LiveData<MusicTrack?> = _currentTrack
 
     private val _playlist = MutableLiveData<List<MusicTrack>>(emptyList())
-    //val playlist: LiveData<List<MusicTrack>> = _playlist
 
     var currentIndex = -1
 
-    private val _isPlaying = MutableLiveData<Boolean>()
+    private val _isPlaying = MutableLiveData<Boolean>(false)
     val isPlaying: LiveData<Boolean> = _isPlaying
 
-    private val _currentPosition = MutableLiveData<Long>()
+    private val _currentPosition = MutableLiveData<Long>(0L)
     val currentPosition: LiveData<Long> = _currentPosition
 
-    private val _duration = MutableLiveData<Long>()
+    private val _duration = MutableLiveData<Long>(0L)
     val duration: LiveData<Long> = _duration
 
-    init {
-        _playlist.value = emptyList()
-        _isPlaying.value = false
-        _currentPosition.value = 0L
-        _duration.value = 0L
+    private val _errorMessage = MutableLiveData<String?>()
+    val errorMessage: LiveData<String?> = _errorMessage
 
+    private val context: Context get() = getApplication<Application>().applicationContext
+    private var isPlayerInitialized = false
+
+    init {
+
+        Log.d(TAG, "PlayerViewModel init:  ")
         player.addListener(object : Player.Listener {
             override fun onIsPlayingChanged(isPlaying: Boolean) {
-                _isPlaying.postValue (isPlaying)
+                _isPlaying.value = isPlaying
             }
 
             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
@@ -63,7 +66,7 @@ class PlayerViewModel(
                 newPosition: Player.PositionInfo,
                 reason: Int
             ) {
-                _currentPosition.postValue(newPosition.positionMs)
+                _currentPosition.value = newPosition.positionMs
             }
             override fun onPlaybackStateChanged(playbackState: Int) {
                 if (playbackState == Player.STATE_ENDED) {
@@ -74,63 +77,116 @@ class PlayerViewModel(
     }
 
     fun setPlaylist(playlist: List<MusicTrack>, initialIndex: Int) {
+        if (initialIndex < 0 || initialIndex >= playlist.size) return
+
         _playlist.value = playlist
         currentIndex = initialIndex
         playTrack(playlist[initialIndex])
     }
 
     fun playTrack(track: MusicTrack) {
-        viewModelScope.launch (Dispatchers.Main) {
-            _currentTrack.value = track
-            //val mediaItem = MediaItem.fromUri(track.mediaUri.toUri())
+        if (!isPlayerInitialized) {
+            initializePlayer()
+        }
 
-            // Проверяем доступность Uri
-            if (!isUriAccessible(track.getContentUri())) {
-                // Если Uri недоступен, пробуем прямой путь
-                if (!tryPlayWithDirectPath(track)) {
-                    showError("Не удалось получить доступ к файлу")
+        viewModelScope.launch(Dispatchers.Main) {
+            try {
+                _errorMessage.value = null
+                _currentTrack.value = track
+                //val mediaItem = MediaItem.fromUri(track.mediaUri.toUri())
+
+                // 1. Попробуем воспроизвести через content URI
+                val contentUri = track.getContentUri()
+                if (isUriAccessible(contentUri)) {
+                    Log.d(TAG, "PlayerViewModel playTrack: через content URI  ")
+                    playUri(contentUri)
                     return@launch
                 }
-                return@launch
-            }
 
-            try{
-                player.setMediaItem(MediaItem.fromUri(track.getContentUri()))
-                player.prepare()
-                player.play()
-                _duration.postValue(player.duration)
-                Log.d(TAG,"5@!@#PlayerViewModel playTrack ")
-            }catch (e: IllegalStateException) {
-                // Обработка ошибки, если поток умер
-                Log.d(TAG,"6@!@#PlayerViewModel playTrack  - Error playing track ${e.message}")
-                // Попробуем использовать прямой путь как fallback
-                tryFallbackPlay(track)
+                // 2. Попробуем прямой путь через FileProvider
+                val fileUri = getFileUri(track)
+                if (fileUri != null && isUriAccessible(fileUri)) {
+                    Log.d(TAG, "PlayerViewModel playTrack: через FileProvider  ")
+                    playUri(fileUri)
+                    return@launch
+                }
+
+                // 3. Попробуем прямой доступ к файлу (для старых версий Android)
+                if (tryDirectFileAccess(track)) {
+                    return@launch
+                }
+
+                _errorMessage.value = "Не удалось получить доступ к файлу"
+            } catch (e: Exception) {
+                _errorMessage.value = "Ошибка воспроизведения: ${e.localizedMessage}"
+                Log.e(TAG, "Playback error", e)
             }
         }
     }
 
+    private fun initializePlayer() {
+        try {
+            if (player.playbackState == Player.STATE_IDLE) {
+                player.playWhenReady = true
+                isPlayerInitialized = true
+            }
+        } catch (e: Exception) {
+            Log.d(TAG, "Player initialization failed ${e.message}")
+        }
+    }
+
+    private suspend fun playUri(uri: Uri) {
+        withContext(Dispatchers.Main.immediate) {
+            Log.d(TAG, "PlayerViewModel playUri player.playbackState = ${player.playbackState}  ")
+            try {
+                // Остановить текущее воспроизведение перед сменой трека
+                if (player.playbackState != Player.STATE_IDLE) {
+                    player.stop()
+                }
+                player.setMediaItem(MediaItem.fromUri(uri))
+                player.prepare()
+                player.play()
+                _duration.value = player.duration
+            }catch (e: IllegalStateException){
+//                // Если плеер в недопустимом состоянии, пересоздаем его
+//                recreatePlayer()
+//                player.setMediaItem(MediaItem.fromUri(uri))
+//                player.prepare()
+//                player.play()
+            }
+        }
+    }
+
+    private fun recreatePlayer() {
+        player.release()
+        val newPlayer = ExoPlayer.Builder(getApplication())
+            .setHandleAudioBecomingNoisy(true)
+            .build()
+
+//        // Переносим все слушатели на новый плеер
+//        player.listeners.forEach { listener ->
+//            newPlayer.addListener(listener)
+//        }
+
+        // Заменяем ссылку на плеер
+        // Note: В реальном приложении вам нужно будет обновить ссылку в зависимостях
+        // Это может потребовать изменения архитектуры или использования DI
+    }
+
     private fun isUriAccessible(uri: Uri): Boolean {
         return try {
-            val cursor = context.contentResolver.query(
-                uri,
-                null,
-                null,
-                null,
-                null
-            )
-            cursor?.close()
-            cursor != null
+            context.contentResolver.openInputStream(uri)?.use { true } == true
         } catch (e: Exception) {
             false
         }
     }
 
-    private fun tryPlayWithDirectPath(track: MusicTrack): Boolean {
+    private fun getFileUri(track: MusicTrack): Uri? {
         return try {
             val file = File(track.mediaUri)
-            if (!file.exists() || !file.canRead()) return false
+            if (!file.exists() || !file.canRead()) return null
 
-            val uri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 FileProvider.getUriForFile(
                     context,
                     "${context.packageName}.provider",
@@ -139,34 +195,26 @@ class PlayerViewModel(
             } else {
                 Uri.fromFile(file)
             }
+        } catch (e: Exception) {
+            null
+        }
+    }
 
+    private fun tryDirectFileAccess(track: MusicTrack): Boolean {
+        Log.d(TAG, "PlayerViewModel tryDirectFileAccess: через прямой доступ к файлу  ")
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) return false
+
+        return try {
+            val file = File(track.mediaUri)
+            if (!file.exists() || !file.canRead()) return false
+
+            val uri = Uri.fromFile(file)
             player.setMediaItem(MediaItem.fromUri(uri))
             player.prepare()
             player.play()
             true
         } catch (e: Exception) {
             false
-        }
-    }
-
-    private fun tryFallbackPlay(track: MusicTrack) {
-        try {
-            // Для Android 10+ используем FileProvider
-            val uri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                FileProvider.getUriForFile(
-                    context,
-                    "${context.packageName}.provider",
-                    File(track.mediaUri)
-                )
-            } else {
-                Uri.fromFile(File(track.mediaUri))
-            }
-
-            player.setMediaItem(MediaItem.fromUri(uri))
-            player.prepare()
-            player.play()
-        } catch (e: Exception) {
-            Log.e("PlayerViewModel", "Fallback play failed", e)
         }
     }
 
@@ -187,8 +235,8 @@ class PlayerViewModel(
         } else {
             // Достигнут конец плейлиста
             player.stop()
-            _isPlaying.postValue(false)
-            _currentPosition.postValue(0)
+            _isPlaying.value = false
+            _currentPosition.value = 0
         }
     }
 
@@ -211,6 +259,10 @@ class PlayerViewModel(
 
     fun releasePlayer() {
         player.release()
+    }
+
+    fun clearError() {
+        _errorMessage.value = null
     }
 
     companion object{
