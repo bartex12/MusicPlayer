@@ -2,6 +2,9 @@ package com.example.muzpleer.di
 
 import android.content.Context
 import androidx.media3.exoplayer.ExoPlayer
+import com.example.muzpleer.home.HomeStorage
+import com.example.muzpleer.home.HomeStorageImpl
+import com.example.muzpleer.home.HomeViewModel
 import com.example.muzpleer.model.MusicTrack
 import com.example.muzpleer.model.PlaylistRepository
 import com.example.muzpleer.scaner.MediaScanner
@@ -15,6 +18,7 @@ import org.koin.dsl.module
 
 val appModule = module {
 
+    single <HomeStorage>{ HomeStorageImpl(get())}
     single { MediaScanner(get()) }
     single { PlaylistRepository()}
     single { provideExoPlayer(get()) }
@@ -25,6 +29,7 @@ val appModule = module {
         )
     }
 
+    viewModel { HomeViewModel(get()) }
     viewModel { TracksViewModel(get()) }
     viewModel { LocalMusicViewModel(get()) }
     viewModel {

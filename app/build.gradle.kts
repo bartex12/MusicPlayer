@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     id("org.jetbrains.kotlin.plugin.parcelize")
+    id ("kotlin-kapt")
 }
 
 android {
@@ -48,6 +49,8 @@ dependencies {
     implementation(libs.androidx.lifecycle.livedata.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
+    //preference
+    implementation ("androidx.preference:preference-ktx:1.2.1")
 
     implementation ("androidx.fragment:fragment-ktx:1.6.1")
     implementation ("androidx.navigation:navigation-fragment-ktx:2.7.3")
@@ -68,10 +71,18 @@ dependencies {
     // Network
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
 
+    //room
+    implementation ("androidx.room:room-runtime:2.6.1") // Актуальная версия на момент 2024
+    kapt ("androidx.room:room-compiler:2.6.1" ) // Используйте kapt без скобок
+    implementation ("androidx.room:room-ktx:2.6.1")  // Корректный синтаксис
+
     //glide
     implementation("com.github.bumptech.glide:compose:1.0.0-beta01")
     implementation ("com.github.bumptech.glide:glide:4.16.0")
     annotationProcessor ("com.github.bumptech.glide:compiler:4.16.0")
+
+    //CircleImageView http://developer.alexanderklimov.ru/android/library/circleimageview.php
+    implementation ("de.hdodenhof:circleimageview:3.1.0")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

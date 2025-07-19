@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/mobile_navigation"
-    app:startDestination="@id/localFragment">
+    app:startDestination="@id/homeFragment">
 
     <fragment
         android:id="@+id/tracksFragment"
@@ -31,6 +31,24 @@
             android:id="@+id/action_localFragment_to_tracksFragment"
             app:destination="@id/tracksFragment" />
     </fragment>
+    <fragment
+        android:id="@+id/homeFragment"
+        android:name="com.example.muzpleer.home.HomeFragment"
+        android:label="HomeFragment" >
+        <action
+            android:id="@+id/action_homeFragment_to_localFragment"
+            app:destination="@id/localFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_tracksFragment"
+            app:destination="@id/tracksFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_settingsFragment"
+            app:destination="@id/settingsFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/settingsFragment"
+        android:name="com.example.muzpleer.setting.SettingsFragment"
+        android:label="SettingsFragment" />
 
 
 </navigation>

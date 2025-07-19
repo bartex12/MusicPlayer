@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory
+        android:title="Звук">
+        <ListPreference
+            android:key="sound_level"
+            android:entries="@array/sound_level_entry_number"
+            android:entryValues="@array/sound_level_entryValues_number"
+            android:defaultValue="80"
+            android:title="Громкость"
+            android:summary="Громкость звукового сигнала"/>
+    </PreferenceCategory>
+
+</PreferenceScreen>

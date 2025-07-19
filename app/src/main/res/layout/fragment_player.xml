@@ -20,8 +20,9 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintWidth_percent="0.6" />
-
+        app:layout_constraintWidth_percent="0.6"
+        />
+<!--    tools:srcCompat="@tools:sample/avatars[3]"-->
     <!-- Track Title -->
     <TextView
         android:id="@+id/tv_title"

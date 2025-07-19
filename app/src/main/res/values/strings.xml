@@ -11,4 +11,34 @@
     <string name="menu_player">playerFragment</string>
     <string name="not_permission">Разрешение отклонено. Функционал ограничен</string>
 
+    <string-array name="sound_level_entry_number">
+        <item>Без звука</item>
+        <item>20%</item>
+        <item>40%</item>
+        <item>60%</item>
+        <item>80%</item>
+        <item>100%</item>
+    </string-array>
+
+    <string-array name="sound_level_entryValues_number">
+        <item>0</item>
+        <item>20</item>
+        <item>40</item>
+        <item>60</item>
+        <item>80</item>
+        <item>100</item>
+    </string-array>
+
+    <string-array name="MenuMain">
+        <item>Музыка на телефоне</item>
+        <item>Своя музыка</item>
+        <item>Настройки</item>
+    </string-array>
+
+    <string-array name="MenuSubMain">
+        <item>Музыкальные треки в папках телефона</item>
+        <item>Музыкальные треки приложения</item>
+        <item>Настройки приложения</item>
+    </string-array>
+
 </resources>
