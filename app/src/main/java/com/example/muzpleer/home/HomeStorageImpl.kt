@@ -17,6 +17,7 @@ class HomeStorageImpl(private val app:Context ): HomeStorage{
         val list :ArrayList<DataHome> = arrayListOf()
         val localTracks = ContextCompat.getDrawable(app, R.drawable.placeholder2)
         val myTracks = ContextCompat.getDrawable(app, R.drawable.rose1)
+        val kingTracks = ContextCompat.getDrawable(app, R.drawable.king)
         val settings = ContextCompat.getDrawable(app, R.drawable.settings1)
         localTracks?.let {
             list.add( DataHome(picture = it, head= stringListMain[0], subHead = stringListSubMain[0]))
@@ -25,9 +26,13 @@ class HomeStorageImpl(private val app:Context ): HomeStorage{
             list.add(
                 DataHome(picture = it, head= stringListMain[1], subHead = stringListSubMain[1]))
         }
-        settings?.let{
+        kingTracks?.let {
             list.add(
                 DataHome(picture = it, head= stringListMain[2], subHead = stringListSubMain[2]))
+        }
+        settings?.let{
+            list.add(
+                DataHome(picture = it, head= stringListMain[3], subHead = stringListSubMain[3]))
         }
         return list
     }

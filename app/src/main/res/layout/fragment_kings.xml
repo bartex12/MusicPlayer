@@ -7,7 +7,7 @@
     android:background="@color/white">
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/tracksRecyclerView"
+        android:id="@+id/kingsRecyclerView"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:clipToPadding="false"
@@ -24,7 +24,7 @@
         android:layout_height="wrap_content"
         android:text="Найти музыку на устройстве"
         android:visibility="gone"
-        app:layout_constraintTop_toBottomOf="@+id/tracksRecyclerView"
+        app:layout_constraintTop_toBottomOf="@+id/kingsRecyclerView"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"/>

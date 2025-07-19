@@ -11,6 +11,7 @@ import com.example.muzpleer.scaner.MediaScanner
 import com.example.muzpleer.service.MusicServiceHandler
 import com.example.muzpleer.ui.local.LocalMusicViewModel
 import com.example.muzpleer.ui.player.PlayerViewModel
+import com.example.muzpleer.ui.tracks.KingsViewModel
 import com.example.muzpleer.ui.tracks.TracksViewModel
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.dsl.viewModel
@@ -31,6 +32,7 @@ val appModule = module {
 
     viewModel { HomeViewModel(get()) }
     viewModel { TracksViewModel(get()) }
+    viewModel { KingsViewModel(get()) }
     viewModel { LocalMusicViewModel(get()) }
     viewModel {
         PlayerViewModel(

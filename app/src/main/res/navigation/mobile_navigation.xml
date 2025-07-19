@@ -44,11 +44,22 @@
         <action
             android:id="@+id/action_homeFragment_to_settingsFragment"
             app:destination="@id/settingsFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_kingsFragment"
+            app:destination="@id/kingsFragment" />
     </fragment>
     <fragment
         android:id="@+id/settingsFragment"
         android:name="com.example.muzpleer.setting.SettingsFragment"
         android:label="SettingsFragment" />
+    <fragment
+        android:id="@+id/kingsFragment"
+        android:name="com.example.muzpleer.ui.tracks.KingsFragment"
+        android:label="KingsFragment" >
+        <action
+            android:id="@+id/action_kingsFragment_to_playerFragment"
+            app:destination="@id/playerFragment" />
+    </fragment>
 
 
 </navigation>
