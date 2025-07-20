@@ -3,9 +3,20 @@ package com.example.muzpleer.model
 import com.example.muzpleer.R
 import com.example.muzpleer.util.Constants
 
-class PlaylistRepository {
+class PlaylistRepository() {
     fun getPlaylist(): List<MusicTrack> {
         return listOf(
+                MusicTrack(
+                        id = -1,
+                        isLocal = false,
+                        duration = 1000,
+                        mediaUri = "",
+                        artworkUri = null,
+                        artist = "Riffusion",
+                        title = "Послали посла за солью",
+                        cover =R.drawable.posol,
+                        resourceId  = R.raw.posol,
+                        typeFromIfMy =Constants.MY_TRACK ),
             MusicTrack(
                 id = -1,
                 isLocal = false,
