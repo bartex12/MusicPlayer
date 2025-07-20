@@ -16,6 +16,7 @@ data class MusicTrack(
     val duration: Long,  //длительность трека
     val mediaUri: String,  // мп3 для треков из local
     val isLocal: Boolean = true,  //из ресурсов или local?
+    val typeFromIfMy: String = "",  //откуда трек, если он сгенерирован нейросетью
     val artworkUri: String? = null, //обложка из local
     val album: String? = null, //название альбома из local
     val cover: Int? = null, //обложка из ресурсов

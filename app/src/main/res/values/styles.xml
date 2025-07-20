@@ -6,4 +6,10 @@
         <item name="android:background">?attr/selectableItemBackgroundBorderless</item>
         <item name="android:tint">@color/white</item>
     </style>
+
+    <style name="TabWidget" parent="TextAppearance.Design.Tab">
+        <item name="android:textSize">13sp</item>
+    </style>
+
+
 </resources>

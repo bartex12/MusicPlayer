@@ -8,7 +8,7 @@
     <fragment
         android:id="@+id/tracksFragment"
         android:name="com.example.muzpleer.ui.tracks.TracksFragment"
-        android:label="TracksFragment" >
+        android:label="Мои треки" >
         <action
             android:id="@+id/action_tracksFragment_to_playerFragment"
             app:destination="@id/playerFragment" />
@@ -19,11 +19,11 @@
     <fragment
         android:id="@+id/playerFragment"
         android:name="com.example.muzpleer.ui.player.PlayerFragment"
-        android:label="PlayerFragment" />
+        android:label="Воспроизведение" />
     <fragment
         android:id="@+id/localFragment"
         android:name="com.example.muzpleer.ui.local.LocalFragment"
-        android:label="LocalFragment" >
+        android:label="Аудио телефона" >
         <action
             android:id="@+id/action_localFragment_to_playerFragment"
             app:destination="@id/playerFragment" />
@@ -34,7 +34,7 @@
     <fragment
         android:id="@+id/homeFragment"
         android:name="com.example.muzpleer.home.HomeFragment"
-        android:label="HomeFragment" >
+        android:label="Аудиоплеер" >
         <action
             android:id="@+id/action_homeFragment_to_localFragment"
             app:destination="@id/localFragment" />
@@ -51,15 +51,31 @@
     <fragment
         android:id="@+id/settingsFragment"
         android:name="com.example.muzpleer.setting.SettingsFragment"
-        android:label="SettingsFragment" />
+        android:label="Настройки" />
     <fragment
         android:id="@+id/kingsFragment"
         android:name="com.example.muzpleer.ui.tracks.KingsFragment"
-        android:label="KingsFragment" >
+        android:label="Маленький принц" >
         <action
             android:id="@+id/action_kingsFragment_to_playerFragment"
             app:destination="@id/playerFragment" />
     </fragment>
+    <fragment
+        android:id="@+id/baseFragment"
+        android:name="com.example.muzpleer.ui.tabs.base.BaseFragment"
+        android:label="BaseFragment" />
+    <fragment
+        android:id="@+id/mykingsFragment"
+        android:name="com.example.muzpleer.ui.tabs.frags.MykingsFragment"
+        android:label="MykingsFragment" />
+    <fragment
+        android:id="@+id/mytracksFragment"
+        android:name="com.example.muzpleer.ui.tabs.frags.MytracksFragment"
+        android:label="MytracksFragment" />
+    <fragment
+        android:id="@+id/tabsFragment"
+        android:name="com.example.muzpleer.ui.tabs.TabsFragment"
+        android:label="TabsFragment" />
 
 
 </navigation>

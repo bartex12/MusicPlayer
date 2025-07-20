@@ -10,6 +10,9 @@
     <string name="menu_tracks">tracksFragment</string>
     <string name="menu_player">playerFragment</string>
     <string name="not_permission">Разрешение отклонено. Функционал ограничен</string>
+    <string name="mytracks">Мои треки</string>
+    <string name="mykings">МП</string>
+    <string name="mykings2">Резерв</string>
 
     <string-array name="sound_level_entry_number">
         <item>Без звука</item>
