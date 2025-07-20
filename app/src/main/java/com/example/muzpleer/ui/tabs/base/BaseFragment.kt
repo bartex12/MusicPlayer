@@ -12,7 +12,11 @@ import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentTracksBinding
+import com.example.muzpleer.model.MusicTrack
+import com.example.muzpleer.ui.player.PlayerFragment
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 open class BaseFragment:Fragment() {
 
@@ -22,10 +26,9 @@ open class BaseFragment:Fragment() {
     private val binding get() = _binding!!
 
     lateinit var adapter: RecyclerViewTabAdapter
-    private lateinit var recyclerView : RecyclerView
+    internal lateinit var recyclerView : RecyclerView
     lateinit var navController: NavController
-    private var nameOfFile = ""
-    val baseViewModel: BaseViewModel by  viewModels()
+    val baseViewModel: BaseViewModel by  viewModel()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -42,24 +45,22 @@ open class BaseFragment:Fragment() {
         recyclerView = binding.tracksRecyclerView
         navController = findNavController()
 
-        initRecyclerTabAdapter()
-        //объявляем о регистрации контекстного меню
-        registerForContextMenu(recyclerView)
-    }
-
-    private fun initRecyclerTabAdapter(){
         adapter = RecyclerViewTabAdapter({myTrack->
-//            Log.d(TAG,"// onClick nameOfFile = $fileName")
-//            val bundle = bundleOf(Constants.NAME_OF_FILE to fileName,
-//                Constants.FROM_ACTIVITY to  Constants.TAB_BAR_ACTIVITY)
-//            navController.navigate(R.id.action_nav_rascladki_to_nav_tempoleader, bundle)
+
+            val playlist:List<MusicTrack> = baseViewModel.data.value?:listOf()
+            // Navigate to player
+            navController.navigate(
+                R.id.action_tabsFragment_to_playerFragment,
+                PlayerFragment.newInstance(myTrack, playlist).arguments)
         },{myTrack->
+            //todo двойной клик
 //            nameOfFile = nameItem
 //            Log.d(TAG,"// onLongClick nameItem = $nameItem")
         })
         recyclerView.layoutManager = LinearLayoutManager(activity)
         recyclerView.adapter = adapter
+
+        //объявляем о регистрации контекстного меню
+        registerForContextMenu(recyclerView)
     }
-
-
 }

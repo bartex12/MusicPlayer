@@ -84,9 +84,8 @@ class HomeFragment: Fragment(R.layout.fragment_home)  {
         adapter = HomeAdapter { position->
             when (position) {
                 0 -> navController.navigate(R.id.action_homeFragment_to_localFragment)
-                1 -> navController.navigate(R.id.action_homeFragment_to_tracksFragment)
-                2 -> navController.navigate(R.id.action_homeFragment_to_kingsFragment)
-                3 -> navController.navigate(R.id.action_homeFragment_to_settingsFragment)
+                1 -> navController.navigate(R.id.action_homeFragment_to_tabsFragment)
+                2 -> navController.navigate(R.id.action_homeFragment_to_settingsFragment)
             }
         }
         //устанавливаем LayoutManager для RecyclerView

@@ -47,6 +47,9 @@
         <action
             android:id="@+id/action_homeFragment_to_kingsFragment"
             app:destination="@id/kingsFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_tabsFragment"
+            app:destination="@id/tabsFragment" />
     </fragment>
     <fragment
         android:id="@+id/settingsFragment"
@@ -75,7 +78,11 @@
     <fragment
         android:id="@+id/tabsFragment"
         android:name="com.example.muzpleer.ui.tabs.TabsFragment"
-        android:label="TabsFragment" />
+        android:label="Моя музыка" >
+        <action
+            android:id="@+id/action_tabsFragment_to_playerFragment"
+            app:destination="@id/playerFragment" />
+    </fragment>
 
 
 </navigation>

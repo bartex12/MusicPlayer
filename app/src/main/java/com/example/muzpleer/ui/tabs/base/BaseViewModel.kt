@@ -10,7 +10,8 @@ import kotlinx.coroutines.*
 open class BaseViewModel(
     private val storage:BaseStorage
 ): ViewModel() {
-    private val data:MutableLiveData<List<MusicTrack>> = MutableLiveData<List<MusicTrack>>() //список файлов
+    private val _data:MutableLiveData<List<MusicTrack>> = MutableLiveData<List<MusicTrack>>() //список файлов
+    val data:LiveData<List<MusicTrack>> = _data
 
 //     Объявляем свой собственный скоуп
 //     В качестве аргумента передается CoroutineContext - через "+" из трех частей:
@@ -29,10 +30,7 @@ companion object {
    const val TAG ="33333"
 }
 
-    fun getMyTracks() : LiveData<List<MusicTrack>> {
-        loadData()
-        return data
-    }
+   init { loadData() }
 
     private fun loadData() {
         //останавливаем запущенные корутины, так как они уже не нужны при запросе новых данных
@@ -42,8 +40,8 @@ companion object {
         // так как вызов  метода getRascladki из 3 мест
         viewModelCoroutineScope.launch {
             val dataNew = storage.getMyTracksList()
-            if (dataNew!=data.value){
-                data.postValue(dataNew)
+            if (dataNew!=_data.value){
+                _data.postValue(dataNew)
             }
         }
     }

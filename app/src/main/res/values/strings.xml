@@ -35,14 +35,12 @@
     <string-array name="MenuMain">
         <item>Музыка на телефоне</item>
         <item>Своя музыка</item>
-        <item>Маленький принц</item>
         <item>Настройки</item>
     </string-array>
 
     <string-array name="MenuSubMain">
         <item>Музыкальные треки в папках телефона</item>
         <item>Музыкальные треки приложения</item>
-        <item>Часть1. Путь к Земле</item>
         <item>Настройки приложения</item>
     </string-array>
 

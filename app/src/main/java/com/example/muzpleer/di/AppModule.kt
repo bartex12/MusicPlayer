@@ -6,6 +6,7 @@ import com.example.muzpleer.home.HomeStorage
 import com.example.muzpleer.home.HomeStorageImpl
 import com.example.muzpleer.home.HomeViewModel
 import com.example.muzpleer.model.MusicTrack
+import com.example.muzpleer.model.MyRepository
 import com.example.muzpleer.model.PlaylistRepository
 import com.example.muzpleer.scaner.MediaScanner
 import com.example.muzpleer.service.MusicServiceHandler
@@ -22,9 +23,10 @@ import org.koin.dsl.module
 
 val appModule = module {
 
-    single <BaseStorage>{ BaseStorageImpl()}
+    single <BaseStorage>{ BaseStorageImpl(get())}
     single <HomeStorage>{ HomeStorageImpl(get())}
     single { MediaScanner(get()) }
+    single { MyRepository()}
     single { PlaylistRepository()}
     single { provideExoPlayer(get()) }
     factory {
