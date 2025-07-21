@@ -15,8 +15,6 @@ import com.example.muzpleer.ui.player.PlayerViewModel
 import com.example.muzpleer.ui.tabs.base.BaseStorage
 import com.example.muzpleer.ui.tabs.base.BaseStorageImpl
 import com.example.muzpleer.ui.tabs.base.BaseViewModel
-import com.example.muzpleer.ui.tracks.KingsViewModel
-import com.example.muzpleer.ui.tracks.TracksViewModel
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
@@ -37,8 +35,6 @@ val appModule = module {
     }
     viewModel { BaseViewModel(get())}
     viewModel { HomeViewModel(get()) }
-    viewModel { TracksViewModel(get()) }
-    viewModel { KingsViewModel(get()) }
     viewModel { LocalMusicViewModel(get()) }
     viewModel {
         PlayerViewModel(

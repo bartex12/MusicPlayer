@@ -49,11 +49,6 @@ class LocalFragment : Fragment() {
             adapter = this@LocalFragment.adapter
         }
 
-        binding.telefonMusicButton.setOnClickListener {
-            findNavController().navigate(
-                R.id.action_localFragment_to_tracksFragment)
-        }
-
             viewModel.progress.observe(viewLifecycleOwner) {isShow ->
                 if(isShow){
                     Log.d(TAG, " 1 LocalFragment onViewCreated observe: progress= $isShow  ")

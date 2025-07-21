@@ -1,4 +1,4 @@
-package com.example.muzpleer.ui.tabs.base
+package com.example.muzpleer.ui.tabs.adapters
 
 import android.view.LayoutInflater
 import android.view.View
@@ -10,8 +10,8 @@ import com.bumptech.glide.Glide
 import com.example.muzpleer.R
 import com.example.muzpleer.model.MusicTrack
 
-class RecyclerViewTabAdapter( val onLineListener:(MusicTrack)->Unit, val onLongClickListener:(MusicTrack)->Unit)
-    :RecyclerView.Adapter<RecyclerViewTabAdapter.ViewHolder>() {
+class RecyclerViewTabAdapter(val onLineListener:(MusicTrack)->Unit, val onLongClickListener:(MusicTrack)->Unit)
+    : RecyclerView.Adapter<RecyclerViewTabAdapter.ViewHolder>() {
 
     var data:List<MusicTrack> = listOf()
         set(value){
@@ -19,7 +19,7 @@ class RecyclerViewTabAdapter( val onLineListener:(MusicTrack)->Unit, val onLongC
             notifyDataSetChanged()
         }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerViewTabAdapter.ViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context)
             .inflate(R.layout.item_track, parent, false)
         return ViewHolder(view)

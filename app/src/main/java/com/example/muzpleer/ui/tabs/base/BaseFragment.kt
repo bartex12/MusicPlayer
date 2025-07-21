@@ -16,6 +16,7 @@ import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentTracksBinding
 import com.example.muzpleer.model.MusicTrack
 import com.example.muzpleer.ui.player.PlayerFragment
+import com.example.muzpleer.ui.tabs.adapters.RecyclerViewTabAdapter
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 open class BaseFragment:Fragment() {
@@ -45,14 +46,15 @@ open class BaseFragment:Fragment() {
         recyclerView = binding.tracksRecyclerView
         navController = findNavController()
 
-        adapter = RecyclerViewTabAdapter({myTrack->
+        adapter = RecyclerViewTabAdapter({ myTrack ->
 
-            val playlist:List<MusicTrack> = baseViewModel.data.value?:listOf()
+            val playlist: List<MusicTrack> = baseViewModel.data.value ?: listOf()
             // Navigate to player
             navController.navigate(
                 R.id.action_tabsFragment_to_playerFragment,
-                PlayerFragment.newInstance(myTrack, playlist).arguments)
-        },{myTrack->
+                PlayerFragment.newInstance(myTrack, playlist).arguments
+            )
+        }, { myTrack ->
             //todo двойной клик
 //            nameOfFile = nameItem
 //            Log.d(TAG,"// onLongClick nameItem = $nameItem")
