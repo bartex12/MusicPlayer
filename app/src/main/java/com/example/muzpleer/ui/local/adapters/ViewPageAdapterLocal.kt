@@ -2,7 +2,6 @@ package com.example.muzpleer.ui.local.adapters
 
 
 import android.content.Context
-import android.util.Log
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentPagerAdapter
@@ -10,8 +9,7 @@ import androidx.viewpager.widget.ViewPager
 import com.example.muzpleer.R
 import com.example.muzpleer.ui.local.frags.AlbumFragment
 import com.example.muzpleer.ui.local.frags.LocalFragment
-import com.example.muzpleer.ui.tabs.frags.MykingsFragment
-import com.example.muzpleer.ui.tabs.frags.MytracksFragment
+import com.example.muzpleer.ui.local.frags.ArtistsFragment
 
 
 class ViewPageAdapterLocal(private val context: Context, fragmentManager : FragmentManager,
@@ -25,13 +23,13 @@ class ViewPageAdapterLocal(private val context: Context, fragmentManager : Fragm
     private val fragments = arrayOf(
         LocalFragment.newInstance(viewPager) ,
         AlbumFragment.newInstance(viewPager),
-        MytracksFragment.newInstance(viewPager)
+        ArtistsFragment.newInstance(viewPager)
     )
 
     private val titles = arrayOf(
         context.getString(R.string.local),
         context.getString(R.string.albums),
-        context.getString(R.string.mytracks)
+        context.getString(R.string.singers)
     )
 
     override fun getCount(): Int {

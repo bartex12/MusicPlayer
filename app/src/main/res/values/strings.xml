@@ -11,6 +11,7 @@
     <string name="menu_player">playerFragment</string>
     <string name="not_permission">Разрешение отклонено. Функционал ограничен</string>
     <string name="mytracks">Мои треки</string>
+    <string name="singers">Исполнители</string>
     <string name="mykings">МП</string>
     <string name="local">Песни</string>
     <string name="albums">Альбомы</string>

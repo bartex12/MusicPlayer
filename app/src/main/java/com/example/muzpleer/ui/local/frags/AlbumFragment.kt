@@ -80,21 +80,23 @@ class AlbumFragment: Fragment() {
     }
 
     private fun scanAlbumsApi29Plus(tracks:List<MusicTrack>): List<MusicAlbum> {
-        val albumsMap = mutableMapOf<Long, MusicAlbum>()
+        // Теперь ключ - название альбома
+        val albumsMap = mutableMapOf<String, MusicAlbum>()
         // Группируем треки по альбомам
         tracks.forEach { track ->
-            if (albumsMap.containsKey(track.albumId)) {
+            val normalizedTitle = track.album?.trim()?.lowercase()
+            if (albumsMap.containsKey(normalizedTitle)) {
                 // Добавляем трек к существующему альбому
-                val existingAlbum = albumsMap[track.albumId]!!
+                val existingAlbum = albumsMap[normalizedTitle]!!
                 Log.d(TAG, "*1*AlbumFragment scanAlbumsApi29Plus " +
                         "existingAlbum.tracks.size  = ${existingAlbum.tracks.size}  ")
-                albumsMap[track.albumId] = existingAlbum.copy(
+                albumsMap[normalizedTitle.toString()] = existingAlbum.copy(
                     tracks = existingAlbum.tracks + track)
             } else {
                 val albumArtUri = ContentUris.withAppendedId(
                     "content://media/external/audio/albumart".toUri(), track.id )
                 // Создаем новый альбом
-                albumsMap[track.albumId] = MusicAlbum(
+                albumsMap[normalizedTitle.toString()] = MusicAlbum(
                     id = track.albumId,
                     title = track.album.toString(),
                     artist = track.artist,
@@ -102,7 +104,7 @@ class AlbumFragment: Fragment() {
                     tracks = listOf(track)
                 )
                 Log.d(TAG, "*2*AlbumFragment scanAlbumsApi29Plus " +
-                        "новый альбом = ${ albumsMap[track.albumId]} " +
+                        "новый альбом = ${ albumsMap[normalizedTitle]} " +
                         "Всего альбомов  = ${albumsMap.size}  ")
             }
         }
