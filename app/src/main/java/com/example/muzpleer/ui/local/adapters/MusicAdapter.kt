@@ -1,4 +1,4 @@
-package com.example.muzpleer.ui.local
+package com.example.muzpleer.ui.local.adapters
 
 import android.annotation.SuppressLint
 import android.content.ContentUris

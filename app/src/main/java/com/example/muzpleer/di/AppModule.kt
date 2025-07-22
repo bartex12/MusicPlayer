@@ -10,7 +10,8 @@ import com.example.muzpleer.model.MyRepository
 import com.example.muzpleer.model.PlaylistRepository
 import com.example.muzpleer.scaner.MediaScanner
 import com.example.muzpleer.service.MusicServiceHandler
-import com.example.muzpleer.ui.local.LocalMusicViewModel
+import com.example.muzpleer.ui.local.frags.AlbumViewModel
+import com.example.muzpleer.ui.local.frags.LocalViewModel
 import com.example.muzpleer.ui.player.PlayerViewModel
 import com.example.muzpleer.ui.tabs.base.BaseStorage
 import com.example.muzpleer.ui.tabs.base.BaseStorageImpl
@@ -35,7 +36,8 @@ val appModule = module {
     }
     viewModel { BaseViewModel(get())}
     viewModel { HomeViewModel(get()) }
-    viewModel { LocalMusicViewModel(get()) }
+    viewModel { LocalViewModel(get()) }
+    viewModel { AlbumViewModel(get()) }
     viewModel {
         PlayerViewModel(
             application = get(),

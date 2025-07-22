@@ -1,4 +1,4 @@
-package com.example.muzpleer.ui.local
+package com.example.muzpleer.ui.local.frags
 
 import android.os.Bundle
 import android.util.Log
@@ -11,8 +11,11 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.viewpager.widget.ViewPager
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentLocalBinding
+import com.example.muzpleer.ui.local.frags.LocalViewModel
+import com.example.muzpleer.ui.local.adapters.MusicAdapter
 import com.example.muzpleer.ui.player.PlayerFragment
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -20,7 +23,7 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
 class LocalFragment : Fragment() {
     private var _binding: FragmentLocalBinding? = null
     private val binding get() = _binding!!
-    private val viewModel: LocalMusicViewModel by viewModel()
+    private val viewModel: LocalViewModel by viewModel()
     private lateinit var adapter: MusicAdapter
 
     override fun onCreateView(
@@ -39,8 +42,8 @@ class LocalFragment : Fragment() {
             val playlist = viewModel.musicList.value
             // Обработка клика по треку
             findNavController().navigate(
-                R.id.action_localFragment_to_playerFragment,
-                PlayerFragment.newInstance(track, playlist).arguments
+                R.id.action_tabsLocalFragment_to_playerFragment,
+                PlayerFragment.Companion.newInstance(track, playlist).arguments
             )
         }
 
@@ -49,34 +52,17 @@ class LocalFragment : Fragment() {
             adapter = this@LocalFragment.adapter
         }
 
-            viewModel.progress.observe(viewLifecycleOwner) {isShow ->
-                if(isShow){
-                    Log.d(TAG, " 1 LocalFragment onViewCreated observe: progress= $isShow  ")
-                    binding.progressBar.visibility = View.VISIBLE
-                }else{
-//                    Log.d(TAG, " 2 LocalFragment onViewCreated observe: progress= $isShow   ")
-//                    binding.progressBar.visibility = View.GONE
-                }
+        viewModel.musicList.observe(viewLifecycleOwner) { tracks ->
+            Log.d(TAG, "3 LocalFragment onViewCreated musicList.collect: tracks.size= ${tracks.size} ")
+            if (tracks.isEmpty()) {
+                binding.progressBar.visibility = View.VISIBLE
+                binding.imageHolder3.visibility = View.VISIBLE
+                Log.d(TAG, "4 LocalFragment onViewCreated musicList.collect: progressBar.visibility = View.VISIBLE ")
+            }else{
+                binding.progressBar.visibility = View.GONE
+                binding.imageHolder3.visibility = View.GONE
             }
-
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                launch {
-                    viewModel.musicList.collect { tracks ->
-                        Log.d(TAG, "3 LocalFragment onViewCreated musicList.collect: tracks.size= ${tracks.size} ")
-                        if (tracks.isEmpty()) {
-                            binding.progressBar.visibility = View.VISIBLE
-                            binding.imageHolder3.visibility = View.VISIBLE
-                            Log.d(TAG, "4 LocalFragment onViewCreated musicList.collect: progressBar.visibility = View.VISIBLE ")
-                        }else{
-                            binding.progressBar.visibility = View.GONE
-                            binding.imageHolder3.visibility = View.GONE
-                        }
-                        adapter.data = tracks  //передаём данные в адаптер
-                        viewModel.setProgress(false)
-                    }
-                }
-            }
+            adapter.data = tracks  //передаём данные в адаптер
         }
         viewModel.loadLocalMusic()
     }
@@ -88,5 +74,11 @@ class LocalFragment : Fragment() {
 
     companion object {
         const val TAG = "33333"
+        private lateinit var viewPager: ViewPager
+
+        fun newInstance(viewPager: ViewPager): LocalFragment {
+            this.viewPager = viewPager
+            return LocalFragment()
+        }
     }
 }

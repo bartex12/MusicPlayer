@@ -23,8 +23,7 @@ class MykingsFragment : BaseFragment() {
 
         baseViewModel.data.observe(viewLifecycleOwner) { list ->
             val dataList = list.filter { it.typeFromIfMy == Constants.LITTLE_KING }
-            Log.d(
-                TAG, "***MytracksFragment onViewCreated: data = " +
+            Log.d(  TAG, "***MytracksFragment onViewCreated: data = " +
                         " ${ dataList.filter { it.typeFromIfMy == Constants.LITTLE_KING }
                                 .map { it.title }}")
             adapter.data = dataList  //обновление данных списка адаптера вкладки

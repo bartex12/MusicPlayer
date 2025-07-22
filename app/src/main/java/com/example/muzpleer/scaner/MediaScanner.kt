@@ -73,7 +73,8 @@ class MediaScanner(private val context: Context) {
                         mediaUri = path,
                         isLocal = true,
                         artworkUri = getAlbumArtUri(albumId),
-                        album = album
+                        album = album,
+                        albumId = albumId
                     )
                 )
             }
@@ -131,12 +132,12 @@ class MediaScanner(private val context: Context) {
                         mediaUri = path,
                         isLocal = true,
                         artworkUri = getAlbumArtUri(albumId),
-                        album = album
+                        album = album,
+                        albumId = albumId
                     )
                 )
             }
         }
-
         return musicList
     }
 

@@ -6,13 +6,11 @@ import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import androidx.navigation.Navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentHomeBinding
-import com.example.muzpleer.ui.local.LocalMusicViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import kotlin.getValue
 
@@ -83,7 +81,7 @@ class HomeFragment: Fragment(R.layout.fragment_home)  {
         //передаём список в адаптер
         adapter = HomeAdapter { position->
             when (position) {
-                0 -> navController.navigate(R.id.action_homeFragment_to_localFragment)
+                0 -> navController.navigate(R.id.action_homeFragment_to_tabsLocalFragment)
                 1 -> navController.navigate(R.id.action_homeFragment_to_tabsFragment)
                 2 -> navController.navigate(R.id.action_homeFragment_to_settingsFragment)
             }

@@ -1,0 +1,11 @@
+package com.example.muzpleer.model
+
+import android.net.Uri
+
+data class MusicAlbum(
+    val id: Long,
+    val title: String,
+    val artist: String,
+    val artworkUri: Uri,
+    val tracks: List<MusicTrack> = emptyList()
+)

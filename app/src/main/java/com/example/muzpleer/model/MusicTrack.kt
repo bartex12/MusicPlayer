@@ -1,11 +1,9 @@
 package com.example.muzpleer.model
 
-import android.annotation.SuppressLint
 import android.content.ContentUris
 import android.net.Uri
 import android.os.Parcelable
 import android.provider.MediaStore
-import com.example.muzpleer.R
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
@@ -16,9 +14,11 @@ data class MusicTrack(
     val duration: Long,  //длительность трека
     val mediaUri: String,  // мп3 для треков из local
     val isLocal: Boolean = true,  //из ресурсов или local?
-    val typeFromIfMy: String = "",  //откуда трек, если он сгенерирован нейросетью
     val artworkUri: String? = null, //обложка из local
     val album: String? = null, //название альбома из local
+    val albumId: Long = -1, // id альбома из local
+
+    val typeFromIfMy: String = "",  //откуда трек, если он сгенерирован нейросетью
     val cover: Int? = null, //обложка из ресурсов
     val resourceId: Int? = null // мп3 для треков из ресурсов приложения
 ): Parcelable{

@@ -12,7 +12,9 @@
     <string name="not_permission">Разрешение отклонено. Функционал ограничен</string>
     <string name="mytracks">Мои треки</string>
     <string name="mykings">МП</string>
-    <string name="mykings2">Резерв</string>
+    <string name="local">Песни</string>
+    <string name="albums">Альбомы</string>
+    <string name="album_art_description">Обложка альбома</string>
 
     <string-array name="sound_level_entry_number">
         <item>Без звука</item>

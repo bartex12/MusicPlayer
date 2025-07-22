@@ -1,4 +1,5 @@
-package com.example.muzpleer.ui.tabs.adapters
+package com.example.muzpleer.ui.local.adapters
+
 
 import android.content.Context
 import android.util.Log
@@ -7,11 +8,13 @@ import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentPagerAdapter
 import androidx.viewpager.widget.ViewPager
 import com.example.muzpleer.R
+import com.example.muzpleer.ui.local.frags.AlbumFragment
+import com.example.muzpleer.ui.local.frags.LocalFragment
 import com.example.muzpleer.ui.tabs.frags.MykingsFragment
 import com.example.muzpleer.ui.tabs.frags.MytracksFragment
 
 
-class ViewPageAdapter(private val context: Context, fragmentManager : FragmentManager,
+class ViewPageAdapterLocal(private val context: Context, fragmentManager : FragmentManager,
                       private val  viewPager: ViewPager)
     : FragmentPagerAdapter(fragmentManager, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
 
@@ -20,15 +23,15 @@ class ViewPageAdapter(private val context: Context, fragmentManager : FragmentMa
     }
 
     private val fragments = arrayOf(
-        MytracksFragment.newInstance(viewPager) ,
-        MykingsFragment.newInstance(viewPager),
-        MykingsFragment.newInstance(viewPager)
+        LocalFragment.newInstance(viewPager) ,
+        AlbumFragment.newInstance(viewPager),
+        MytracksFragment.newInstance(viewPager)
     )
 
     private val titles = arrayOf(
-        context.getString(R.string.mytracks),
-        context.getString(R.string.mykings),
-        context.getString(R.string.local)
+        context.getString(R.string.local),
+        context.getString(R.string.albums),
+        context.getString(R.string.mytracks)
     )
 
     override fun getCount(): Int {
