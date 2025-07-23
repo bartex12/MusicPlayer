@@ -1,34 +1,20 @@
 package com.example.muzpleer.ui.local.frags
 
 import android.content.ContentUris
-import android.content.Context
 import android.os.Bundle
-import android.provider.MediaStore
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
-import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.viewpager.widget.ViewPager
-import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentAlbumBinding
-import com.example.muzpleer.databinding.FragmentLocalBinding
 import com.example.muzpleer.model.MusicAlbum
 import com.example.muzpleer.model.MusicTrack
-import com.example.muzpleer.ui.local.frags.LocalFragment
-import com.example.muzpleer.ui.local.frags.LocalViewModel
 import com.example.muzpleer.ui.local.adapters.AlbumsAdapter
-import com.example.muzpleer.ui.local.adapters.MusicAdapter
-import com.example.muzpleer.ui.player.PlayerFragment
-import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
-import kotlin.getValue
 
 
 class AlbumFragment: Fragment() {

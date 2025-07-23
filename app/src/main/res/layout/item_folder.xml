@@ -1,0 +1,46 @@
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="72dp"
+    android:padding="12dp">
+
+    <ImageView
+        android:id="@+id/ivFolderIcon"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:src="@drawable/gimme"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <TextView
+        android:id="@+id/tvFolderName"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:textSize="16sp"
+        android:text="Название папки"
+        app:layout_constraintStart_toEndOf="@id/ivFolderIcon"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <TextView
+        android:id="@+id/tvFolderPath"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:textSize="12sp"
+        android:text="Путь к папке"
+        android:textColor="@color/background"
+        app:layout_constraintStart_toEndOf="@id/ivFolderIcon"
+        app:layout_constraintTop_toBottomOf="@id/tvFolderName"/>
+
+    <TextView
+        android:id="@+id/tvTracksCount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:text="12 песен"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

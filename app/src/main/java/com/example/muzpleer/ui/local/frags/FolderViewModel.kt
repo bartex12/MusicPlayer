@@ -9,7 +9,7 @@ import com.example.muzpleer.scaner.MediaScanner
 import kotlinx.coroutines.launch
 
 
-class AlbumViewModel(
+class FolderViewModel(
     private val mediaScanner: MediaScanner
 ) : ViewModel() {
 

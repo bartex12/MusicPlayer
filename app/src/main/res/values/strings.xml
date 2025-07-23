@@ -16,6 +16,7 @@
     <string name="local">Песни</string>
     <string name="albums">Альбомы</string>
     <string name="album_art_description">Обложка альбома</string>
+    <string name="folders">Папки</string>
 
     <string-array name="sound_level_entry_number">
         <item>Без звука</item>
