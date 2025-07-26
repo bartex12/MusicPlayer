@@ -8,8 +8,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.viewpager.widget.ViewPager
+import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentAlbumBinding
 import com.example.muzpleer.model.MusicAlbum
 import com.example.muzpleer.model.MusicTrack
@@ -37,7 +39,7 @@ class AlbumFragment: Fragment() {
 
         adapter = AlbumsAdapter { album ->
             val albumTracks:List<MusicTrack> = album.tracks
-
+            findNavController().navigate( R.id.localFragment)
             //todo сделать переход
 //            val playlist = track.tracks
 //            // Обработка клика по треку
