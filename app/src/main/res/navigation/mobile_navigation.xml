@@ -47,6 +47,10 @@
             android:id="@+id/action_tabsLocalFragment_to_playerFragment"
             app:destination="@id/playerFragment" />
     </fragment>
+    <fragment
+        android:id="@+id/albumFragment"
+        android:name="com.example.muzpleer.ui.local.frags.AlbumFragment"
+        android:label="AlbumFragment" />
 
 
 </navigation>

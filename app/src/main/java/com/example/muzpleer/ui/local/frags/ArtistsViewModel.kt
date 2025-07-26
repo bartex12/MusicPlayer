@@ -12,16 +12,20 @@ class ArtistsViewModel (
     private val mediaScanner: MediaScanner
     ) : ViewModel() {
 
-        companion object {
-            const val TAG = "33333"
-        }
-
         private val _musicList = MutableLiveData<List<MusicTrack>>(emptyList())
         val musicList: LiveData<List<MusicTrack>> = _musicList
+
+    init {
+        loadLocalMusic()
+    }
 
         fun loadLocalMusic() {
             viewModelScope.launch {
                 _musicList.value  = mediaScanner.scanDeviceForMusic()
             }
         }
+
+    companion object {
+        const val TAG = "33333"
+    }
     }

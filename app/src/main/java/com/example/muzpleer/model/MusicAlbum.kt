@@ -6,6 +6,6 @@ data class MusicAlbum(
     val id: Long,
     val title: String,
     val artist: String,
-    val artworkUri: Uri,
+    val artworkUri: Uri? = null,
     val tracks: List<MusicTrack> = emptyList()
 )

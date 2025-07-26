@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.viewpager.widget.ViewPager
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentLocalBinding
+import com.example.muzpleer.model.MusicTrack
 import com.example.muzpleer.ui.local.frags.LocalViewModel
 import com.example.muzpleer.ui.local.adapters.MusicAdapter
 import com.example.muzpleer.ui.player.PlayerFragment
@@ -39,7 +40,7 @@ class LocalFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         adapter = MusicAdapter { track ->
-            val playlist = viewModel.musicList.value
+            val playlist = viewModel.musicList.value?:listOf()
             // Обработка клика по треку
             findNavController().navigate(
                 R.id.action_tabsLocalFragment_to_playerFragment,
@@ -53,18 +54,30 @@ class LocalFragment : Fragment() {
         }
 
         viewModel.musicList.observe(viewLifecycleOwner) { tracks ->
-            Log.d(TAG, "3 LocalFragment onViewCreated musicList.collect: tracks.size= ${tracks.size} ")
+            Log.d(TAG, "3 LocalFragment onViewCreated musicList.observe: tracks.size= ${tracks.size} ")
             if (tracks.isEmpty()) {
                 binding.progressBar.visibility = View.VISIBLE
                 binding.imageHolder3.visibility = View.VISIBLE
-                Log.d(TAG, "4 LocalFragment onViewCreated musicList.collect: progressBar.visibility = View.VISIBLE ")
+                Log.d(TAG, "4 LocalFragment onViewCreated musicList.observe: progressBar.visibility = View.VISIBLE ")
             }else{
                 binding.progressBar.visibility = View.GONE
                 binding.imageHolder3.visibility = View.GONE
             }
-            adapter.data = tracks  //передаём данные в адаптер
+            val sortedData =  getSortedData(tracks)
+            adapter.data = sortedData  //передаём данные в адаптер
         }
-        viewModel.loadLocalMusic()
+    }
+
+    private fun getSortedData(tracks:List<MusicTrack>):List<MusicTrack>{
+        return tracks.sortedWith(compareBy(
+            { track -> when {
+                track.title.matches(Regex("^[а-яА-ЯёЁ].*")) -> 0
+                track.title.matches(Regex("^[a-zA-Z].*")) -> 1
+                else -> 2}
+            },
+            { track -> track.title.lowercase() }
+        )
+        )
     }
 
     override fun onDestroyView() {

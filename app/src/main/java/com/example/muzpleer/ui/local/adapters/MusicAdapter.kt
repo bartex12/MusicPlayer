@@ -2,11 +2,14 @@ package com.example.muzpleer.ui.local.adapters
 
 import android.annotation.SuppressLint
 import android.content.ContentUris
+import android.graphics.BitmapFactory
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.net.toUri
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.ItemMusicBinding
 import com.example.muzpleer.model.MusicTrack
@@ -14,6 +17,9 @@ import com.example.muzpleer.model.MusicTrack
 class MusicAdapter(
     private val onItemClick: (MusicTrack) -> Unit
 ) : RecyclerView.Adapter<MusicAdapter.MusicViewHolder>() {
+    companion object{
+        const val TAG = "33333"
+    }
 
     var data:List<MusicTrack> = listOf()
         @SuppressLint("NotifyDataSetChanged")
@@ -54,13 +60,25 @@ class MusicAdapter(
             // Загружаем обложку, если есть
             val albumArtUri = ContentUris.withAppendedId(
                 "content://media/external/audio/albumart".toUri(),
-                track.id.toLong()
-            )
+                track.albumId)
+
+//            ///обложка имеет Uri track.artworkUri
+//            Log.d(TAG, " %%% MusicAdapter MusicViewHolder bind: albumArtUri =  $albumArtUri  title = ${track.title}")
+//            try {
+//                binding.root.context.contentResolver.openInputStream(albumArtUri)?.use { stream ->
+//                    val bitmap = BitmapFactory.decodeStream(stream)
+//                    Log.d(TAG, "MusicViewHolder Обложка найдена: ${bitmap.width}x${bitmap.height}")
+//                } ?: Log.d(TAG,  "MusicViewHolder Обложка не найдена")
+//            } catch (e: Exception) {
+//                Log.e(TAG, "MusicViewHolder Ошибка: ${e.message}")
+//            }
+
             // Загрузка обложки
                 Glide.with(binding.root.context)
                     .load(albumArtUri)
                     .placeholder(R.drawable.placeholder2)
                     .error(R.drawable.placeholder2)
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
                     .into(binding.trackArtwork)
 
             binding.root.setOnClickListener { onItemClick(track) }

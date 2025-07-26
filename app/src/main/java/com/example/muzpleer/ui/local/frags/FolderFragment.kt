@@ -1,12 +1,17 @@
 package com.example.muzpleer.ui.local.frags
 
+import android.content.ContentUris
 import android.content.Context
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.annotation.RequiresApi
+import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.viewpager.widget.ViewPager
@@ -31,6 +36,7 @@ class FolderFragment : Fragment(){
         return binding.root
     }
 
+    @RequiresApi(Build.VERSION_CODES.Q)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -64,6 +70,7 @@ class FolderFragment : Fragment(){
         viewModel.loadLocalMusic()
     }
 
+    @RequiresApi(Build.VERSION_CODES.Q)
     fun scanAudioFolders(context: Context): List<AudioFolder> {
         val foldersMap = mutableMapOf<String, MutableList<MusicTrack>>()
         val collection = MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
@@ -101,7 +108,7 @@ class FolderFragment : Fragment(){
                             id = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)),
                             title = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE)) ?: "Unknown",
                             artist = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST)) ?: "Unknown",
-                            artworkUri = getAlbumArtUri(cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM_ID))),
+                            artworkUri = getAlbumArtUri2(cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM_ID))),
                             mediaUri = path,
                             duration = duration
                         )
@@ -137,6 +144,11 @@ class FolderFragment : Fragment(){
             }
         }
         return null
+    }
+
+    private  fun getAlbumArtUri2(albumId: Long):Uri{
+       return ContentUris.withAppendedId(
+            "content://media/external/audio/albumart".toUri(), albumId)
     }
 
     fun getDisplayName(path: String): String {

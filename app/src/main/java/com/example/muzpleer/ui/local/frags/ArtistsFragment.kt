@@ -1,20 +1,25 @@
 package com.example.muzpleer.ui.local.frags
 
 import android.content.ContentUris
+import android.graphics.BitmapFactory
+import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.viewpager.widget.ViewPager
 import com.example.muzpleer.databinding.FragmentSingersBinding
+import com.example.muzpleer.model.MusicAlbum
 import com.example.muzpleer.model.MusicArtist
 import com.example.muzpleer.model.MusicTrack
 import com.example.muzpleer.ui.local.adapters.ArtistsAdapter
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import kotlin.collections.plus
 import kotlin.getValue
 
 class ArtistsFragment:Fragment() {
@@ -53,20 +58,57 @@ class ArtistsFragment:Fragment() {
         }
 
         viewModel.musicList.observe(viewLifecycleOwner) { tracks ->
-            Log.d(TAG, "3 LocalFragment onViewCreated musicList.observe  tracks.size= ${tracks.size} ")
+            Log.d(TAG, "3 ArtistsFragment onViewCreated musicList.observe  tracks.size= ${tracks.size} ")
             if (tracks.isEmpty()) {
                 binding.progressBarSingers.visibility = View.VISIBLE
                 binding.imageHolder3Singers.visibility = View.VISIBLE
-                Log.d(TAG, "4 LocalFragment onViewCreated musicList.collect: progressBar.visibility = View.VISIBLE ")
+                Log.d(TAG, "4 ArtistsFragment onViewCreated musicList.observe: progressBar.visibility = View.VISIBLE ")
             }else{
                 binding.progressBarSingers.visibility = View.GONE
                 binding.imageHolder3Singers.visibility = View.GONE
             }
 
-            val artists: List<MusicArtist> = getArtistsWithTracks(tracks)
+            val artists: List<MusicArtist> = scanArtistsWithTracks(tracks)
             adapter.data = artists  //передаём данные в адаптер
         }
-        viewModel.loadLocalMusic()
+    }
+
+    private fun scanArtistsWithTracks(tracks:List<MusicTrack>): List<MusicArtist> {
+        // Теперь ключ - имя артиста
+        val artistMap = mutableMapOf<String, MusicArtist>()
+        // Группируем треки по артистам
+        tracks.forEach { track ->
+            val normalizedName  = track.artist?.trim()?.lowercase()
+            if (artistMap.containsKey(normalizedName)) {
+                // Добавляем трек к существующему альбому
+                val existingArtist  = artistMap[normalizedName]!!
+//                Log.d(TAG, "*1*AlbumFragment scanAlbumsApi29Plus " +
+//                        "existingAlbum.tracks.size  = ${existingAlbum.tracks.size}  ")
+                artistMap[normalizedName.toString()] = existingArtist.copy(
+                    tracks = existingArtist.tracks + track)
+            } else {
+                val albumArtUri = ContentUris.withAppendedId(
+                    "content://media/external/audio/albumart".toUri(), track.albumId )
+                // Создаем новый альбом
+                artistMap[normalizedName.toString()] = MusicArtist(
+                    name = track.artist,
+                    artworkUri = albumArtUri,
+                    tracks = listOf(track)
+                )
+//                Log.d(TAG, "*2*AlbumFragment scanAlbumsApi29Plus " +
+//                        "новый альбом = ${ albumsMap[normalizedTitle]} " +
+//                        "Всего альбомов  = ${albumsMap.size}  ")
+            }
+        }
+        return artistMap.values.sortedWith(compareBy(
+            { artist -> when {
+                artist.name.matches(Regex("^[а-яА-ЯёЁ].*")) -> 0
+                artist.name.matches(Regex("^[a-zA-Z].*")) -> 1
+                else -> 2}
+            },
+            { artist -> artist.name.lowercase() }
+        )
+        )
     }
 
     private fun getArtistsWithTracks(tracks: List<MusicTrack> ): List<MusicArtist> {
@@ -78,15 +120,14 @@ class ArtistsFragment:Fragment() {
             val artistName = track.artist?.takeIf { it.isNotBlank() } ?: "<unknown>"
             artistsMap.getOrPut(artistName) { mutableListOf() }.add(track)
         }
-
         // Преобразуем в список MusicArtist
-        return artistsMap.map { (name, tracks) ->
+        return artistsMap.map { (name, tracksForArtist) ->
             MusicArtist(
                 name = name,
-                tracks = tracks.sortedBy { it.title },
+                tracks = tracksForArtist.sortedBy { it.title },
                 artworkUri = ContentUris
-                    .withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-                        tracks.firstOrNull()?.id ?: -1)
+                    .withAppendedId( "content://media/external/audio/albumart".toUri(),
+                        tracksForArtist.firstOrNull()?.albumId ?:-1 )  //неправильно todo
             )
         }.sortedWith(artistComparator) // Применяем кастомную сортировку
     }
@@ -114,4 +155,23 @@ class ArtistsFragment:Fragment() {
             return ArtistsFragment()
         }
     }
+//    private fun getAlbumIdForCover(tracksForArtist: List<MusicTrack>): Long{
+//        tracksForArtist.forEach {musicTrack->
+//            val uri = ContentUris.withAppendedId(
+//                "content://media/external/audio/albumart".toUri(),
+//                musicTrack.albumId)
+//            try {
+//                requireContext().contentResolver.openInputStream(uri)?.use { stream ->
+//                    if (BitmapFactory.decodeStream(stream).width>0){
+//                        return musicTrack.albumId
+//                    }
+//                    Log.d(TAG, "Обложка найдена:")
+//                } ?: Log.d(TAG, "Обложка не найдена")
+//            } catch (e: Exception) {
+//                Log.d(TAG, "Ошибка: ${e.message}")
+//            }
+//        }
+//        return -1
+//    }
+
 }

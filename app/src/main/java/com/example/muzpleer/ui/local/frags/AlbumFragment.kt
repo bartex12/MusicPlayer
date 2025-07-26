@@ -35,12 +35,14 @@ class AlbumFragment: Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        adapter = AlbumsAdapter { track ->
+        adapter = AlbumsAdapter { album ->
+            val albumTracks:List<MusicTrack> = album.tracks
+
             //todo сделать переход
 //            val playlist = track.tracks
 //            // Обработка клика по треку
 //            findNavController().navigate(
-//                R.id.action_tabsLocalFragment_to_playerFragment,
+//                R.id.action_albumFragment_to_playerFragment,
 //                PlayerFragment.newInstance(track, playlist).arguments
 //            )
         }
@@ -50,11 +52,11 @@ class AlbumFragment: Fragment() {
             adapter = this@AlbumFragment.adapter
         }
         viewModel.musicList.observe(viewLifecycleOwner) { tracks ->
-            Log.d(TAG, "3 LocalFragment onViewCreated musicList.collect: tracks.size= ${tracks.size} ")
+            Log.d(TAG, "3 AlbumFragment onViewCreated musicList.observe: tracks.size= ${tracks.size} ")
             if (tracks.isEmpty()) {
                 binding.progressBarAlbum.visibility = View.VISIBLE
                 binding.imageHolder3Album.visibility = View.VISIBLE
-                Log.d(TAG, "4 LocalFragment onViewCreated musicList.collect: progressBar.visibility = View.VISIBLE ")
+                Log.d(TAG, "4 AlbumFragment onViewCreated musicList.observe: progressBar.visibility = View.VISIBLE ")
             }else{
                 binding.progressBarAlbum.visibility = View.GONE
                 binding.imageHolder3Album.visibility = View.GONE
@@ -62,7 +64,6 @@ class AlbumFragment: Fragment() {
             val musicAlbums: List<MusicAlbum> = scanAlbumsApi29Plus(tracks)
             adapter.albums = musicAlbums  //передаём данные в адаптер
         }
-        viewModel.loadLocalMusic()
     }
 
     private fun scanAlbumsApi29Plus(tracks:List<MusicTrack>): List<MusicAlbum> {
@@ -74,13 +75,13 @@ class AlbumFragment: Fragment() {
             if (albumsMap.containsKey(normalizedTitle)) {
                 // Добавляем трек к существующему альбому
                 val existingAlbum = albumsMap[normalizedTitle]!!
-                Log.d(TAG, "*1*AlbumFragment scanAlbumsApi29Plus " +
-                        "existingAlbum.tracks.size  = ${existingAlbum.tracks.size}  ")
+//                Log.d(TAG, "*1*AlbumFragment scanAlbumsApi29Plus " +
+//                        "existingAlbum.tracks.size  = ${existingAlbum.tracks.size}  ")
                 albumsMap[normalizedTitle.toString()] = existingAlbum.copy(
                     tracks = existingAlbum.tracks + track)
             } else {
                 val albumArtUri = ContentUris.withAppendedId(
-                    "content://media/external/audio/albumart".toUri(), track.id )
+                    "content://media/external/audio/albumart".toUri(), track.albumId )
                 // Создаем новый альбом
                 albumsMap[normalizedTitle.toString()] = MusicAlbum(
                     id = track.albumId,
@@ -89,19 +90,20 @@ class AlbumFragment: Fragment() {
                     artworkUri = albumArtUri,
                     tracks = listOf(track)
                 )
-                Log.d(TAG, "*2*AlbumFragment scanAlbumsApi29Plus " +
-                        "новый альбом = ${ albumsMap[normalizedTitle]} " +
-                        "Всего альбомов  = ${albumsMap.size}  ")
+//                Log.d(TAG, "*2*AlbumFragment scanAlbumsApi29Plus " +
+//                        "новый альбом = ${ albumsMap[normalizedTitle]} " +
+//                        "Всего альбомов  = ${albumsMap.size}  ")
             }
         }
         return albumsMap.values.sortedWith(compareBy(
             { album -> when {
                 album.title.matches(Regex("^[а-яА-ЯёЁ].*")) -> 0
                 album.title.matches(Regex("^[a-zA-Z].*")) -> 1
-                else -> 2
-            }},
+                else -> 2}
+            },
             { album -> album.title.lowercase() }
-        ))
+        )
+        )
     }
 
     override fun onDestroyView() {

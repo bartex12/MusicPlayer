@@ -46,7 +46,7 @@ class TabsLocalFragment: Fragment() {
 
         //устанавливаем текущую вкладку - берём из преференсис     0- вкладка секундомера
         viewPager.currentItem  =  0
-        Log.d(TAG, "***TabsFragment setFragmentResultListener tabPosition = ${viewPager.currentItem}")
+        //Log.d(TAG, "***TabsFragment setFragmentResultListener tabPosition = ${viewPager.currentItem}")
     }
 
     override fun onPause() {

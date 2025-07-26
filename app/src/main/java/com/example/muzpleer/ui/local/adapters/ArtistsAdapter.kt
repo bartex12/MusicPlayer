@@ -47,6 +47,7 @@ class ArtistsAdapter(
         fun bind(artist: MusicArtist) {
             binding.tvArtistName.text = artist.name
             binding.tvTracksCount.text = " Песен: ${artist.tracks.size}"
+
             // Загрузка обложки
             Glide.with(binding.root.context)
                 .load(artist.artworkUri)

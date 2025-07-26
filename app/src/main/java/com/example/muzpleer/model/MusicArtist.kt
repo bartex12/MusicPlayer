@@ -7,8 +7,5 @@ import android.provider.MediaStore
 data class MusicArtist(
     val name: String,
     val tracks: List<MusicTrack>,
-    val artworkUri: Uri = ContentUris
-        .withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-            tracks.firstOrNull()?.id ?: -1
-        )
+    val artworkUri: Uri
 )

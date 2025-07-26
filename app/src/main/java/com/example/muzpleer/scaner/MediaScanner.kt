@@ -1,10 +1,22 @@
 package com.example.muzpleer.scaner
 
+import android.content.ContentUris
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.media.MediaMetadataRetriever
+import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
+import android.util.Log
 import androidx.annotation.RequiresApi
+import androidx.core.content.FileProvider
 import com.example.muzpleer.model.MusicTrack
+import com.example.muzpleer.ui.local.frags.LocalFragment
+import androidx.core.net.toUri
+import kotlinx.parcelize.IgnoredOnParcel
+import java.io.File
+import java.io.FileOutputStream
 
 
 class MediaScanner(private val context: Context) {
@@ -72,14 +84,17 @@ class MediaScanner(private val context: Context) {
                         duration = duration,
                         mediaUri = path,
                         isLocal = true,
-                        artworkUri = getAlbumArtUri(albumId),
+                        artworkUri = getArtworkUri(context, albumId, path ),
                         album = album,
                         albumId = albumId
                     )
                 )
+//                Log.d(TAG, "#%# MediaScanner scanMusicApi29Plus MusicTrack:" +
+//                        " title = $title  artist = $artist  path = $path  " +
+//                        "artworkUri = ${getArtworkUri(context, albumId, path ).toString()} " +
+//                        " album = $album albumId = $albumId ")
             }
         }
-
         return musicList
     }
 
@@ -131,11 +146,16 @@ class MediaScanner(private val context: Context) {
                         duration = duration,
                         mediaUri = path,
                         isLocal = true,
-                        artworkUri = getAlbumArtUri(albumId),
+                        artworkUri = getArtworkUri(context, albumId, path ),
+                        //artworkUri = getAlbumArtUri(albumId),
                         album = album,
                         albumId = albumId
                     )
                 )
+                Log.d(TAG, "#%# MediaScanner scanMusicLegacy MusicTrack:" +
+                        " title = $title  artist = $artist  path = $path  " +
+                        "artworkUri = ${getArtworkUri(context, albumId, path ).toString()} " +
+                        " album = $album albumId = $albumId ")
             }
         }
         return musicList
@@ -160,4 +180,62 @@ class MediaScanner(private val context: Context) {
         }
         return null
     }
+
+    private var cachedArtworkUri: Uri? = null
+
+    fun getArtworkUri(context: Context, albumId:Long, mediaUri:String): Uri {
+        return cachedArtworkUri ?: run {
+            val uri = when {
+                albumId != -1L -> getArtworkUriFromMediaStore(albumId)
+                else -> tryExtractFromFile(context, mediaUri)
+            }
+            cachedArtworkUri = uri
+            uri
+        }
+    }
+
+    fun getArtworkUriFromMediaStore(albumId: Long): Uri {
+        return ContentUris.withAppendedId(
+            "content://media/external/audio/albumart".toUri(),
+            albumId
+        )
+    }
+
+    private fun tryExtractFromFile(context: Context, mediaUri: String): Uri {
+        return getEmbeddedArtwork(mediaUri)?.let { bitmap ->
+            saveBitmapAndGetUri(context, bitmap)
+        } ?: getDefaultArtworkUri(context)
+    }
+
+    fun getEmbeddedArtwork(path: String): Bitmap? {
+        val retriever = MediaMetadataRetriever()
+        return try {
+            retriever.setDataSource(path)
+            val art = retriever.embeddedPicture
+            if (art != null) BitmapFactory.decodeByteArray(art, 0, art.size)
+            else null
+        } catch (e: Exception) {
+            null
+        } finally {
+            retriever.release()
+        }
+    }
+
+    private fun saveBitmapAndGetUri(context: Context, bitmap: Bitmap): Uri {
+        val file = File(context.cacheDir, "artwork_${System.currentTimeMillis()}.jpg")
+        FileOutputStream(file).use { out ->
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 85, out)
+        }
+        return FileProvider.getUriForFile(
+            context,
+            "${context.packageName}.provider",
+            file
+        )
+    }
+
+    private fun getDefaultArtworkUri(context: Context): Uri{
+        // Возвращаем дефолтную обложку
+        return "android.resource://${context.packageName}/drawable/gimme.png".toUri()
+    }
+
 }
