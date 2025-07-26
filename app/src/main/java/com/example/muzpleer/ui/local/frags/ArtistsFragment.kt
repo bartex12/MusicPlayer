@@ -11,8 +11,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.viewpager.widget.ViewPager
+import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentSingersBinding
 import com.example.muzpleer.model.MusicAlbum
 import com.example.muzpleer.model.MusicArtist
@@ -40,20 +42,15 @@ class ArtistsFragment:Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        adapter = ArtistsAdapter { track ->
-            //todo сделать переход
-//            val playlist = viewModel.musicList.value
-//            // Обработка клика по треку
-//            findNavController().navigate(
-//                R.id.action_tabsLocalFragment_to_playerFragment,
-//                PlayerFragment.Companion.newInstance(track, playlist).arguments
-//            )
+        adapter = ArtistsAdapter { artist ->
+
+            val artistTracks:List<MusicTrack> = artist.tracks
+            findNavController().navigate( R.id.alltracksFragment,
+                AlltracksFragment.newInstance( artistTracks).arguments)
         }
 
         binding.singersRecyclerView.apply {
             layoutManager = LinearLayoutManager(requireContext())
-//            this.addItemDecoration(decor = StickyHeaderDecoration())
-//            this.setFastScrollEnabled(true)
             adapter = this@ArtistsFragment.adapter
         }
 
@@ -67,7 +64,6 @@ class ArtistsFragment:Fragment() {
                 binding.progressBarSingers.visibility = View.GONE
                 binding.imageHolder3Singers.visibility = View.GONE
             }
-
             val artists: List<MusicArtist> = scanArtistsWithTracks(tracks)
             adapter.data = artists  //передаём данные в адаптер
         }

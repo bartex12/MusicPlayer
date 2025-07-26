@@ -13,8 +13,10 @@ import android.view.ViewGroup
 import androidx.annotation.RequiresApi
 import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.viewpager.widget.ViewPager
+import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentFoldersBinding
 import com.example.muzpleer.model.AudioFolder
 import com.example.muzpleer.model.MusicTrack
@@ -41,13 +43,9 @@ class FolderFragment : Fragment(){
         super.onViewCreated(view, savedInstanceState)
 
         adapter = FoldersAdapter { folder ->
-            //todo сделать переход
-//            val playlist = track.tracks
-//            // Обработка клика по треку
-//            findNavController().navigate(
-//                R.id.action_tabsLocalFragment_to_playerFragment,
-//                PlayerFragment.newInstance(track, playlist).arguments
-//            )
+            val folderTracks:List<MusicTrack> = folder.tracks
+            findNavController().navigate( R.id.alltracksFragment,
+                AlltracksFragment.newInstance( folderTracks).arguments)
         }
 
         binding.foldersRecyclerView.apply {
@@ -55,11 +53,11 @@ class FolderFragment : Fragment(){
             adapter = this@FolderFragment.adapter
         }
         viewModel.musicList.observe(viewLifecycleOwner) { tracks ->
-            Log.d(TAG, "3 LocalFragment onViewCreated musicList.collect: tracks.size= ${tracks.size} ")
+            Log.d(TAG, "3 FolderFragment onViewCreated musicList.observe: tracks.size= ${tracks.size} ")
             if (tracks.isEmpty()) {
                 binding.progressBarFolder.visibility = View.VISIBLE
                 binding.imageHolder3Folder.visibility = View.VISIBLE
-                Log.d(TAG, "4 LocalFragment onViewCreated musicList.collect: progressBar.visibility = View.VISIBLE ")
+                Log.d(TAG, "4 FolderFragment onViewCreated musicList.observe: progressBar.visibility = View.VISIBLE ")
             }else{
                 binding.progressBarFolder.visibility = View.GONE
                 binding.imageHolder3Folder.visibility = View.GONE
@@ -67,7 +65,6 @@ class FolderFragment : Fragment(){
             val musicFolders : List<AudioFolder> = scanAudioFolders(requireContext())
             adapter.folders = musicFolders  //передаём данные в адаптер
         }
-        viewModel.loadLocalMusic()
     }
 
     @RequiresApi(Build.VERSION_CODES.Q)

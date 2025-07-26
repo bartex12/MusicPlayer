@@ -59,6 +59,14 @@
         android:id="@+id/folderFragment"
         android:name="com.example.muzpleer.ui.local.frags.FolderFragment"
         android:label="FolderFragment" />
+    <fragment
+        android:id="@+id/alltracksFragment"
+        android:name="com.example.muzpleer.ui.local.frags.AlltracksFragment"
+        android:label="AlltracksFragment" >
+        <action
+            android:id="@+id/action_alltracksFragment_to_playerFragment"
+            app:destination="@id/playerFragment" />
+    </fragment>
 
 
 </navigation>

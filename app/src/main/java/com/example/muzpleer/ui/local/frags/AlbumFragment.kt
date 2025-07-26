@@ -39,14 +39,8 @@ class AlbumFragment: Fragment() {
 
         adapter = AlbumsAdapter { album ->
             val albumTracks:List<MusicTrack> = album.tracks
-            findNavController().navigate( R.id.localFragment)
-            //todo сделать переход
-//            val playlist = track.tracks
-//            // Обработка клика по треку
-//            findNavController().navigate(
-//                R.id.action_albumFragment_to_playerFragment,
-//                PlayerFragment.newInstance(track, playlist).arguments
-//            )
+            findNavController().navigate( R.id.alltracksFragment,
+                AlltracksFragment.newInstance( albumTracks).arguments)
         }
 
         binding.albumRecyclerView.apply {
