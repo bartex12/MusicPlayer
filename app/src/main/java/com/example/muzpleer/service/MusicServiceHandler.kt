@@ -6,7 +6,7 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
-import com.example.muzpleer.model.MusicTrack
+import com.example.muzpleer.model.Song
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -19,12 +19,12 @@ class MusicServiceHandler(
     internal var callback: PlayerCallback
 ) {
     private var player: ExoPlayer? = null
-    internal var playlist: List<MusicTrack> = emptyList()
+    internal var playlist: List<Song> = emptyList()
     private var currentIndex = 0
     private var positionUpdateJob: Job? = null
 
     interface PlayerCallback {
-        fun onTrackChanged(track: MusicTrack)
+        fun onTrackChanged(track: Song)
         fun onPlaybackStateChanged(isPlaying: Boolean)
         fun onPositionChanged(position: Long, duration: Long)
         fun onError(message: String)
@@ -63,7 +63,7 @@ class MusicServiceHandler(
         startPositionUpdates()
     }
 
-    fun setPlaylist(tracks: List<MusicTrack>, startIndex: Int = 0) {
+    fun setPlaylist(tracks: List<Song>, startIndex: Int = 0) {
         playlist = tracks
         currentIndex = startIndex
         playTrack(startIndex)
@@ -99,7 +99,8 @@ class MusicServiceHandler(
         if (currentIndex < playlist.size - 1) {
             playTrack(currentIndex + 1)
         } else {
-            player?.stop()
+            // player?.stop() // после проигрывания последнего трека плейлиста - остановка
+            playTrack(0)// после проигрывания последнего трека плейлиста - переход к первому треку
         }
     }
 

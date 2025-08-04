@@ -2,8 +2,6 @@ package com.example.muzpleer.ui.local.adapters
 
 import android.annotation.SuppressLint
 import android.content.ContentUris
-import android.graphics.BitmapFactory
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.net.toUri
@@ -12,16 +10,16 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.ItemMusicBinding
-import com.example.muzpleer.model.MusicTrack
+import com.example.muzpleer.model.Song
 
 class MusicAdapter(
-    private val onItemClick: (MusicTrack) -> Unit
+    private val onItemClick: (Song) -> Unit
 ) : RecyclerView.Adapter<MusicAdapter.MusicViewHolder>() {
     companion object{
         const val TAG = "33333"
     }
 
-    var data:List<MusicTrack> = listOf()
+    var data:List<Song> = listOf()
         @SuppressLint("NotifyDataSetChanged")
         set(value){
             field = value
@@ -52,7 +50,7 @@ class MusicAdapter(
     inner class MusicViewHolder(private val binding: ItemMusicBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(track: MusicTrack) {
+        fun bind(track: Song) {
             binding.trackTitle.text = track.title
             binding.trackArtist.text = track.artist
             binding.trackDuration.text = track.duration.formatAsTime()

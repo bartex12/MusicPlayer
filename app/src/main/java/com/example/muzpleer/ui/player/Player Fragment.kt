@@ -11,7 +11,7 @@ import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentPlayerBinding
-import com.example.muzpleer.model.MusicTrack
+import com.example.muzpleer.model.Song
 import com.google.android.material.snackbar.Snackbar
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
@@ -20,8 +20,8 @@ class PlayerFragment : Fragment() {
     private val binding get() = _binding!!
     private val viewModel: PlayerViewModel by viewModel()
 
-    private lateinit var track: MusicTrack
-    private lateinit var playlist: List<MusicTrack>
+    private lateinit var track: Song
+    private lateinit var playlist: List<Song>
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -145,7 +145,7 @@ class PlayerFragment : Fragment() {
         private const val ARG_TRACK = "track"
         private const val ARG_PLAYLIST = "playlist"
 
-        fun newInstance(track: MusicTrack, playlist: List<MusicTrack>): PlayerFragment {
+        fun newInstance(track: Song, playlist: List<Song>): PlayerFragment {
             return PlayerFragment().apply {
                 arguments = bundleOf(
                     ARG_TRACK to track,

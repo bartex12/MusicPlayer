@@ -4,12 +4,12 @@ import android.content.ContentUris
 import android.net.Uri
 import android.provider.MediaStore
 
-data class AudioFolder(
+data class Folder(
     val path: String,
     val name: String,
-    val tracks: List<MusicTrack>,
+    val tracks: List<Song>,
     val artworkUri: Uri? =  ContentUris
         .withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-            tracks.firstOrNull()?.id ?: -1
+            tracks.firstOrNull()?.albumId ?: -1
         )
 )

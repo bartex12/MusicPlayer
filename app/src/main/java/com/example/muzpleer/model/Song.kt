@@ -16,7 +16,7 @@ import java.io.File
 import java.io.FileOutputStream
 
 @Parcelize
-data class MusicTrack(
+data class Song(
     val id: Long,  //id
     val title: String, //название
     val artist: String, //исполнитель

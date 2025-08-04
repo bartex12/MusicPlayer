@@ -8,12 +8,12 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.muzpleer.R
-import com.example.muzpleer.model.MusicTrack
+import com.example.muzpleer.model.Song
 
-class RecyclerViewTabAdapter(val onLineListener:(MusicTrack)->Unit, val onLongClickListener:(MusicTrack)->Unit)
+class RecyclerViewTabAdapter(val onLineListener:(Song)->Unit, val onLongClickListener:(Song)->Unit)
     : RecyclerView.Adapter<RecyclerViewTabAdapter.ViewHolder>() {
 
-    var data:List<MusicTrack> = listOf()
+    var data:List<Song> = listOf()
         set(value){
             field = value
             notifyDataSetChanged()
@@ -32,7 +32,7 @@ class RecyclerViewTabAdapter(val onLineListener:(MusicTrack)->Unit, val onLongCl
     override fun getItemCount(): Int = data.size
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        fun bind(item: MusicTrack) {
+        fun bind(item: Song) {
             itemView.apply {
                 findViewById<TextView>(R.id.tv_title).text = item.title
                 findViewById<TextView>(R.id.tv_artist).text = item.artist

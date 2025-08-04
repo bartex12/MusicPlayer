@@ -7,13 +7,13 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.ItemArtistBinding
-import com.example.muzpleer.model.MusicArtist
+import com.example.muzpleer.model.Artist
 
 class ArtistsAdapter(
-    private val onItemClick: (MusicArtist) -> Unit
+    private val onItemClick: (Artist) -> Unit
 ) : RecyclerView.Adapter<ArtistsAdapter.ArtistViewHolder>() {
 
-    var data:List<MusicArtist> = listOf()
+    var data:List<Artist> = listOf()
         @SuppressLint("NotifyDataSetChanged")
         set(value){
             field = value
@@ -44,7 +44,7 @@ class ArtistsAdapter(
     inner class ArtistViewHolder(private val binding: ItemArtistBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(artist: MusicArtist) {
+        fun bind(artist: Artist) {
             binding.tvArtistName.text = artist.name
             binding.tvTracksCount.text = " Песен: ${artist.tracks.size}"
 

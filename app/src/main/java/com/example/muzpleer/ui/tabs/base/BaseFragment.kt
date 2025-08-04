@@ -1,20 +1,17 @@
 package com.example.muzpleer.ui.tabs.base
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
 import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentTracksBinding
-import com.example.muzpleer.model.MusicTrack
+import com.example.muzpleer.model.Song
 import com.example.muzpleer.ui.player.PlayerFragment
 import com.example.muzpleer.ui.tabs.adapters.RecyclerViewTabAdapter
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -48,7 +45,7 @@ open class BaseFragment:Fragment() {
 
         adapter = RecyclerViewTabAdapter({ myTrack ->
 
-            val playlist: List<MusicTrack> = baseViewModel.data.value ?: listOf()
+            val playlist: List<Song> = baseViewModel.data.value ?: listOf()
             // Navigate to player
             navController.navigate(
                 R.id.action_tabsFragment_to_playerFragment,

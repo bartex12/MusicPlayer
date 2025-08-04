@@ -13,8 +13,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.viewpager.widget.ViewPager
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentAlbumBinding
-import com.example.muzpleer.model.MusicAlbum
-import com.example.muzpleer.model.MusicTrack
+import com.example.muzpleer.model.Album
+import com.example.muzpleer.model.Song
 import com.example.muzpleer.ui.local.adapters.AlbumsAdapter
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
@@ -38,7 +38,7 @@ class AlbumFragment: Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         adapter = AlbumsAdapter { album ->
-            val albumTracks:List<MusicTrack> = album.tracks
+            val albumTracks:List<Song> = album.tracks
             findNavController().navigate( R.id.alltracksFragment,
                 AlltracksFragment.newInstance( albumTracks).arguments)
         }
@@ -57,14 +57,14 @@ class AlbumFragment: Fragment() {
                 binding.progressBarAlbum.visibility = View.GONE
                 binding.imageHolder3Album.visibility = View.GONE
             }
-            val musicAlbums: List<MusicAlbum> = scanAlbumsApi29Plus(tracks)
+            val musicAlbums: List<Album> = scanAlbumsApi29Plus(tracks)
             adapter.albums = musicAlbums  //передаём данные в адаптер
         }
     }
 
-    private fun scanAlbumsApi29Plus(tracks:List<MusicTrack>): List<MusicAlbum> {
+    private fun scanAlbumsApi29Plus(tracks:List<Song>): List<Album> {
         // Теперь ключ - название альбома
-        val albumsMap = mutableMapOf<String, MusicAlbum>()
+        val albumsMap = mutableMapOf<String, Album>()
         // Группируем треки по альбомам
         tracks.forEach { track ->
             val normalizedTitle = track.album?.trim()?.lowercase()
@@ -79,7 +79,7 @@ class AlbumFragment: Fragment() {
                 val albumArtUri = ContentUris.withAppendedId(
                     "content://media/external/audio/albumart".toUri(), track.albumId )
                 // Создаем новый альбом
-                albumsMap[normalizedTitle.toString()] = MusicAlbum(
+                albumsMap[normalizedTitle.toString()] = Album(
                     id = track.albumId,
                     title = track.album.toString(),
                     artist = track.artist,

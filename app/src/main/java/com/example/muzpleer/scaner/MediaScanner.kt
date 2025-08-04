@@ -11,12 +11,14 @@ import android.provider.MediaStore
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.content.FileProvider
-import com.example.muzpleer.model.MusicTrack
-import com.example.muzpleer.ui.local.frags.LocalFragment
+import com.example.muzpleer.model.Song
 import androidx.core.net.toUri
-import kotlinx.parcelize.IgnoredOnParcel
+import com.example.muzpleer.model.Album
+import com.example.muzpleer.model.Artist
+import com.example.muzpleer.model.Folder
 import java.io.File
 import java.io.FileOutputStream
+import kotlin.collections.set
 
 
 class MediaScanner(private val context: Context) {
@@ -24,7 +26,12 @@ class MediaScanner(private val context: Context) {
         const val TAG = "33333"
     }
 
-    fun scanDeviceForMusic(): List<MusicTrack> {
+    private val songs = mutableListOf<Song>()
+    private val albums = mutableMapOf<String, Album>()
+    private val artists = mutableMapOf<String, Artist>()
+    private val folders = mutableMapOf<String, Folder>()
+
+    fun scanDeviceForMusic(): List<Song> {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             scanMusicApi29Plus(context)
         } else {
@@ -33,8 +40,8 @@ class MediaScanner(private val context: Context) {
     }
 
     @RequiresApi(Build.VERSION_CODES.Q)
-    private fun scanMusicApi29Plus(context: Context): List<MusicTrack> {
-        val musicList = mutableListOf<MusicTrack>()
+    private fun scanMusicApi29Plus(context: Context): List<Song> {
+        val musicList = mutableListOf<Song>()
         val collection = MediaStore.Audio.Media.getContentUri(
             MediaStore.VOLUME_EXTERNAL
         )
@@ -77,16 +84,17 @@ class MediaScanner(private val context: Context) {
                 val albumId = cursor.getLong(albumIdColumn)
 
                 musicList.add(
-                    MusicTrack(
+                    Song(
                         id = id,
                         title = title,
                         artist = artist,
+                        album = album,
+                        albumId = albumId,
                         duration = duration,
                         mediaUri = path,
                         isLocal = true,
-                        artworkUri = getArtworkUri(context, albumId, path ),
-                        album = album,
-                        albumId = albumId
+                        artworkUri = getArtworkUri(context, albumId, path )
+
                     )
                 )
 //                Log.d(TAG, "#%# MediaScanner scanMusicApi29Plus MusicTrack:" +
@@ -95,11 +103,59 @@ class MediaScanner(private val context: Context) {
 //                        " album = $album albumId = $albumId ")
             }
         }
+
+        // Build albums, artists and folders
+        //buildCollections(musicList)
         return musicList
     }
 
-    private fun scanMusicLegacy(context: Context): List<MusicTrack> {
-        val musicList = mutableListOf<MusicTrack>()
+//    private fun buildCollections(songs: List<Song>) {
+//        albums.clear()
+//        artists.clear()
+//        folders.clear()
+//
+//        songs.groupBy { "${it.album}|${it.artist}" }.forEach { (key, albumSongs) ->
+//            val parts = key.split("|")
+//            val albumName = parts[0]
+//            val artistName = parts[1]
+//
+//            albums[key] = Album(
+//                id = key,
+//                name = albumName,
+//                artist = artistName,
+//                songs = albumSongs,
+//                albumArtUri = albumSongs.firstOrNull()?.albumArtUri
+//            )
+//        }
+//
+//
+//        songs.groupBy { it.artist }.forEach { (artistName, artistSongs) ->
+//            //val artistArtUri = getArtworkUriFromMediaStore(artistSongs)
+//            artists[artistName] = Artist(
+//                id = artistName,
+//                name = artistName,
+//                songs = artistSongs,
+//                albumArtUri = artistSongs.firstOrNull()?.albumArtUri
+//            )
+//        }
+//
+//        songs.groupBy { it.folderPath }.forEach { (folderPath, folderSongs) ->
+//            val folderName = File(folderPath).name
+//            folders[folderPath] = Folder(
+//                path = folderPath,
+//                name = folderName,
+//                songs = folderSongs,
+//                albumArtUri = folderSongs.firstOrNull()?.albumArtUri
+//            )
+//        }
+//    }
+//
+//    fun getAlbums(): List<Album> = albums.values.toList()
+//    fun getArtists(): List<Artist> = artists.values.toList()
+//    fun getFolders(): List<Folder> = folders.values.toList()
+
+    private fun scanMusicLegacy(context: Context): List<Song> {
+        val musicList = mutableListOf<Song>()
         val uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
         val projection = arrayOf(
             MediaStore.Audio.Media._ID,
@@ -139,7 +195,7 @@ class MediaScanner(private val context: Context) {
                 val albumId = cursor.getLong(albumIdColumn)
 
                 musicList.add(
-                    MusicTrack(
+                    Song(
                         id = id,
                         title = title,
                         artist = artist,
@@ -147,7 +203,6 @@ class MediaScanner(private val context: Context) {
                         mediaUri = path,
                         isLocal = true,
                         artworkUri = getArtworkUri(context, albumId, path ),
-                        //artworkUri = getAlbumArtUri(albumId),
                         album = album,
                         albumId = albumId
                     )
@@ -159,26 +214,6 @@ class MediaScanner(private val context: Context) {
             }
         }
         return musicList
-    }
-
-    private fun getAlbumArtUri(albumId: Long): String? {
-        val contentUri = MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI
-        val projection = arrayOf(MediaStore.Audio.Albums.ALBUM_ART)
-        val selection = "${MediaStore.Audio.Albums._ID} = ?"
-        val selectionArgs = arrayOf(albumId.toString())
-
-        context.contentResolver.query(
-            contentUri,
-            projection,
-            selection,
-            selectionArgs,
-            null
-        )?.use { cursor ->
-            if (cursor.moveToFirst()) {
-                return cursor.getString(0)
-            }
-        }
-        return null
     }
 
     private var cachedArtworkUri: Uri? = null

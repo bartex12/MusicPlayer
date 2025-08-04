@@ -5,16 +5,15 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.muzpleer.databinding.ItemAlbumBinding
-import com.example.muzpleer.model.MusicAlbum
+import com.example.muzpleer.model.Album
 import com.bumptech.glide.Glide
 import com.example.muzpleer.R
-import com.example.muzpleer.model.MusicTrack
 
 class AlbumsAdapter(
-    private val onAlbumClick: (MusicAlbum) -> Unit
+    private val onAlbumClick: (Album) -> Unit
 ) : RecyclerView.Adapter<AlbumsAdapter.AlbumViewHolder>() {
 
-    var albums:List<MusicAlbum> = listOf()
+    var albums:List<Album> = listOf()
         @SuppressLint("NotifyDataSetChanged")
         set(value){
             field = value
@@ -40,7 +39,7 @@ class AlbumsAdapter(
     inner class AlbumViewHolder(private val binding: ItemAlbumBinding)
         : RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(album: MusicAlbum) {
+        fun bind(album: Album) {
             binding.albumTitle.text = album.title
             binding.albumArtist.text = album.artist
             binding.tracksCount.text = "${album.tracks.size} треков"

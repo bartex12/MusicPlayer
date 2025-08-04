@@ -1,10 +1,7 @@
 package com.example.muzpleer.ui.local.frags
 
 import android.content.ContentUris
-import android.graphics.BitmapFactory
-import android.net.Uri
 import android.os.Bundle
-import android.provider.MediaStore
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -16,9 +13,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.viewpager.widget.ViewPager
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentSingersBinding
-import com.example.muzpleer.model.MusicAlbum
-import com.example.muzpleer.model.MusicArtist
-import com.example.muzpleer.model.MusicTrack
+import com.example.muzpleer.model.Artist
+import com.example.muzpleer.model.Song
 import com.example.muzpleer.ui.local.adapters.ArtistsAdapter
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import kotlin.collections.plus
@@ -44,7 +40,7 @@ class ArtistsFragment:Fragment() {
 
         adapter = ArtistsAdapter { artist ->
 
-            val artistTracks:List<MusicTrack> = artist.tracks
+            val artistTracks:List<Song> = artist.tracks
             findNavController().navigate( R.id.alltracksFragment,
                 AlltracksFragment.newInstance( artistTracks).arguments)
         }
@@ -64,14 +60,14 @@ class ArtistsFragment:Fragment() {
                 binding.progressBarSingers.visibility = View.GONE
                 binding.imageHolder3Singers.visibility = View.GONE
             }
-            val artists: List<MusicArtist> = scanArtistsWithTracks(tracks)
+            val artists: List<Artist> = scanArtistsWithTracks(tracks)
             adapter.data = artists  //передаём данные в адаптер
         }
     }
 
-    private fun scanArtistsWithTracks(tracks:List<MusicTrack>): List<MusicArtist> {
+    private fun scanArtistsWithTracks(tracks:List<Song>): List<Artist> {
         // Теперь ключ - имя артиста
-        val artistMap = mutableMapOf<String, MusicArtist>()
+        val artistMap = mutableMapOf<String, Artist>()
         // Группируем треки по артистам
         tracks.forEach { track ->
             val normalizedName  = track.artist?.trim()?.lowercase()
@@ -86,7 +82,7 @@ class ArtistsFragment:Fragment() {
                 val albumArtUri = ContentUris.withAppendedId(
                     "content://media/external/audio/albumart".toUri(), track.albumId )
                 // Создаем новый альбом
-                artistMap[normalizedName.toString()] = MusicArtist(
+                artistMap[normalizedName.toString()] = Artist(
                     name = track.artist,
                     artworkUri = albumArtUri,
                     tracks = listOf(track)
@@ -107,9 +103,9 @@ class ArtistsFragment:Fragment() {
         )
     }
 
-    private fun getArtistsWithTracks(tracks: List<MusicTrack> ): List<MusicArtist> {
+    private fun getArtistsWithTracks(tracks: List<Song> ): List<Artist> {
 
-        val artistsMap = mutableMapOf<String, MutableList<MusicTrack>>()
+        val artistsMap = mutableMapOf<String, MutableList<Song>>()
 
         // Группируем треки по исполнителям
         tracks.forEach { track ->
@@ -118,7 +114,7 @@ class ArtistsFragment:Fragment() {
         }
         // Преобразуем в список MusicArtist
         return artistsMap.map { (name, tracksForArtist) ->
-            MusicArtist(
+            Artist(
                 name = name,
                 tracks = tracksForArtist.sortedBy { it.title },
                 artworkUri = ContentUris
@@ -128,7 +124,7 @@ class ArtistsFragment:Fragment() {
         }.sortedWith(artistComparator) // Применяем кастомную сортировку
     }
 
-    private val artistComparator = compareBy<MusicArtist> { artist ->
+    private val artistComparator = compareBy<Artist> { artist ->
         when {
             artist.name == "<unknown>" -> 2 // Unknown в конец
             artist.name.matches(Regex("^[а-яА-ЯёЁ].*")) -> 0 // Русские сначала

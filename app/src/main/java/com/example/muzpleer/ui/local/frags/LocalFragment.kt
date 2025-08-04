@@ -6,19 +6,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.viewpager.widget.ViewPager
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentLocalBinding
-import com.example.muzpleer.model.MusicTrack
-import com.example.muzpleer.ui.local.frags.LocalViewModel
+import com.example.muzpleer.model.Song
 import com.example.muzpleer.ui.local.adapters.MusicAdapter
 import com.example.muzpleer.ui.player.PlayerFragment
-import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class LocalFragment : Fragment() {
@@ -68,7 +63,7 @@ class LocalFragment : Fragment() {
         }
     }
 
-    private fun getSortedData(tracks:List<MusicTrack>):List<MusicTrack>{
+    private fun getSortedData(tracks:List<Song>):List<Song>{
         return tracks.sortedWith(compareBy(
             { track -> when {
                 track.title.matches(Regex("^[а-яА-ЯёЁ].*")) -> 0

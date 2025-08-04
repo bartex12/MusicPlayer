@@ -2,24 +2,18 @@ package com.example.muzpleer.ui.local.adapters
 
 import android.annotation.SuppressLint
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
-import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.muzpleer.databinding.ItemFolderBinding
-import com.example.muzpleer.model.AudioFolder
-import com.example.muzpleer.model.MusicAlbum
+import com.example.muzpleer.model.Folder
 import com.example.muzpleer.R
-import com.example.muzpleer.databinding.ItemAlbumBinding
-import com.example.muzpleer.ui.local.adapters.AlbumsAdapter.AlbumViewHolder
 
 class FoldersAdapter(
-    private val onFolderClick: (AudioFolder) -> Unit
+    private val onFolderClick: (Folder) -> Unit
 ) : RecyclerView.Adapter<FoldersAdapter.FolderViewHolder>() {
 
-    var folders:List<AudioFolder> = listOf()
+    var folders:List<Folder> = listOf()
         @SuppressLint("NotifyDataSetChanged")
         set(value){
             field = value
@@ -44,7 +38,7 @@ class FoldersAdapter(
     inner class FolderViewHolder(private val binding: ItemFolderBinding)
         : RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(folder: AudioFolder) {
+        fun bind(folder: Folder) {
             binding.tvFolderName.text = folder.name
             binding.tvFolderPath.text = folder.path
             binding.tvTracksCount.text = "${folder.tracks.size} треков"

@@ -5,9 +5,8 @@ import androidx.media3.exoplayer.ExoPlayer
 import com.example.muzpleer.home.HomeStorage
 import com.example.muzpleer.home.HomeStorageImpl
 import com.example.muzpleer.home.HomeViewModel
-import com.example.muzpleer.model.MusicTrack
+import com.example.muzpleer.model.Song
 import com.example.muzpleer.model.MyRepository
-import com.example.muzpleer.model.PlaylistRepository
 import com.example.muzpleer.scaner.MediaScanner
 import com.example.muzpleer.service.MusicServiceHandler
 import com.example.muzpleer.ui.local.frags.AlbumViewModel
@@ -28,7 +27,7 @@ val appModule = module {
     single <HomeStorage>{ HomeStorageImpl(get())}
     single { MediaScanner(get()) }
     single { MyRepository()}
-    single { PlaylistRepository()}
+
     single { provideExoPlayer(get()) }
     factory {
         MusicServiceHandler(
@@ -48,12 +47,10 @@ val appModule = module {
             playerHandler = get() // Получаем MusicServiceHandler из контейнера)
         )
     }
-
-
     // Регистрируем заглушку для колбэка (реальная реализация будет в ViewModel)
     factory<MusicServiceHandler.PlayerCallback> {
         object : MusicServiceHandler.PlayerCallback {
-            override fun onTrackChanged(track: MusicTrack) {}
+            override fun onTrackChanged(track: Song) {}
             override fun onPlaybackStateChanged(isPlaying: Boolean) {}
             override fun onPositionChanged(position: Long, duration: Long) {}
             override fun onError(message: String) {}

@@ -4,14 +4,14 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.example.muzpleer.model.MusicTrack
+import com.example.muzpleer.model.Song
 import kotlinx.coroutines.*
 
 open class BaseViewModel(
     private val storage:BaseStorage
 ): ViewModel() {
-    private val _data:MutableLiveData<List<MusicTrack>> = MutableLiveData<List<MusicTrack>>() //список файлов
-    val data:LiveData<List<MusicTrack>> = _data
+    private val _data:MutableLiveData<List<Song>> = MutableLiveData<List<Song>>() //список файлов
+    val data:LiveData<List<Song>> = _data
 
 //     Объявляем свой собственный скоуп
 //     В качестве аргумента передается CoroutineContext - через "+" из трех частей:

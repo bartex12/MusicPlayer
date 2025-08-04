@@ -12,7 +12,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.viewpager.widget.ViewPager
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentAlltracksBinding
-import com.example.muzpleer.model.MusicTrack
+import com.example.muzpleer.model.Song
 import com.example.muzpleer.ui.local.adapters.MusicAdapter
 import com.example.muzpleer.ui.player.PlayerFragment
 
@@ -20,7 +20,7 @@ class AlltracksFragment:Fragment() {
     private var _binding: FragmentAlltracksBinding? = null
     private val binding get() = _binding!!
     private lateinit var adapter: MusicAdapter
-    private lateinit var alltrackslist: List<MusicTrack>
+    private lateinit var alltrackslist: List<Song>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -66,7 +66,7 @@ class AlltracksFragment:Fragment() {
         private lateinit var viewPager: ViewPager
         private const val ARG_ALLTRACKSLIST = "ARG_ALLTRACKSLIST"
 
-        fun newInstance( alltrackslist: List<MusicTrack>): AlltracksFragment {
+        fun newInstance( alltrackslist: List<Song>): AlltracksFragment {
             return AlltracksFragment().apply {
                 arguments = bundleOf(
                     ARG_ALLTRACKSLIST to ArrayList(alltrackslist))

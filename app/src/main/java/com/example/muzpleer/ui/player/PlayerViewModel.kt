@@ -5,7 +5,7 @@ import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.example.muzpleer.model.MusicTrack
+import com.example.muzpleer.model.Song
 import com.example.muzpleer.service.MusicServiceHandler
 
 class PlayerViewModel(
@@ -13,8 +13,8 @@ class PlayerViewModel(
     private val playerHandler: MusicServiceHandler
 ) : AndroidViewModel(application), MusicServiceHandler.PlayerCallback {
 
-    private val _currentTrack = MutableLiveData<MusicTrack?>()
-    val currentTrack: LiveData<MusicTrack?> = _currentTrack
+    private val _currentTrack = MutableLiveData<Song?>()
+    val currentTrack: LiveData<Song?> = _currentTrack
 
     private val _isPlaying = MutableLiveData<Boolean>(false)
     val isPlaying: LiveData<Boolean> = _isPlaying
@@ -33,7 +33,7 @@ class PlayerViewModel(
         Log.d(TAG, "PlayerViewModel init: playerHandler =$playerHandler ")
     }
 
-    override fun onTrackChanged(track: MusicTrack) {
+    override fun onTrackChanged(track: Song) {
         _currentTrack.postValue(track)
     }
 
@@ -50,7 +50,7 @@ class PlayerViewModel(
         _errorMessage.postValue(message)
     }
 
-    fun setPlaylist(playlist: List<MusicTrack>, initialIndex: Int = 0) {
+    fun setPlaylist(playlist: List<Song>, initialIndex: Int = 0) {
         playerHandler.setPlaylist(playlist, initialIndex)
     }
 

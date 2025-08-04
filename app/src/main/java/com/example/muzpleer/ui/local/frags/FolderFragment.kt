@@ -18,8 +18,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.viewpager.widget.ViewPager
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentFoldersBinding
-import com.example.muzpleer.model.AudioFolder
-import com.example.muzpleer.model.MusicTrack
+import com.example.muzpleer.model.Folder
+import com.example.muzpleer.model.Song
 import com.example.muzpleer.ui.local.adapters.FoldersAdapter
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
@@ -43,7 +43,7 @@ class FolderFragment : Fragment(){
         super.onViewCreated(view, savedInstanceState)
 
         adapter = FoldersAdapter { folder ->
-            val folderTracks:List<MusicTrack> = folder.tracks
+            val folderTracks:List<Song> = folder.tracks
             findNavController().navigate( R.id.alltracksFragment,
                 AlltracksFragment.newInstance( folderTracks).arguments)
         }
@@ -62,14 +62,14 @@ class FolderFragment : Fragment(){
                 binding.progressBarFolder.visibility = View.GONE
                 binding.imageHolder3Folder.visibility = View.GONE
             }
-            val musicFolders : List<AudioFolder> = scanAudioFolders(requireContext())
+            val musicFolders : List<Folder> = scanAudioFolders(requireContext())
             adapter.folders = musicFolders  //передаём данные в адаптер
         }
     }
 
     @RequiresApi(Build.VERSION_CODES.Q)
-    fun scanAudioFolders(context: Context): List<AudioFolder> {
-        val foldersMap = mutableMapOf<String, MutableList<MusicTrack>>()
+    fun scanAudioFolders(context: Context): List<Folder> {
+        val foldersMap = mutableMapOf<String, MutableList<Song>>()
         val collection = MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
 
         val projection = arrayOf(
@@ -101,7 +101,7 @@ class FolderFragment : Fragment(){
                 // Пропускаем файлы без пути
                 if (folderPath.isNotEmpty()) {
                     foldersMap.getOrPut(folderPath) { mutableListOf() }.add(
-                        MusicTrack(
+                        Song(
                             id = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)),
                             title = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE)) ?: "Unknown",
                             artist = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST)) ?: "Unknown",
@@ -115,7 +115,7 @@ class FolderFragment : Fragment(){
         }
 
         return foldersMap.map { (path, tracks) ->
-            AudioFolder(
+            Folder(
                 path = path,
                 name = getDisplayName(path),
                 tracks = tracks
