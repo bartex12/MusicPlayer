@@ -12,13 +12,16 @@ import com.bumptech.glide.Glide
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentPlayerBinding
 import com.example.muzpleer.model.Song
+import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 import com.google.android.material.snackbar.Snackbar
+import org.koin.androidx.viewmodel.ext.android.activityViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import kotlin.getValue
 
 class PlayerFragment : Fragment() {
     private var _binding: FragmentPlayerBinding? = null
     private val binding get() = _binding!!
-    private val viewModel: PlayerViewModel by viewModel()
+    private val viewModel: SharedViewModel by activityViewModel()
 
     private lateinit var track: Song
     private lateinit var playlist: List<Song>
@@ -43,15 +46,15 @@ class PlayerFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        val indexOfTrack =if(track.isLocal){
-            playlist.indexOfFirst { it.mediaUri == track.mediaUri}
-        }else{
-            playlist.indexOfFirst { it.resourceId == track.resourceId}
-        }
-        Log.d(TAG, "PlayerFragmentonViewCreated: track = ${track.title} " +
-                "playlist size =${playlist.size} индекс = $indexOfTrack")
-        viewModel.setPlaylist(playlist, indexOfTrack)
+//        todo для моих треков
+//        val indexOfTrack =if(track.isLocal){
+//            playlist.indexOfFirst { it.mediaUri == track.mediaUri}
+//        }else{
+//            playlist.indexOfFirst { it.resourceId == track.resourceId}
+//        }
+//        Log.d(TAG, "PlayerFragmentonViewCreated: track = ${track.title} " +
+//                "playlist size =${playlist.size} индекс = $indexOfTrack")
+//        viewModel.setPlaylist(playlist, indexOfTrack)
 
         setupControls()
         observeViewModel()
@@ -93,16 +96,33 @@ class PlayerFragment : Fragment() {
 
     private fun observeViewModel() {
 
-        viewModel.currentTrack.observe(viewLifecycleOwner) { track ->
-            track?.let {
-                binding.tvTitle.text = it.title
-                binding.tvArtist.text = it.artist
+        viewModel.songAndPlaylist.observe(viewLifecycleOwner) { songAndPlaylist ->
+            Log.d(TAG, "*** PlayerFragment onViewCreated currentSong.observe: " +
+                    " currentSong = ${songAndPlaylist.song} currentPlayList.size = ${songAndPlaylist.playlist.size}")
 
-                Glide.with(requireContext())
-                    .load(if (track.isLocal) it.artworkUri else it.cover)
-                    .placeholder(R.drawable.placeholder2)
-                    .into(binding.artworkImageView)
-            }
+            viewModel.setCurrentSong(songAndPlaylist.song)
+
+            //находим индекс трека в плейлисте
+            val indexOfTrack =
+                songAndPlaylist.playlist.indexOfFirst { it.mediaUri == songAndPlaylist.song.mediaUri }
+            Log.d(TAG, "*** PlayerFragment onViewCreated indexOfTrack = $indexOfTrack " +
+                    "mediaUri = ${songAndPlaylist.song.mediaUri}  " +
+                    "songAndPlaylist.playlist.size = ${songAndPlaylist.playlist.size}")
+
+            viewModel.setPlaylistForHandler(songAndPlaylist.playlist, indexOfTrack)
+        }
+
+        viewModel.currentSong.observe(viewLifecycleOwner) { currentSong ->
+            Log.d(TAG, "*** PlayerFragment onViewCreated currentSong.observe: " +
+                    " currentSong = $currentSong ")
+
+            binding.tvTitle.text = currentSong?.title
+            binding.tvArtist.text = currentSong?.artist
+
+            Glide.with(requireContext())
+                .load(currentSong?.artworkUri)
+                .placeholder(R.drawable.placeholder2)
+                .into(binding.artworkImageView)
         }
 
         viewModel.isPlaying.observe(viewLifecycleOwner) { isPlaying ->

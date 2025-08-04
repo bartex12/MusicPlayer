@@ -12,9 +12,9 @@ import com.example.muzpleer.R
 import com.example.muzpleer.databinding.ItemMusicBinding
 import com.example.muzpleer.model.Song
 
-class MusicAdapter(
+class SongsAdapter(
     private val onItemClick: (Song) -> Unit
-) : RecyclerView.Adapter<MusicAdapter.MusicViewHolder>() {
+) : RecyclerView.Adapter<SongsAdapter.MusicViewHolder>() {
     companion object{
         const val TAG = "33333"
     }

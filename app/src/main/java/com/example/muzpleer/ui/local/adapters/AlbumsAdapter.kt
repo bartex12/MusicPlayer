@@ -42,7 +42,7 @@ class AlbumsAdapter(
         fun bind(album: Album) {
             binding.albumTitle.text = album.title
             binding.albumArtist.text = album.artist
-            binding.tracksCount.text = "${album.tracks.size} треков"
+            binding.tracksCount.text = "${album.songs.size} треков"
 
             // Загрузка обложки альбома
             Glide.with(binding.root.context)

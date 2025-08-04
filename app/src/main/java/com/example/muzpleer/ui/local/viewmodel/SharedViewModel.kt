@@ -1,0 +1,170 @@
+package com.example.muzpleer.ui.local.viewmodel
+
+import android.util.Log
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.liveData
+import androidx.lifecycle.viewModelScope
+import com.example.muzpleer.model.Album
+import com.example.muzpleer.model.Artist
+import com.example.muzpleer.model.Folder
+import com.example.muzpleer.model.Song
+import com.example.muzpleer.model.SongAndPlaylist
+import com.example.muzpleer.repository.MusicRepository
+import com.example.muzpleer.service.MusicServiceHandler
+import kotlinx.coroutines.launch
+import kotlin.collections.find
+import kotlin.let
+import kotlin.ranges.coerceAtLeast
+
+class SharedViewModel(
+    private val repository: MusicRepository,
+    private val playerHandler: MusicServiceHandler
+) : ViewModel(), MusicServiceHandler.PlayerCallback{
+
+    init {
+        playerHandler.callback = this  //иначе не работает
+        Log.d(TAG, "PlayerViewModel init: playerHandler =$playerHandler ")
+    }
+
+
+    private val _songs = MutableLiveData<List<Song>>()
+    val songs: LiveData<List<Song>> = _songs
+
+    private val _playlist = MutableLiveData<List<Song>>()
+    val playlist: LiveData<List<Song>> = _playlist
+
+    private val _songAndPlaylist = MutableLiveData<SongAndPlaylist>()
+    val songAndPlaylist: LiveData<SongAndPlaylist> = _songAndPlaylist
+
+    private val _albums = MutableLiveData<List<Album>>()
+    val albums: LiveData<List<Album>> = _albums
+
+    private val _artists = MutableLiveData<List<Artist>>()
+    val artists: LiveData<List<Artist>> = _artists
+
+    private val _folders = MutableLiveData<List<Folder>>()
+    val folders: LiveData<List<Folder>> = _folders
+
+    private val _currentSong = MutableLiveData<Song?>()
+    val currentSong: LiveData<Song?> = _currentSong
+
+    private val _isPlaying = MutableLiveData<Boolean>(false)
+    val isPlaying: LiveData<Boolean> = _isPlaying
+
+    private val _currentPosition = MutableLiveData<Long>(0L)
+    val currentPosition: LiveData<Long> = _currentPosition
+
+    private val _duration = MutableLiveData<Long>(0L)
+    val duration: LiveData<Long> = _duration
+
+    private val _errorMessage = MutableLiveData<String?>()
+    val errorMessage: LiveData<String?> = _errorMessage
+
+
+
+    init {
+        Log.d(TAG, "SharedViewModel init ")
+        viewModelScope.launch {
+            _songs.value = repository.loadMusic()
+            _albums.value = repository.getAlbums()
+            _artists.value = repository.getArtists()
+            _folders.value = repository.getFolders()
+        }
+    }
+
+//    fun loadMusic(){
+//        _songs.value = repository.loadMusic()
+//    }
+
+    fun getSongsByAlbum(albumId: String): LiveData<List<Song>> {
+        return liveData {
+            emit(repository.getAlbums().find { it.id == albumId }?.songs ?: emptyList())
+        }
+    }
+
+    fun getSongsByArtist(artistId: String): LiveData<List<Song>> {
+        return liveData {
+            emit(repository.getArtists().find { it.id == artistId }?.songs ?: emptyList())
+        }
+    }
+
+    fun getSongsByFolder(folderPath: String): LiveData<List<Song>> {
+        return liveData {
+            emit(repository.getFolders().find { it.path == folderPath }?.songs ?: emptyList())
+        }
+    }
+
+    fun setSongAndPlaylist(songAndPlaylist: SongAndPlaylist){
+        _songAndPlaylist.value = songAndPlaylist
+    }
+
+    fun setPlaylistForHandler(playlist: List<Song>, initialIndex: Int = 0) {
+        playerHandler.setPlaylist(playlist, initialIndex)
+    }
+
+    fun setPlaylist(songsList : List<Song>){
+        _playlist.value = songsList
+    }
+
+    fun togglePlayPause() {
+        playerHandler.togglePlayPause()
+    }
+
+    fun playNext() {
+        Log.d(TAG, "SharedViewModel playNext ")
+        playerHandler.playNext()
+    }
+
+    fun playPrevious() {
+        playerHandler.playPrevious()
+    }
+
+    fun seekTo(position: Long) {
+        playerHandler.seekTo(position)
+    }
+
+    fun seekRelative(offsetMs: Long) {
+        playerHandler.getCurrentPosition().let { currentPos ->
+            val newPosition = (currentPos + offsetMs).coerceAtLeast(0)
+            playerHandler.seekTo(newPosition)
+        }
+    }
+
+    override fun onTrackChanged(track: Song) {
+        Log.d(TAG, "SharedViewModel onTrackChanged track = $track")
+        _currentSong.postValue(track)
+    }
+
+    override fun onPlaybackStateChanged(isPlaying: Boolean) {
+        _isPlaying.postValue(isPlaying)
+    }
+
+    override fun onPositionChanged(position: Long, duration: Long) {
+        _currentPosition.postValue(position)
+        _duration.postValue(duration)
+    }
+
+    override fun onError(message: String) {
+        _errorMessage.postValue(message)
+    }
+
+    fun clearError() {
+        _errorMessage.value = null
+    }
+
+    fun setCurrentSong(song: Song) {
+        Log.d(TAG, "PlayerViewModel setCurrentSong ")
+        _currentSong.postValue(song)
+    }
+
+    companion object{
+        const val TAG= "33333"
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        playerHandler.release()
+    }
+}

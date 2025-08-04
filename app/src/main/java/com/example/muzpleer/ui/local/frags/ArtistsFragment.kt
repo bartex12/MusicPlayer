@@ -16,6 +16,8 @@ import com.example.muzpleer.databinding.FragmentSingersBinding
 import com.example.muzpleer.model.Artist
 import com.example.muzpleer.model.Song
 import com.example.muzpleer.ui.local.adapters.ArtistsAdapter
+import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
+import org.koin.androidx.viewmodel.ext.android.activityViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import kotlin.collections.plus
 import kotlin.getValue
@@ -23,7 +25,7 @@ import kotlin.getValue
 class ArtistsFragment:Fragment() {
     private var _binding: FragmentSingersBinding? = null
     private val binding get() = _binding!!
-    private val viewModel: ArtistsViewModel by viewModel()
+    private val viewModel: SharedViewModel by activityViewModel()
     private lateinit var adapter: ArtistsAdapter
 
     override fun onCreateView(
@@ -40,9 +42,13 @@ class ArtistsFragment:Fragment() {
 
         adapter = ArtistsAdapter { artist ->
 
-            val artistTracks:List<Song> = artist.tracks
-            findNavController().navigate( R.id.alltracksFragment,
-                AlltracksFragment.newInstance( artistTracks).arguments)
+            viewModel.setPlaylist(artist.songs) //устанавливаем список песен как плейлист
+            // Навигация через Bundle
+            val bundle = Bundle().apply {
+                putString("artistId", artist.id)
+            }
+            findNavController().navigate( R.id.alltracksFragment,bundle)
+               // AlltracksFragment.newInstance( artistTracks).arguments)
         }
 
         binding.singersRecyclerView.apply {
@@ -50,9 +56,9 @@ class ArtistsFragment:Fragment() {
             adapter = this@ArtistsFragment.adapter
         }
 
-        viewModel.musicList.observe(viewLifecycleOwner) { tracks ->
-            Log.d(TAG, "3 ArtistsFragment onViewCreated musicList.observe  tracks.size= ${tracks.size} ")
-            if (tracks.isEmpty()) {
+        viewModel.artists.observe(viewLifecycleOwner) { artists ->
+            Log.d(TAG, "3 ArtistsFragment onViewCreated musicList.observe  artists.size= ${artists.size} ")
+            if (artists.isEmpty()) {
                 binding.progressBarSingers.visibility = View.VISIBLE
                 binding.imageHolder3Singers.visibility = View.VISIBLE
                 Log.d(TAG, "4 ArtistsFragment onViewCreated musicList.observe: progressBar.visibility = View.VISIBLE ")
@@ -60,78 +66,10 @@ class ArtistsFragment:Fragment() {
                 binding.progressBarSingers.visibility = View.GONE
                 binding.imageHolder3Singers.visibility = View.GONE
             }
-            val artists: List<Artist> = scanArtistsWithTracks(tracks)
+
             adapter.data = artists  //передаём данные в адаптер
         }
     }
-
-    private fun scanArtistsWithTracks(tracks:List<Song>): List<Artist> {
-        // Теперь ключ - имя артиста
-        val artistMap = mutableMapOf<String, Artist>()
-        // Группируем треки по артистам
-        tracks.forEach { track ->
-            val normalizedName  = track.artist?.trim()?.lowercase()
-            if (artistMap.containsKey(normalizedName)) {
-                // Добавляем трек к существующему альбому
-                val existingArtist  = artistMap[normalizedName]!!
-//                Log.d(TAG, "*1*AlbumFragment scanAlbumsApi29Plus " +
-//                        "existingAlbum.tracks.size  = ${existingAlbum.tracks.size}  ")
-                artistMap[normalizedName.toString()] = existingArtist.copy(
-                    tracks = existingArtist.tracks + track)
-            } else {
-                val albumArtUri = ContentUris.withAppendedId(
-                    "content://media/external/audio/albumart".toUri(), track.albumId )
-                // Создаем новый альбом
-                artistMap[normalizedName.toString()] = Artist(
-                    name = track.artist,
-                    artworkUri = albumArtUri,
-                    tracks = listOf(track)
-                )
-//                Log.d(TAG, "*2*AlbumFragment scanAlbumsApi29Plus " +
-//                        "новый альбом = ${ albumsMap[normalizedTitle]} " +
-//                        "Всего альбомов  = ${albumsMap.size}  ")
-            }
-        }
-        return artistMap.values.sortedWith(compareBy(
-            { artist -> when {
-                artist.name.matches(Regex("^[а-яА-ЯёЁ].*")) -> 0
-                artist.name.matches(Regex("^[a-zA-Z].*")) -> 1
-                else -> 2}
-            },
-            { artist -> artist.name.lowercase() }
-        )
-        )
-    }
-
-    private fun getArtistsWithTracks(tracks: List<Song> ): List<Artist> {
-
-        val artistsMap = mutableMapOf<String, MutableList<Song>>()
-
-        // Группируем треки по исполнителям
-        tracks.forEach { track ->
-            val artistName = track.artist?.takeIf { it.isNotBlank() } ?: "<unknown>"
-            artistsMap.getOrPut(artistName) { mutableListOf() }.add(track)
-        }
-        // Преобразуем в список MusicArtist
-        return artistsMap.map { (name, tracksForArtist) ->
-            Artist(
-                name = name,
-                tracks = tracksForArtist.sortedBy { it.title },
-                artworkUri = ContentUris
-                    .withAppendedId( "content://media/external/audio/albumart".toUri(),
-                        tracksForArtist.firstOrNull()?.albumId ?:-1 )  //неправильно todo
-            )
-        }.sortedWith(artistComparator) // Применяем кастомную сортировку
-    }
-
-    private val artistComparator = compareBy<Artist> { artist ->
-        when {
-            artist.name == "<unknown>" -> 2 // Unknown в конец
-            artist.name.matches(Regex("^[а-яА-ЯёЁ].*")) -> 0 // Русские сначала
-            artist.name.matches(Regex("^[a-zA-Z].*")) -> 1 // Латинские после русских
-            else -> 2 // Все остальное (цифры, символы) в конец
-        }
-    }.thenBy { it.name.lowercase() } // Сортировка внутри групп
 
     override fun onDestroyView() {
         super.onDestroyView()
@@ -147,23 +85,5 @@ class ArtistsFragment:Fragment() {
             return ArtistsFragment()
         }
     }
-//    private fun getAlbumIdForCover(tracksForArtist: List<MusicTrack>): Long{
-//        tracksForArtist.forEach {musicTrack->
-//            val uri = ContentUris.withAppendedId(
-//                "content://media/external/audio/albumart".toUri(),
-//                musicTrack.albumId)
-//            try {
-//                requireContext().contentResolver.openInputStream(uri)?.use { stream ->
-//                    if (BitmapFactory.decodeStream(stream).width>0){
-//                        return musicTrack.albumId
-//                    }
-//                    Log.d(TAG, "Обложка найдена:")
-//                } ?: Log.d(TAG, "Обложка не найдена")
-//            } catch (e: Exception) {
-//                Log.d(TAG, "Ошибка: ${e.message}")
-//            }
-//        }
-//        return -1
-//    }
 
 }

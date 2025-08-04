@@ -41,7 +41,7 @@ class FoldersAdapter(
         fun bind(folder: Folder) {
             binding.tvFolderName.text = folder.name
             binding.tvFolderPath.text = folder.path
-            binding.tvTracksCount.text = "${folder.tracks.size} треков"
+            binding.tvTracksCount.text = "${folder.songs.size} треков"
 
             // Загрузка обложки первого трека
             folder.artworkUri?.let { uri ->

@@ -11,7 +11,7 @@
         android:label="Воспроизведение" />
     <fragment
         android:id="@+id/localFragment"
-        android:name="com.example.muzpleer.ui.local.frags.LocalFragment"
+        android:name="com.example.muzpleer.ui.local.frags.SongFragment"
         android:label="Аудио телефона" />
     <fragment
         android:id="@+id/homeFragment"
@@ -61,7 +61,7 @@
         android:label="FolderFragment" />
     <fragment
         android:id="@+id/alltracksFragment"
-        android:name="com.example.muzpleer.ui.local.frags.AlltracksFragment"
+        android:name="com.example.muzpleer.ui.local.frags.SongListFragment"
         android:label="AlltracksFragment" >
         <action
             android:id="@+id/action_alltracksFragment_to_playerFragment"

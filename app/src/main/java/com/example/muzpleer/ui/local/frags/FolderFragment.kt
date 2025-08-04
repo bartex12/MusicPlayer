@@ -21,12 +21,15 @@ import com.example.muzpleer.databinding.FragmentFoldersBinding
 import com.example.muzpleer.model.Folder
 import com.example.muzpleer.model.Song
 import com.example.muzpleer.ui.local.adapters.FoldersAdapter
+import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
+import org.koin.androidx.viewmodel.ext.android.activityViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import kotlin.getValue
 
 class FolderFragment : Fragment(){
     private var _binding: FragmentFoldersBinding? = null
     private val binding get() = _binding!!
-    private val viewModel: FolderViewModel by viewModel()
+    private val viewModel: SharedViewModel by activityViewModel()
     private lateinit var adapter: FoldersAdapter
 
     override fun onCreateView(
@@ -43,18 +46,22 @@ class FolderFragment : Fragment(){
         super.onViewCreated(view, savedInstanceState)
 
         adapter = FoldersAdapter { folder ->
-            val folderTracks:List<Song> = folder.tracks
-            findNavController().navigate( R.id.alltracksFragment,
-                AlltracksFragment.newInstance( folderTracks).arguments)
+            viewModel.setPlaylist(folder.songs) //устанавливаем список песен как плейлист
+            // Навигация через Bundle
+            val bundle = Bundle().apply {
+                putString("folderPath", folder.path)
+            }
+            findNavController().navigate( R.id.alltracksFragment, bundle)
+                //AlltracksFragment.newInstance( folderTracks).arguments)
         }
 
         binding.foldersRecyclerView.apply {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = this@FolderFragment.adapter
         }
-        viewModel.musicList.observe(viewLifecycleOwner) { tracks ->
-            Log.d(TAG, "3 FolderFragment onViewCreated musicList.observe: tracks.size= ${tracks.size} ")
-            if (tracks.isEmpty()) {
+        viewModel.folders.observe(viewLifecycleOwner) { folders ->
+            Log.d(TAG, "3 FolderFragment onViewCreated musicList.observe: folders.size= ${folders.size} ")
+            if (folders.isEmpty()) {
                 binding.progressBarFolder.visibility = View.VISIBLE
                 binding.imageHolder3Folder.visibility = View.VISIBLE
                 Log.d(TAG, "4 FolderFragment onViewCreated musicList.observe: progressBar.visibility = View.VISIBLE ")
@@ -62,98 +69,8 @@ class FolderFragment : Fragment(){
                 binding.progressBarFolder.visibility = View.GONE
                 binding.imageHolder3Folder.visibility = View.GONE
             }
-            val musicFolders : List<Folder> = scanAudioFolders(requireContext())
-            adapter.folders = musicFolders  //передаём данные в адаптер
-        }
-    }
 
-    @RequiresApi(Build.VERSION_CODES.Q)
-    fun scanAudioFolders(context: Context): List<Folder> {
-        val foldersMap = mutableMapOf<String, MutableList<Song>>()
-        val collection = MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
-
-        val projection = arrayOf(
-            MediaStore.Audio.Media._ID,
-            MediaStore.Audio.Media.DATA,
-            MediaStore.Audio.Media.TITLE,
-            MediaStore.Audio.Media.ARTIST,
-            MediaStore.Audio.Media.ALBUM_ID,
-            MediaStore.Audio.Media.DURATION,
-        )
-
-        val selection = "${MediaStore.Audio.Media.IS_MUSIC} != 0"
-
-        context.contentResolver.query(
-            collection,
-            projection,
-            selection,
-            null,
-            null
-        )?.use { cursor ->
-            val dataColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA)
-            val durationColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION)
-
-            while (cursor.moveToNext()) {
-                val path = cursor.getString(dataColumn)
-                val folderPath = path.substringBeforeLast("/")
-                val duration = cursor.getLong(durationColumn)
-
-                // Пропускаем файлы без пути
-                if (folderPath.isNotEmpty()) {
-                    foldersMap.getOrPut(folderPath) { mutableListOf() }.add(
-                        Song(
-                            id = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)),
-                            title = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE)) ?: "Unknown",
-                            artist = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST)) ?: "Unknown",
-                            artworkUri = getAlbumArtUri2(cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM_ID))),
-                            mediaUri = path,
-                            duration = duration
-                        )
-                    )
-                }
-            }
-        }
-
-        return foldersMap.map { (path, tracks) ->
-            Folder(
-                path = path,
-                name = getDisplayName(path),
-                tracks = tracks
-            )
-        }.sortedBy { it.name.lowercase() }
-    }
-
-    private fun getAlbumArtUri(albumId: Long): String? {
-        val contentUri = MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI
-        val projection = arrayOf(MediaStore.Audio.Albums.ALBUM_ART)
-        val selection = "${MediaStore.Audio.Albums._ID} = ?"
-        val selectionArgs = arrayOf(albumId.toString())
-
-        context?.contentResolver?.query(
-            contentUri,
-            projection,
-            selection,
-            selectionArgs,
-            null
-        )?.use { cursor ->
-            if (cursor.moveToFirst()) {
-                return cursor.getString(0)
-            }
-        }
-        return null
-    }
-
-    private  fun getAlbumArtUri2(albumId: Long):Uri{
-       return ContentUris.withAppendedId(
-            "content://media/external/audio/albumart".toUri(), albumId)
-    }
-
-    fun getDisplayName(path: String): String {
-        return when {
-            path.contains("WhatsApp/Media/WhatsApp Audio") -> "WhatsApp Audio"
-            path.contains("Telegram/Telegram Audio") -> "Telegram Audio"
-            path.contains("Download") -> "Downloads"
-            else -> path.substringAfterLast("/")
+            adapter.folders = folders  //передаём данные в адаптер
         }
     }
 

@@ -1,4 +1,4 @@
-package com.example.muzpleer.scaner
+package com.example.muzpleer.repository
 
 import android.content.ContentUris
 import android.content.Context
@@ -21,7 +21,7 @@ import java.io.FileOutputStream
 import kotlin.collections.set
 
 
-class MediaScanner(private val context: Context) {
+class MusicRepository(private val context: Context) {
     companion object{
         const val TAG = "33333"
     }
@@ -31,7 +31,7 @@ class MediaScanner(private val context: Context) {
     private val artists = mutableMapOf<String, Artist>()
     private val folders = mutableMapOf<String, Folder>()
 
-    fun scanDeviceForMusic(): List<Song> {
+    fun loadMusic(): List<Song> {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             scanMusicApi29Plus(context)
         } else {
@@ -83,6 +83,8 @@ class MediaScanner(private val context: Context) {
                 val album = cursor.getString(albumColumn) ?: "Неизвестно"
                 val albumId = cursor.getLong(albumIdColumn)
 
+                val folderPath = File(path).parent ?: ""
+
                 musicList.add(
                     Song(
                         id = id,
@@ -93,7 +95,8 @@ class MediaScanner(private val context: Context) {
                         duration = duration,
                         mediaUri = path,
                         isLocal = true,
-                        artworkUri = getArtworkUri(context, albumId, path )
+                        artworkUri = getArtworkUri(context, albumId, path ),
+                        folderPath = folderPath
 
                     )
                 )
@@ -103,56 +106,60 @@ class MediaScanner(private val context: Context) {
 //                        " album = $album albumId = $albumId ")
             }
         }
-
+        musicList.sortWith(compareBy(
+            { !it.title.matches(Regex(".*[А-Яа-яЁё].*")) },
+            { it.title.lowercase() }
+        ))
         // Build albums, artists and folders
-        //buildCollections(musicList)
+        buildCollections(musicList)
+        Log.d(TAG, "#%# MediaScanner scanMusicApi29Plus musicList.size = ${musicList.size}")
+
         return musicList
     }
 
-//    private fun buildCollections(songs: List<Song>) {
-//        albums.clear()
-//        artists.clear()
-//        folders.clear()
-//
-//        songs.groupBy { "${it.album}|${it.artist}" }.forEach { (key, albumSongs) ->
-//            val parts = key.split("|")
-//            val albumName = parts[0]
-//            val artistName = parts[1]
-//
-//            albums[key] = Album(
-//                id = key,
-//                name = albumName,
-//                artist = artistName,
-//                songs = albumSongs,
-//                albumArtUri = albumSongs.firstOrNull()?.albumArtUri
-//            )
-//        }
-//
-//
-//        songs.groupBy { it.artist }.forEach { (artistName, artistSongs) ->
-//            //val artistArtUri = getArtworkUriFromMediaStore(artistSongs)
-//            artists[artistName] = Artist(
-//                id = artistName,
-//                name = artistName,
-//                songs = artistSongs,
-//                albumArtUri = artistSongs.firstOrNull()?.albumArtUri
-//            )
-//        }
-//
-//        songs.groupBy { it.folderPath }.forEach { (folderPath, folderSongs) ->
-//            val folderName = File(folderPath).name
-//            folders[folderPath] = Folder(
-//                path = folderPath,
-//                name = folderName,
-//                songs = folderSongs,
-//                albumArtUri = folderSongs.firstOrNull()?.albumArtUri
-//            )
-//        }
-//    }
-//
-//    fun getAlbums(): List<Album> = albums.values.toList()
-//    fun getArtists(): List<Artist> = artists.values.toList()
-//    fun getFolders(): List<Folder> = folders.values.toList()
+    private fun buildCollections(songs: List<Song>) {
+        albums.clear()
+        artists.clear()
+        folders.clear()
+
+        songs.groupBy { "${it.album}|${it.artist}" }.forEach { (key, albumSongs) ->
+            val parts = key.split("|")
+            val albumName = parts[0]
+            val artistName = parts[1]
+
+            albums[key] = Album(
+                id = key,
+                title = albumName,
+                artist = artistName,
+                artworkUri = albumSongs.firstOrNull()?.artworkUri,
+                songs = albumSongs
+            )
+        }
+
+        songs.groupBy { it.artist }.forEach { (artistName, artistSongs) ->
+            //val artistArtUri = getArtworkUriFromMediaStore(artistSongs)
+            artists[artistName] = Artist(
+                id = artistName,
+                name = artistName,
+                songs = artistSongs,
+                artworkUri = artistSongs.firstOrNull()?.artworkUri
+            )
+        }
+
+        songs.groupBy { it.folderPath }.forEach { (folderPath, folderSongs) ->
+            val folderName = File(folderPath).name
+            folders[folderPath] = Folder(
+                path = folderPath,
+                name = folderName,
+                songs = folderSongs,
+                artworkUri = folderSongs.firstOrNull()?.artworkUri
+            )
+        }
+    }
+
+    fun getAlbums(): List<Album> = albums.values.toList()
+    fun getArtists(): List<Artist> = artists.values.toList()
+    fun getFolders(): List<Folder> = folders.values.toList()
 
     private fun scanMusicLegacy(context: Context): List<Song> {
         val musicList = mutableListOf<Song>()
@@ -194,6 +201,8 @@ class MediaScanner(private val context: Context) {
                 val album = cursor.getString(albumColumn) ?: "Неизвестно"
                 val albumId = cursor.getLong(albumIdColumn)
 
+                val folderPath = File(path).parent ?: ""
+
                 musicList.add(
                     Song(
                         id = id,
@@ -204,7 +213,8 @@ class MediaScanner(private val context: Context) {
                         isLocal = true,
                         artworkUri = getArtworkUri(context, albumId, path ),
                         album = album,
-                        albumId = albumId
+                        albumId = albumId,
+                        folderPath = folderPath
                     )
                 )
                 Log.d(TAG, "#%# MediaScanner scanMusicLegacy MusicTrack:" +
@@ -213,6 +223,14 @@ class MediaScanner(private val context: Context) {
                         " album = $album albumId = $albumId ")
             }
         }
+        musicList.sortWith(compareBy(
+            { it.title.matches(Regex(".*[А-Яа-яЁё].*")) },
+            { it.title.lowercase() }
+        ))
+        // Build albums, artists and folders
+        buildCollections(musicList)
+
+        Log.d(TAG, "#%# MediaScanner scanMusicLegacy musicList.size = ${musicList.size}")
         return musicList
     }
 

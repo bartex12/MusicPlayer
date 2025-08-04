@@ -12,15 +12,19 @@ import androidx.viewpager.widget.ViewPager
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentLocalBinding
 import com.example.muzpleer.model.Song
-import com.example.muzpleer.ui.local.adapters.MusicAdapter
+import com.example.muzpleer.model.SongAndPlaylist
+import com.example.muzpleer.ui.local.adapters.SongsAdapter
+import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 import com.example.muzpleer.ui.player.PlayerFragment
+import org.koin.androidx.viewmodel.ext.android.activityViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import kotlin.getValue
 
-class LocalFragment : Fragment() {
+class SongFragment : Fragment() {
     private var _binding: FragmentLocalBinding? = null
     private val binding get() = _binding!!
-    private val viewModel: LocalViewModel by viewModel()
-    private lateinit var adapter: MusicAdapter
+    private val viewModel: SharedViewModel by activityViewModel()
+    private lateinit var adapter: SongsAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -34,23 +38,29 @@ class LocalFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        adapter = MusicAdapter { track ->
-            val playlist = viewModel.musicList.value?:listOf()
-            // Обработка клика по треку
-            findNavController().navigate(
-                R.id.action_tabsLocalFragment_to_playerFragment,
-                PlayerFragment.Companion.newInstance(track, playlist).arguments
+        adapter = SongsAdapter { song ->
+
+            val playlist = viewModel.songs.value?:listOf()
+            Log.d(TAG, "*** SongsFragment onViewCreated SongsAdapter  song.title = ${song.title} " +
+                    " playlist.size = ${playlist.size} ")
+            viewModel.setSongAndPlaylist(
+                SongAndPlaylist(
+                    song = song,
+                    playlist = playlist)
             )
+            // Обработка клика по треку
+            findNavController().navigate( R.id.action_tabsLocalFragment_to_playerFragment)
+            //PlayerFragment.Companion.newInstance(song, playlist).arguments
         }
 
         binding.localRecyclerView.apply {
             layoutManager = LinearLayoutManager(requireContext())
-            adapter = this@LocalFragment.adapter
+            adapter = this@SongFragment.adapter
         }
 
-        viewModel.musicList.observe(viewLifecycleOwner) { tracks ->
-            Log.d(TAG, "3 LocalFragment onViewCreated musicList.observe: tracks.size= ${tracks.size} ")
-            if (tracks.isEmpty()) {
+        viewModel.songs.observe(viewLifecycleOwner) { songs ->
+            Log.d(TAG, "3 LocalFragment onViewCreated musicList.observe: songs.size= ${songs.size} ")
+            if (songs.isEmpty()) {
                 binding.progressBar.visibility = View.VISIBLE
                 binding.imageHolder3.visibility = View.VISIBLE
                 Log.d(TAG, "4 LocalFragment onViewCreated musicList.observe: progressBar.visibility = View.VISIBLE ")
@@ -58,7 +68,7 @@ class LocalFragment : Fragment() {
                 binding.progressBar.visibility = View.GONE
                 binding.imageHolder3.visibility = View.GONE
             }
-            val sortedData =  getSortedData(tracks)
+            val sortedData =  getSortedData(songs)
             adapter.data = sortedData  //передаём данные в адаптер
         }
     }
@@ -84,9 +94,9 @@ class LocalFragment : Fragment() {
         const val TAG = "33333"
         private lateinit var viewPager: ViewPager
 
-        fun newInstance(viewPager: ViewPager): LocalFragment {
+        fun newInstance(viewPager: ViewPager): SongFragment {
             this.viewPager = viewPager
-            return LocalFragment()
+            return SongFragment()
         }
     }
 }

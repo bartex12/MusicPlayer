@@ -26,6 +26,7 @@ data class Song(
     val artworkUri: Uri? = null, //обложка из local
     val album: String? = null, //название альбома из local
     val albumId: Long = -1, // id альбома из local
+    val folderPath: String = "",  //путь к папке
 
     val typeFromIfMy: String = "",  //откуда трек, если он сгенерирован нейросетью
     val cover: Int? = null, //обложка из ресурсов
