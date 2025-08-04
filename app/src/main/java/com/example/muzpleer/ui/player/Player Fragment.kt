@@ -23,8 +23,8 @@ class PlayerFragment : Fragment() {
     private val binding get() = _binding!!
     private val viewModel: SharedViewModel by activityViewModel()
 
-    private lateinit var track: Song
-    private lateinit var playlist: List<Song>
+    //private lateinit var track: Song
+    //private lateinit var playlist: List<Song>
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -35,27 +35,17 @@ class PlayerFragment : Fragment() {
         return binding.root
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        arguments?.let {
-            track = it.getParcelable(ARG_TRACK) ?: throw IllegalStateException("Track argument is required")
-            playlist = it.getParcelableArrayList(ARG_PLAYLIST) ?: listOf(track)
-        }
-    }
+//    override fun onCreate(savedInstanceState: Bundle?) {
+//        super.onCreate(savedInstanceState)
+//
+//        arguments?.let {
+//            track = it.getParcelable(ARG_TRACK) ?: throw IllegalStateException("Track argument is required")
+//            playlist = it.getParcelableArrayList(ARG_PLAYLIST) ?: listOf(track)
+//        }
+//    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-//        todo для моих треков
-//        val indexOfTrack =if(track.isLocal){
-//            playlist.indexOfFirst { it.mediaUri == track.mediaUri}
-//        }else{
-//            playlist.indexOfFirst { it.resourceId == track.resourceId}
-//        }
-//        Log.d(TAG, "PlayerFragmentonViewCreated: track = ${track.title} " +
-//                "playlist size =${playlist.size} индекс = $indexOfTrack")
-//        viewModel.setPlaylist(playlist, indexOfTrack)
-
         setupControls()
         observeViewModel()
     }
@@ -103,10 +93,13 @@ class PlayerFragment : Fragment() {
             viewModel.setCurrentSong(songAndPlaylist.song)
 
             //находим индекс трека в плейлисте
-            val indexOfTrack =
+            val indexOfTrack = if(songAndPlaylist.song.isLocal){
                 songAndPlaylist.playlist.indexOfFirst { it.mediaUri == songAndPlaylist.song.mediaUri }
+            }else{
+                songAndPlaylist.playlist.indexOfFirst { it.resourceId == songAndPlaylist.song.resourceId  }
+            }
+
             Log.d(TAG, "*** PlayerFragment onViewCreated indexOfTrack = $indexOfTrack " +
-                    "mediaUri = ${songAndPlaylist.song.mediaUri}  " +
                     "songAndPlaylist.playlist.size = ${songAndPlaylist.playlist.size}")
 
             viewModel.setPlaylistForHandler(songAndPlaylist.playlist, indexOfTrack)
@@ -115,14 +108,15 @@ class PlayerFragment : Fragment() {
         viewModel.currentSong.observe(viewLifecycleOwner) { currentSong ->
             Log.d(TAG, "*** PlayerFragment onViewCreated currentSong.observe: " +
                     " currentSong = $currentSong ")
+            currentSong?. let{
+                binding.tvTitle.text = it.title
+                binding.tvArtist.text = it.artist
 
-            binding.tvTitle.text = currentSong?.title
-            binding.tvArtist.text = currentSong?.artist
-
-            Glide.with(requireContext())
-                .load(currentSong?.artworkUri)
-                .placeholder(R.drawable.placeholder2)
-                .into(binding.artworkImageView)
+                Glide.with(requireContext())
+                    .load(if (currentSong.isLocal) it.artworkUri else it.cover)
+                    .placeholder(R.drawable.placeholder2)
+                    .into(binding.artworkImageView)
+            }
         }
 
         viewModel.isPlaying.observe(viewLifecycleOwner) { isPlaying ->

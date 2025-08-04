@@ -65,8 +65,22 @@ class AlbumFragment: Fragment() {
                 binding.progressBarAlbum.visibility = View.GONE
                 binding.imageHolder3Album.visibility = View.GONE
             }
-            adapter.albums = musicAlbums  //передаём данные в адаптер
+
+            val sortedAlbums = getSortedData(musicAlbums)
+            adapter.albums = sortedAlbums  //передаём данные в адаптер
         }
+    }
+
+    private fun getSortedData(tracks:List<Album>):List<Album>{
+        return tracks.sortedWith(compareBy(
+            { album -> when {
+                album.title.matches(Regex("^[а-яА-ЯёЁ].*")) -> 0
+                album.title.matches(Regex("^[a-zA-Z].*")) -> 1
+                else -> 2}
+            },
+            { album -> album.title.lowercase() }
+        )
+        )
     }
 
     override fun onDestroyView() {

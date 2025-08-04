@@ -33,7 +33,7 @@
         android:label="Настройки" />
     <fragment
         android:id="@+id/tabsFragment"
-        android:name="com.example.muzpleer.ui.tabs.TabsFragment"
+        android:name="com.example.muzpleer.ui.tabs.MyTabsFragment"
         android:label="Моя музыка" >
         <action
             android:id="@+id/action_tabsFragment_to_playerFragment"

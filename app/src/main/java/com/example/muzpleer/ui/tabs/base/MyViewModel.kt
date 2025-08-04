@@ -5,13 +5,20 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.muzpleer.model.Song
+import com.example.muzpleer.util.Constants
 import kotlinx.coroutines.*
 
-open class BaseViewModel(
-    private val storage:BaseStorage
+open class MyViewModel(
+    private val storage:MyStorage
 ): ViewModel() {
     private val _data:MutableLiveData<List<Song>> = MutableLiveData<List<Song>>() //список файлов
     val data:LiveData<List<Song>> = _data
+
+    private val _dataMy:MutableLiveData<List<Song>> = MutableLiveData<List<Song>>() //список файлов
+    val dataMy:LiveData<List<Song>> = _dataMy
+
+    private val _dataKing:MutableLiveData<List<Song>> = MutableLiveData<List<Song>>() //список файлов
+    val dataKing:LiveData<List<Song>> = _dataKing
 
 //     Объявляем свой собственный скоуп
 //     В качестве аргумента передается CoroutineContext - через "+" из трех частей:
@@ -40,8 +47,12 @@ companion object {
         // так как вызов  метода getRascladki из 3 мест
         viewModelCoroutineScope.launch {
             val dataNew = storage.getMyTracksList()
+            val dataNewMy =dataNew.filter { it.typeFromIfMy == Constants.MY_TRACK }
+            val dataNewKing  =dataNew.filter { it.typeFromIfMy == Constants.LITTLE_KING }
             if (dataNew!=_data.value){
                 _data.postValue(dataNew)
+                _dataMy.postValue(dataNewMy)
+                _dataKing.postValue(dataNewKing)
             }
         }
     }

@@ -10,16 +10,16 @@ import com.example.muzpleer.model.MyRepository
 import com.example.muzpleer.repository.MusicRepository
 import com.example.muzpleer.service.MusicServiceHandler
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
-import com.example.muzpleer.ui.tabs.base.BaseStorage
-import com.example.muzpleer.ui.tabs.base.BaseStorageImpl
-import com.example.muzpleer.ui.tabs.base.BaseViewModel
+import com.example.muzpleer.ui.tabs.base.MyStorage
+import com.example.muzpleer.ui.tabs.base.MyStorageImpl
+import com.example.muzpleer.ui.tabs.base.MyViewModel
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 
 val appModule = module {
 
-    single <BaseStorage>{ BaseStorageImpl(get())}
+    single <MyStorage>{ MyStorageImpl(get())}
     single <HomeStorage>{ HomeStorageImpl(get())}
     single { MusicRepository(get()) }
     single { MyRepository()}
@@ -32,7 +32,7 @@ val appModule = module {
         )
     }
     viewModel { SharedViewModel(get(),get())}
-    viewModel { BaseViewModel(get())}
+    viewModel { MyViewModel(get())}
     viewModel { HomeViewModel(get()) }
 
     // Регистрируем заглушку для колбэка (реальная реализация будет в ViewModel)

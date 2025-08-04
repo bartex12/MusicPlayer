@@ -7,15 +7,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
 import androidx.viewpager.widget.ViewPager
-import com.example.muzpleer.databinding.FragmentTabsBinding
 import com.example.muzpleer.databinding.FragmentTabslocalBinding
 import com.example.muzpleer.ui.local.adapters.ViewPageAdapterLocal
-import com.example.muzpleer.ui.tabs.adapters.ViewPageAdapter
-import com.example.muzpleer.ui.tabs.base.BaseViewModel
 import com.google.android.material.tabs.TabLayout
-import kotlin.getValue
 
 class TabsLocalFragment: Fragment() {
     companion object{

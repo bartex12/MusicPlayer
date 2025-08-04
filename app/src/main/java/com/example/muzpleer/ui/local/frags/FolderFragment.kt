@@ -18,6 +18,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.viewpager.widget.ViewPager
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentFoldersBinding
+import com.example.muzpleer.model.Artist
 import com.example.muzpleer.model.Folder
 import com.example.muzpleer.model.Song
 import com.example.muzpleer.ui.local.adapters.FoldersAdapter
@@ -70,8 +71,21 @@ class FolderFragment : Fragment(){
                 binding.imageHolder3Folder.visibility = View.GONE
             }
 
-            adapter.folders = folders  //передаём данные в адаптер
+            val sortedFolders = getSortedData(folders)
+            adapter.folders = sortedFolders  //передаём данные в адаптер
         }
+    }
+
+    private fun getSortedData( folders:List<Folder>):List<Folder>{
+        return folders.sortedWith(compareBy(
+            { folder -> when {
+                folder.name.matches(Regex("^[а-яА-ЯёЁ].*")) -> 0
+                folder.name.matches(Regex("^[a-zA-Z].*")) -> 1
+                else -> 2}
+            },
+            { folder -> folder.name.lowercase() }
+        )
+        )
     }
 
     override fun onDestroyView() {

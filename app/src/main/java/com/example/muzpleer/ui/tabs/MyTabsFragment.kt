@@ -11,10 +11,10 @@ import androidx.fragment.app.viewModels
 import androidx.viewpager.widget.ViewPager
 import com.example.muzpleer.databinding.FragmentTabsBinding
 import com.example.muzpleer.ui.tabs.adapters.ViewPageAdapter
-import com.example.muzpleer.ui.tabs.base.BaseViewModel
+import com.example.muzpleer.ui.tabs.base.MyViewModel
 import com.google.android.material.tabs.TabLayout
 
-class TabsFragment: Fragment() {
+class MyTabsFragment: Fragment() {
 companion object{
     const val TAG = "33333"
 }
@@ -25,7 +25,7 @@ companion object{
     private lateinit var tabLayout: TabLayout
     private lateinit var adapter: ViewPageAdapter
 
-    private val baseViewModel: BaseViewModel by  viewModels()
+    private val baseViewModel: MyViewModel by  viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,

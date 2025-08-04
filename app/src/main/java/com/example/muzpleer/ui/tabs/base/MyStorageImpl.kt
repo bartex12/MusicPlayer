@@ -4,7 +4,7 @@ import com.example.muzpleer.model.Song
 import com.example.muzpleer.model.MyRepository
 
 
-class BaseStorageImpl(private val repository:MyRepository): BaseStorage {
+class MyStorageImpl(private val repository:MyRepository): MyStorage {
     override suspend fun getMyTracksList(): List<Song> {
         return repository.getMyTracksList()
     }

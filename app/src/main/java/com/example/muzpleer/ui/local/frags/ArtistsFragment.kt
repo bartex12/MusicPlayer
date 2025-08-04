@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.viewpager.widget.ViewPager
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentSingersBinding
+import com.example.muzpleer.model.Album
 import com.example.muzpleer.model.Artist
 import com.example.muzpleer.model.Song
 import com.example.muzpleer.ui.local.adapters.ArtistsAdapter
@@ -67,8 +68,20 @@ class ArtistsFragment:Fragment() {
                 binding.imageHolder3Singers.visibility = View.GONE
             }
 
-            adapter.data = artists  //передаём данные в адаптер
+            val sortedData = getSortedData(artists)
+            adapter.data = sortedData  //передаём данные в адаптер
         }
+    }
+    private fun getSortedData(artists:List<Artist>):List<Artist>{
+        return artists.sortedWith(compareBy(
+            { artist -> when {
+                artist.name.matches(Regex("^[а-яА-ЯёЁ].*")) -> 0
+                artist.name.matches(Regex("^[a-zA-Z].*")) -> 1
+                else -> 2}
+            },
+            { artist -> artist.name.lowercase() }
+        )
+        )
     }
 
     override fun onDestroyView() {

@@ -2,31 +2,89 @@ package com.example.muzpleer.ui.tabs.frags
 
 import android.os.Bundle
 import android.util.Log
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
+import androidx.fragment.app.Fragment
+import androidx.navigation.NavController
+import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager.widget.ViewPager
-import com.example.muzpleer.ui.tabs.base.BaseFragment
+import com.example.muzpleer.R
+import com.example.muzpleer.databinding.FragmentTracksBinding
+import com.example.muzpleer.model.Song
+import com.example.muzpleer.model.SongAndPlaylist
+import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
+import com.example.muzpleer.ui.tabs.adapters.RecyclerViewTabAdapter
+import com.example.muzpleer.ui.tabs.base.MyViewModel
 import com.example.muzpleer.util.Constants
+import org.koin.androidx.viewmodel.ext.android.activityViewModel
+import org.koin.androidx.viewmodel.ext.android.viewModel
+import kotlin.getValue
 
-class MykingsFragment : BaseFragment() {
+class MykingsFragment : Fragment() {
 
-    companion object {
-        private lateinit var viewPager: ViewPager
+    private var _binding:FragmentTracksBinding? = null
+    private val binding get() = _binding!!
 
-        fun newInstance(viewPager: ViewPager): MykingsFragment {
-            this.viewPager = viewPager
-            return MykingsFragment()
-        }
+    lateinit var adapter: RecyclerViewTabAdapter
+    internal lateinit var recyclerView : RecyclerView
+    lateinit var navController: NavController
+    val baseViewModel: MyViewModel by  viewModel()
+    private val sharedViewModel: SharedViewModel by activityViewModel()
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentTracksBinding.inflate(inflater, container, false)
+        return binding.root //fragment_tracks
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        baseViewModel.data.observe(viewLifecycleOwner) { list ->
-            val dataList = list.filter { it.typeFromIfMy == Constants.LITTLE_KING }
-            Log.d(  TAG, "***MytracksFragment onViewCreated: data = " +
-                        " ${ dataList.filter { it.typeFromIfMy == Constants.LITTLE_KING }
-                                .map { it.title }}")
-            adapter.data = dataList  //обновление данных списка адаптера вкладки
+        recyclerView = binding.tracksRecyclerView
+        navController = findNavController()
+
+        adapter = RecyclerViewTabAdapter({ myTrack ->
+            val playlist: List<Song> = baseViewModel.dataKing.value ?: listOf()
+
+            sharedViewModel.setSongAndPlaylist(
+                SongAndPlaylist(
+                    song = myTrack,
+                    playlist = playlist)
+            )
+            // Navigate to player
+            navController.navigate(
+                R.id.action_tabsFragment_to_playerFragment)
+                //PlayerFragment.newInstance(myTrack, playlist).arguments )
+        }, { myTrack ->
+            //todo двойной клик
+//            nameOfFile = nameItem
+//            Log.d(TAG,"// onLongClick nameItem = $nameItem")
+        })
+        recyclerView.layoutManager = LinearLayoutManager(activity)
+        recyclerView.adapter = adapter
+
+        //объявляем о регистрации контекстного меню
+        registerForContextMenu(recyclerView)
+
+        baseViewModel.dataKing.observe(viewLifecycleOwner) { list ->
+            Log.d(TAG, "***MykingsFragment onViewCreated: data size = ${list.size}" )
+            adapter.data = list  //обновление данных списка адаптера вкладки
+        }
+    }
+
+    companion object {
+        private lateinit var viewPager: ViewPager
+        const val TAG = "33333"
+
+        fun newInstance(viewPager: ViewPager): MykingsFragment {
+            this.viewPager = viewPager
+            return MykingsFragment()
         }
     }
 }
