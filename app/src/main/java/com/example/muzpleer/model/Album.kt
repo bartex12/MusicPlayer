@@ -5,7 +5,8 @@ import android.net.Uri
 data class Album(
     val id: String,
     val title: String,
-    val artist: String,
+    val artist: String,       // Основной исполнитель или "Various Artists"
+    val artists: List<String>, // Все исполнители в альбоме
     val artworkUri: Uri? = null,
     val songs: List<Song> = emptyList()
 )
