@@ -33,8 +33,8 @@ class SharedViewModel(
     private val _songs = MutableLiveData<List<Song>>()
     val songs: LiveData<List<Song>> = _songs
 
-    //private val _filteredSongs = MutableLiveData<List<Song>>()
-    //val filteredSongs: LiveData<List<Song>> = _filteredSongs
+    private val _filteredSongs = MutableLiveData<List<Song>>()
+    val filteredSongs: LiveData<List<Song>> = _filteredSongs
 
     private val _playlist = MutableLiveData<List<Song>>()
     val playlist: LiveData<List<Song>> = _playlist
@@ -169,25 +169,25 @@ class SharedViewModel(
         playerHandler.release()
     }
 
-//    internal fun filterSongs(query: String?){
-//        var originList: MutableList<Song>? = _songs.value?.toMutableList()
-//        var filteredList: MutableList<Song>? = _filteredSongs.value?.toMutableList()
-//        filteredList = mutableListOf()
-//        if (query?.isEmpty() == true) {
-//            Log.d(TAG, "PlayerViewModel filterSongs query?.isEmpty()")
-//            originList?.let{ filteredList.addAll(originList)}?:mutableListOf<Song>()
-//        } else {
-//            Log.d(TAG, "PlayerViewModel filterSongs query?.isNotEmpty()")
-//            val searchQuery = query?.lowercase(Locale.getDefault())
-//            if (originList != null)  {
-//                for (song in originList) {
-//                    if (song.title.lowercase(Locale.getDefault()).contains(searchQuery.toString()) ||
-//                        song.artist.lowercase(Locale.getDefault()).contains(searchQuery.toString())) {
-//                        filteredList.add(song)
-//                    }
-//                }
-//            }
-//        }
-//        _filteredSongs.value = filteredList
-//    }
+    internal fun setFilteredSongs(filteredSongs: List<Song>) {
+        _filteredSongs.value = filteredSongs
+    }
+
+    internal fun filterSongs(query: String) {
+        val originalSongsList: MutableList<Song> =  (songs.value ?: listOf()).toMutableList()
+        val filteredSongsList: MutableList<Song> = (filteredSongs.value ?: listOf()).toMutableList()
+        filteredSongsList.clear()
+        if (query.isEmpty()) {
+            filteredSongsList.addAll(originalSongsList)
+        } else {
+            val searchQuery = query.lowercase(Locale.getDefault())
+            for (song in originalSongsList) {
+                if (song.title.lowercase(Locale.getDefault()).contains(searchQuery) ||
+                    song.artist.lowercase(Locale.getDefault()).contains(searchQuery)) {
+                    filteredSongsList.add(song)
+                }
+            }
+        }
+        _filteredSongs.value = filteredSongsList
+    }
 }

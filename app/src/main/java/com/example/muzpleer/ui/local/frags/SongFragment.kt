@@ -3,17 +3,25 @@ package com.example.muzpleer.ui.local.frags
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.SearchView
+import androidx.core.view.MenuHost
+import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.viewpager.widget.ViewPager
+import com.example.muzpleer.MainActivity
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentSongsBinding
 import com.example.muzpleer.model.Song
 import com.example.muzpleer.model.SongAndPlaylist
+import com.example.muzpleer.ui.local.TabLocalFragment
 import com.example.muzpleer.ui.local.adapters.SongsAdapter
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 import com.example.muzpleer.ui.player.PlayerFragment
@@ -22,13 +30,12 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
 import java.util.Locale
 import kotlin.getValue
 
-class SongFragment : Fragment() {
+class SongFragment : Fragment(),
+    SearchView.OnQueryTextListener  {
     private var _binding: FragmentSongsBinding? = null
     private val binding get() = _binding!!
     private val viewModel: SharedViewModel by activityViewModel()
     private lateinit var adapter: SongsAdapter
-   // private var originalSongsList = mutableListOf<Song>() // Исходный список песен
-    //private var filteredSongsList = mutableListOf<Song>() // Отфильтрованный список
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -57,7 +64,6 @@ class SongFragment : Fragment() {
             )
             // Обработка клика по треку
             findNavController().navigate(R.id.action_tabsLocalFragment_to_playerFragment)
-            //PlayerFragment.Companion.newInstance(song, playlist).arguments
         }
 
         binding.localRecyclerView.apply {
@@ -65,24 +71,11 @@ class SongFragment : Fragment() {
             adapter = this@SongFragment.adapter
         }
 
-//        // Обработка поиска
-//        binding.searchView.setOnQueryTextListener(object: android.widget.SearchView.OnQueryTextListener{
-//                override fun onQueryTextSubmit(query: String?): Boolean {
-//                    return false
-//                }
-//
-//                override fun onQueryTextChange(newText: String?): Boolean {
-//                    viewModel.filterSongs(newText)
-//                    return true
-//                }
-//            })
-
         viewModel.songs.observe(viewLifecycleOwner) { songs ->
-            Log.d( TAG,"3 LocalFragment onViewCreated musicList.observe: songs.size= ${songs.size} ")
+            Log.d( TAG,"31 SongsFragment onViewCreated songs.observe: songs.size= ${songs.size} ")
             if (songs.isEmpty()) {
                 binding.progressBar.visibility = View.VISIBLE
                 binding.imageHolder3.visibility = View.VISIBLE
-                Log.d( TAG,"4 LocalFragment onViewCreated musicList.observe: progressBar.visibility = View.VISIBLE "  )
             } else {
                 binding.progressBar.visibility = View.GONE
                 binding.imageHolder3.visibility = View.GONE
@@ -90,6 +83,14 @@ class SongFragment : Fragment() {
             val sortedData = getSortedData(songs)
             adapter.data = sortedData  //передаём данные в адаптер
         }
+
+        viewModel.filteredSongs.observe(viewLifecycleOwner) { filteredSongs ->
+            Log.d( TAG,"32 SongsFragment onViewCreated filteredSongs.observe: filteredSongs.size= ${filteredSongs.size} ")
+            val sortedData = getSortedData(filteredSongs)
+            adapter.data = sortedData  //передаём данные в адаптер
+        }
+
+        initMenu()
     }
 
     private fun getSortedData(tracks:List<Song>):List<Song>{
@@ -117,5 +118,49 @@ class SongFragment : Fragment() {
             this.viewPager = viewPager
             return SongFragment()
         }
+    }
+
+    fun initMenu() {
+        val menuHost: MenuHost = requireActivity()
+        menuHost.addMenuProvider(object : MenuProvider {
+
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                menuInflater.inflate(R.menu.main, menu)
+            }
+
+            override fun onPrepareMenu(menu: Menu) {
+                super.onPrepareMenu(menu)
+
+                val searchItem: MenuItem = menu.findItem(R.id.search_toolbar)
+                val searchView =searchItem.actionView as SearchView
+                //значок лупы слева в развёрнутом сост и сворачиваем строку поиска (true)
+                searchView.setIconifiedByDefault(true)
+                //пишем подсказку в строке поиска
+                searchView.queryHint = getString(R.string.search_song)
+                //устанавливаем в панели действий кнопку ( > )для отправки поискового запроса
+                 searchView.isSubmitButtonEnabled = true
+                //устанавливаем слушатель
+                searchView.setOnQueryTextListener(this@SongFragment)
+            }
+
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                return when (menuItem.itemId) {
+                    R.id.search_toolbar -> {
+                        Log.d(TAG, "#TabLocalFragment onMenuItemSelected:  id = songFragment ")
+                        true
+                    }
+                    else -> false
+                }
+            }
+        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
+    }
+
+    override fun onQueryTextSubmit(query: String?): Boolean {
+       return false
+    }
+
+    override fun onQueryTextChange(newText: String?): Boolean {
+        viewModel.filterSongs(newText.orEmpty())
+        return true
     }
 }
