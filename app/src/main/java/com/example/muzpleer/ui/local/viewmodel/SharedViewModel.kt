@@ -31,10 +31,10 @@ class SharedViewModel(
 
 
     private val _songs = MutableLiveData<List<Song>>()
-    //val songs: LiveData<List<Song>> = _songs
+    val songs: LiveData<List<Song>> = _songs
 
-    private val _filteredSongs = MutableLiveData<List<Song>>()
-    val filteredSongs: LiveData<List<Song>> = _filteredSongs
+    //private val _filteredSongs = MutableLiveData<List<Song>>()
+    //val filteredSongs: LiveData<List<Song>> = _filteredSongs
 
     private val _playlist = MutableLiveData<List<Song>>()
     val playlist: LiveData<List<Song>> = _playlist
@@ -72,7 +72,7 @@ class SharedViewModel(
         Log.d(TAG, "SharedViewModel init ")
         viewModelScope.launch {
             _songs.value = repository.loadMusic()
-            _filteredSongs.value  = _songs.value
+            //_filteredSongs.value  = _songs.value
             _albums.value = repository.getAlbums()
             _artists.value = repository.getArtists()
             _folders.value = repository.getFolders()
@@ -169,25 +169,25 @@ class SharedViewModel(
         playerHandler.release()
     }
 
-    internal fun filterSongs(query: String?){
-        var originList: MutableList<Song>? = _songs.value?.toMutableList()
-        var filteredList: MutableList<Song>? = _filteredSongs.value?.toMutableList()
-        filteredList = mutableListOf()
-        if (query?.isEmpty() == true) {
-            Log.d(TAG, "PlayerViewModel filterSongs query?.isEmpty()")
-            originList?.let{ filteredList.addAll(originList)}?:mutableListOf<Song>()
-        } else {
-            Log.d(TAG, "PlayerViewModel filterSongs query?.isNotEmpty()")
-            val searchQuery = query?.lowercase(Locale.getDefault())
-            if (originList != null)  {
-                for (song in originList) {
-                    if (song.title.lowercase(Locale.getDefault()).contains(searchQuery.toString()) ||
-                        song.artist.lowercase(Locale.getDefault()).contains(searchQuery.toString())) {
-                        filteredList.add(song)
-                    }
-                }
-            }
-        }
-        _filteredSongs.value = filteredList
-    }
+//    internal fun filterSongs(query: String?){
+//        var originList: MutableList<Song>? = _songs.value?.toMutableList()
+//        var filteredList: MutableList<Song>? = _filteredSongs.value?.toMutableList()
+//        filteredList = mutableListOf()
+//        if (query?.isEmpty() == true) {
+//            Log.d(TAG, "PlayerViewModel filterSongs query?.isEmpty()")
+//            originList?.let{ filteredList.addAll(originList)}?:mutableListOf<Song>()
+//        } else {
+//            Log.d(TAG, "PlayerViewModel filterSongs query?.isNotEmpty()")
+//            val searchQuery = query?.lowercase(Locale.getDefault())
+//            if (originList != null)  {
+//                for (song in originList) {
+//                    if (song.title.lowercase(Locale.getDefault()).contains(searchQuery.toString()) ||
+//                        song.artist.lowercase(Locale.getDefault()).contains(searchQuery.toString())) {
+//                        filteredList.add(song)
+//                    }
+//                }
+//            }
+//        }
+//        _filteredSongs.value = filteredList
+//    }
 }

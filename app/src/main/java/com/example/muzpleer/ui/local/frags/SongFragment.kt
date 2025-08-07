@@ -27,8 +27,8 @@ class SongFragment : Fragment() {
     private val binding get() = _binding!!
     private val viewModel: SharedViewModel by activityViewModel()
     private lateinit var adapter: SongsAdapter
-    private var originalSongsList = mutableListOf<Song>() // Исходный список песен
-    private var filteredSongsList = mutableListOf<Song>() // Отфильтрованный список
+   // private var originalSongsList = mutableListOf<Song>() // Исходный список песен
+    //private var filteredSongsList = mutableListOf<Song>() // Отфильтрованный список
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -44,7 +44,7 @@ class SongFragment : Fragment() {
 
         adapter = SongsAdapter { song ->
 
-            val playlist = viewModel.filteredSongs.value ?: listOf()
+            val playlist = viewModel.songs.value ?: listOf()
             Log.d(
                 TAG, "*** SongsFragment onViewCreated SongsAdapter  song.title = ${song.title} " +
                         " playlist.size = ${playlist.size} "
@@ -65,19 +65,19 @@ class SongFragment : Fragment() {
             adapter = this@SongFragment.adapter
         }
 
-        // Обработка поиска
-        binding.searchView.setOnQueryTextListener(object: android.widget.SearchView.OnQueryTextListener{
-                override fun onQueryTextSubmit(query: String?): Boolean {
-                    return false
-                }
+//        // Обработка поиска
+//        binding.searchView.setOnQueryTextListener(object: android.widget.SearchView.OnQueryTextListener{
+//                override fun onQueryTextSubmit(query: String?): Boolean {
+//                    return false
+//                }
+//
+//                override fun onQueryTextChange(newText: String?): Boolean {
+//                    viewModel.filterSongs(newText)
+//                    return true
+//                }
+//            })
 
-                override fun onQueryTextChange(newText: String?): Boolean {
-                    viewModel.filterSongs(newText)
-                    return true
-                }
-            })
-
-        viewModel.filteredSongs.observe(viewLifecycleOwner) { songs ->
+        viewModel.songs.observe(viewLifecycleOwner) { songs ->
             Log.d( TAG,"3 LocalFragment onViewCreated musicList.observe: songs.size= ${songs.size} ")
             if (songs.isEmpty()) {
                 binding.progressBar.visibility = View.VISIBLE
