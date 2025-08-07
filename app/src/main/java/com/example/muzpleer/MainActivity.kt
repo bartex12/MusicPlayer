@@ -7,7 +7,10 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
+import android.os.Handler
+import android.os.Looper
 import android.provider.Settings
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
@@ -28,11 +31,16 @@ import com.example.muzpleer.databinding.ActivityMainBinding
 import org.koin.android.ext.android.getKoin
 import kotlin.getValue
 import androidx.core.net.toUri
+import androidx.core.view.GravityCompat
+import androidx.navigation.NavController
+import com.google.android.material.snackbar.Snackbar
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var binding: ActivityMainBinding
+    private var doubleBackToExitPressedOnce = false
+    private lateinit var navController:NavController
 
     private val storagePermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -59,9 +67,10 @@ class MainActivity : AppCompatActivity() {
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        //todo восстановить разрешения
+        navController = findNavController(R.id.nav_host_fragment_content_main)
+
+       //получаем разрешения
         checkPermissions()
-        //scanForMusic()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -193,7 +202,6 @@ class MainActivity : AppCompatActivity() {
         setSupportActionBar(binding.appBarMain.toolbar)
         val drawerLayout: DrawerLayout = binding.drawerLayout
         val navView: NavigationView = binding.navView
-        val navController = findNavController(R.id.nav_host_fragment_content_main)
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
         appBarConfiguration = AppBarConfiguration(
@@ -204,5 +212,42 @@ class MainActivity : AppCompatActivity() {
         //navController.navigate(R.id.localFragment)
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
+    }
+
+    //при нажатии на кнопку Назад если фрагмент реализует BackButtonListener, вызываем метод backPressed
+    //при этом если мы в homeFragment   - выходим из приложения по двойному щелчку,
+    // а если в другом экране - делаем то, что там прописано
+    override fun onBackPressed() {
+        //если мы в homeFragment, то при нажатии Назад показываем Snackbar и при повторном
+        //нажати в течении 2 секунд закрываем приложение
+        Log.d(TAG,"MainActivity onBackPressed  Destination = ${navController.currentDestination?.label}")
+        if( navController.currentDestination?.id  == R.id.homeFragment){
+            Log.d(TAG, "MainActivity onBackPressed  это HomeFragment")
+            //если флаг = true - а это при двойном щелчке - закрываем программу
+            if (doubleBackToExitPressedOnce) {
+                super.onBackPressed()
+                return
+            }
+            doubleBackToExitPressedOnce = true //выставляем флаг = true
+            //закрываем шторку, если была открыта
+            if (binding.drawerLayout.isDrawerOpen(GravityCompat.START)) {
+                binding.drawerLayout.closeDrawer(GravityCompat.START)
+            }
+            //показываем Snackbar: Для выхода нажмите  НАЗАД  ещё раз
+            Snackbar.make(
+                findViewById(android.R.id.content), this.getString(R.string.forExit),
+                Snackbar.LENGTH_SHORT
+            ).show()
+            //запускаем поток, в котором через 2 секунды меняем флаг
+            Handler(Looper.getMainLooper())
+                .postDelayed({ doubleBackToExitPressedOnce = false }, 2000)
+        }else{
+            Log.d(TAG, "MainActivity onBackPressed  это НЕ HomeFragment ")
+            super.onBackPressed()
+        }
+    }
+
+    companion object{
+        const val TAG = "33333"
     }
 }

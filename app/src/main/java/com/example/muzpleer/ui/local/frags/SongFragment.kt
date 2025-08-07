@@ -5,12 +5,13 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.viewpager.widget.ViewPager
 import com.example.muzpleer.R
-import com.example.muzpleer.databinding.FragmentLocalBinding
+import com.example.muzpleer.databinding.FragmentSongsBinding
 import com.example.muzpleer.model.Song
 import com.example.muzpleer.model.SongAndPlaylist
 import com.example.muzpleer.ui.local.adapters.SongsAdapter
@@ -18,20 +19,23 @@ import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 import com.example.muzpleer.ui.player.PlayerFragment
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import java.util.Locale
 import kotlin.getValue
 
 class SongFragment : Fragment() {
-    private var _binding: FragmentLocalBinding? = null
+    private var _binding: FragmentSongsBinding? = null
     private val binding get() = _binding!!
     private val viewModel: SharedViewModel by activityViewModel()
     private lateinit var adapter: SongsAdapter
+    private var originalSongsList = mutableListOf<Song>() // Исходный список песен
+    private var filteredSongsList = mutableListOf<Song>() // Отфильтрованный список
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentLocalBinding.inflate(inflater, container, false)
+        _binding = FragmentSongsBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -40,16 +44,19 @@ class SongFragment : Fragment() {
 
         adapter = SongsAdapter { song ->
 
-            val playlist = viewModel.songs.value?:listOf()
-            Log.d(TAG, "*** SongsFragment onViewCreated SongsAdapter  song.title = ${song.title} " +
-                    " playlist.size = ${playlist.size} ")
+            val playlist = viewModel.filteredSongs.value ?: listOf()
+            Log.d(
+                TAG, "*** SongsFragment onViewCreated SongsAdapter  song.title = ${song.title} " +
+                        " playlist.size = ${playlist.size} "
+            )
             viewModel.setSongAndPlaylist(
                 SongAndPlaylist(
                     song = song,
-                    playlist = playlist)
+                    playlist = playlist
+                )
             )
             // Обработка клика по треку
-            findNavController().navigate( R.id.action_tabsLocalFragment_to_playerFragment)
+            findNavController().navigate(R.id.action_tabsLocalFragment_to_playerFragment)
             //PlayerFragment.Companion.newInstance(song, playlist).arguments
         }
 
@@ -58,17 +65,29 @@ class SongFragment : Fragment() {
             adapter = this@SongFragment.adapter
         }
 
-        viewModel.songs.observe(viewLifecycleOwner) { songs ->
-            Log.d(TAG, "3 LocalFragment onViewCreated musicList.observe: songs.size= ${songs.size} ")
+        // Обработка поиска
+        binding.searchView.setOnQueryTextListener(object: android.widget.SearchView.OnQueryTextListener{
+                override fun onQueryTextSubmit(query: String?): Boolean {
+                    return false
+                }
+
+                override fun onQueryTextChange(newText: String?): Boolean {
+                    viewModel.filterSongs(newText)
+                    return true
+                }
+            })
+
+        viewModel.filteredSongs.observe(viewLifecycleOwner) { songs ->
+            Log.d( TAG,"3 LocalFragment onViewCreated musicList.observe: songs.size= ${songs.size} ")
             if (songs.isEmpty()) {
                 binding.progressBar.visibility = View.VISIBLE
                 binding.imageHolder3.visibility = View.VISIBLE
-                Log.d(TAG, "4 LocalFragment onViewCreated musicList.observe: progressBar.visibility = View.VISIBLE ")
-            }else{
+                Log.d( TAG,"4 LocalFragment onViewCreated musicList.observe: progressBar.visibility = View.VISIBLE "  )
+            } else {
                 binding.progressBar.visibility = View.GONE
                 binding.imageHolder3.visibility = View.GONE
             }
-            val sortedData =  getSortedData(songs)
+            val sortedData = getSortedData(songs)
             adapter.data = sortedData  //передаём данные в адаптер
         }
     }
