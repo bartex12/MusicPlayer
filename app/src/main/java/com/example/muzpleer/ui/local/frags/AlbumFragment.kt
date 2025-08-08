@@ -4,10 +4,17 @@ import android.content.ContentUris
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.widget.SearchView
 import androidx.core.net.toUri
+import androidx.core.view.MenuHost
+import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.viewpager.widget.ViewPager
@@ -69,6 +76,14 @@ class AlbumFragment: Fragment() {
             val sortedAlbums = getSortedData(musicAlbums)
             adapter.albums = sortedAlbums  //передаём данные в адаптер
         }
+
+        viewModel.filteredAlbums.observe(viewLifecycleOwner) { filteredAlbums ->
+            Log.d(TAG,"32 AlbumFragment onViewCreated filteredAlbums.observe: filteredAlbums.size= ${filteredAlbums.size} ")
+            val sortedData = getSortedData(filteredAlbums)
+            adapter.albums = sortedData  //передаём данные в адаптер
+        }
+
+        initMenu()
     }
 
     private fun getSortedData(tracks:List<Album>):List<Album>{
@@ -96,5 +111,43 @@ class AlbumFragment: Fragment() {
             this.viewPager = viewPager
             return AlbumFragment()
         }
+    }
+
+    fun initMenu() {
+        val menuHost: MenuHost = requireActivity()
+        menuHost.addMenuProvider(object : MenuProvider {
+
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                menuInflater.inflate(R.menu.main, menu)
+
+                val searchItem: MenuItem = menu.findItem(R.id.search_toolbar)
+                val searchView =searchItem.actionView as SearchView
+                //значок лупы слева в развёрнутом сост и сворачиваем строку поиска (true)
+                searchView.setIconifiedByDefault(true)
+                //пишем подсказку в строке поиска
+                searchView.queryHint = getString(R.string.search_album)
+                //устанавливаем в панели действий кнопку ( > )для отправки поискового запроса
+                searchView.isSubmitButtonEnabled = true
+                //устанавливаем слушатель
+                searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+                    override fun onQueryTextSubmit(query: String?) = false
+
+                    override fun onQueryTextChange(newText: String?): Boolean {
+                        viewModel.filterAlbums(newText.orEmpty())
+                        return true
+                    }
+                })
+            }
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+//                return when (menuItem.itemId) {
+//                    R.id.search_toolbar -> {
+//                        Log.d(TAG, "#AlbumFragment onMenuItemSelected:  id = AlbumFragment ")
+//                        true
+//                    }
+//                    else -> false
+//                }
+                return false
+            }
+        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
     }
 }

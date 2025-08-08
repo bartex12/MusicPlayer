@@ -45,11 +45,20 @@ class SharedViewModel(
     private val _albums = MutableLiveData<List<Album>>()
     val albums: LiveData<List<Album>> = _albums
 
+    private val _filteredAlbums = MutableLiveData<List<Album>>()
+    val filteredAlbums: LiveData<List<Album>> = _filteredAlbums
+
     private val _artists = MutableLiveData<List<Artist>>()
     val artists: LiveData<List<Artist>> = _artists
 
+    private val _filteredArtists = MutableLiveData<List<Artist>>()
+    val filteredArtists: LiveData<List<Artist>> = _filteredArtists
+
     private val _folders = MutableLiveData<List<Folder>>()
     val folders: LiveData<List<Folder>> = _folders
+
+    private val _filteredFolders = MutableLiveData<List<Folder>>()
+    val filteredFolders: LiveData<List<Folder>> = _filteredFolders
 
     private val _currentSong = MutableLiveData<Song?>()
     val currentSong: LiveData<Song?> = _currentSong
@@ -66,16 +75,20 @@ class SharedViewModel(
     private val _errorMessage = MutableLiveData<String?>()
     val errorMessage: LiveData<String?> = _errorMessage
 
-
-
     init {
         Log.d(TAG, "SharedViewModel init ")
         viewModelScope.launch {
             _songs.value = repository.loadMusic()
-            //_filteredSongs.value  = _songs.value
+            _filteredSongs.value  = _songs.value
+
             _albums.value = repository.getAlbums()
+            _filteredAlbums.value = _albums.value
+
             _artists.value = repository.getArtists()
+            _filteredArtists.value = _artists.value
+
             _folders.value = repository.getFolders()
+            _filteredFolders.value = _folders.value
         }
     }
 
@@ -189,5 +202,56 @@ class SharedViewModel(
             }
         }
         _filteredSongs.value = filteredSongsList
+    }
+
+    internal fun filterAlbums(query: String) {
+        val originalAlbumList: MutableList<Album> =  (albums.value ?: listOf()).toMutableList()
+        val filteredAlbumList: MutableList<Album> = (filteredAlbums.value ?: listOf()).toMutableList()
+        filteredAlbumList.clear()
+        if (query.isEmpty()) {
+            filteredAlbumList.addAll(originalAlbumList)
+        } else {
+            val searchQuery = query.lowercase(Locale.getDefault())
+            for (album in originalAlbumList) {
+                if (album.title.lowercase(Locale.getDefault()).contains(searchQuery) ||
+                    album.artist.lowercase(Locale.getDefault()).contains(searchQuery)) {
+                    filteredAlbumList.add(album)
+                }
+            }
+        }
+        _filteredAlbums.value = filteredAlbumList
+    }
+    internal fun filterArtists(query: String) {
+        val originalArtistList: MutableList<Artist> =  (artists.value ?: listOf()).toMutableList()
+        val filteredArtistList: MutableList<Artist> = (filteredArtists.value ?: listOf()).toMutableList()
+        filteredArtistList.clear()
+        if (query.isEmpty()) {
+            filteredArtistList.addAll(originalArtistList)
+        } else {
+            val searchQuery = query.lowercase(Locale.getDefault())
+            for (artist in originalArtistList) {
+                if (artist.name.lowercase(Locale.getDefault()).contains(searchQuery)) {
+                    filteredArtistList.add(artist)
+                }
+            }
+        }
+        _filteredArtists.value = filteredArtistList
+    }
+
+    internal fun filterFolders(query: String) {
+        val originalFolderList: MutableList<Folder> =  (folders.value ?: listOf()).toMutableList()
+        val filteredFolderList: MutableList<Folder> = (filteredFolders.value ?: listOf()).toMutableList()
+        filteredFolderList.clear()
+        if (query.isEmpty()) {
+            filteredFolderList.addAll(originalFolderList)
+        } else {
+            val searchQuery = query.lowercase(Locale.getDefault())
+            for (folder in originalFolderList) {
+                if (folder.name.lowercase(Locale.getDefault()).contains(searchQuery)) {
+                    filteredFolderList.add(folder)
+                }
+            }
+        }
+        _filteredFolders.value = filteredFolderList
     }
 }

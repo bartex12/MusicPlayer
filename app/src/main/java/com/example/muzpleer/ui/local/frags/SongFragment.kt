@@ -30,12 +30,12 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
 import java.util.Locale
 import kotlin.getValue
 
-class SongFragment : Fragment(),
-    SearchView.OnQueryTextListener  {
+class SongFragment : Fragment() {
     private var _binding: FragmentSongsBinding? = null
     private val binding get() = _binding!!
     private val viewModel: SharedViewModel by activityViewModel()
     private lateinit var adapter: SongsAdapter
+    private var currentSearchQuery = ""
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -126,10 +126,6 @@ class SongFragment : Fragment(),
 
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
                 menuInflater.inflate(R.menu.main, menu)
-            }
-
-            override fun onPrepareMenu(menu: Menu) {
-                super.onPrepareMenu(menu)
 
                 val searchItem: MenuItem = menu.findItem(R.id.search_toolbar)
                 val searchView =searchItem.actionView as SearchView
@@ -138,29 +134,34 @@ class SongFragment : Fragment(),
                 //пишем подсказку в строке поиска
                 searchView.queryHint = getString(R.string.search_song)
                 //устанавливаем в панели действий кнопку ( > )для отправки поискового запроса
-                 searchView.isSubmitButtonEnabled = true
+                searchView.isSubmitButtonEnabled = true
+
+                //Сохраняем состояние поиска при смене ориентации:
+                if (       currentSearchQuery.isNotEmpty()) {
+                    searchItem.expandActionView()
+                    searchView.setQuery(currentSearchQuery, false)
+                }
                 //устанавливаем слушатель
-                searchView.setOnQueryTextListener(this@SongFragment)
+                searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+                    override fun onQueryTextSubmit(query: String?) = false
+
+                    override fun onQueryTextChange(newText: String?): Boolean {
+                        viewModel.filterSongs(newText.orEmpty())
+                        return true
+                    }
+                })
             }
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-                return when (menuItem.itemId) {
-                    R.id.search_toolbar -> {
-                        Log.d(TAG, "#TabLocalFragment onMenuItemSelected:  id = songFragment ")
-                        true
-                    }
-                    else -> false
-                }
+//                return when (menuItem.itemId) {
+//                    R.id.search_toolbar -> {
+//                        Log.d(TAG, "#SongFragment onMenuItemSelected:  id = songFragment ")
+//                        true
+//                    }
+//                    else -> false
+//                }
+                return false
             }
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
-    }
-
-    override fun onQueryTextSubmit(query: String?): Boolean {
-       return false
-    }
-
-    override fun onQueryTextChange(newText: String?): Boolean {
-        viewModel.filterSongs(newText.orEmpty())
-        return true
     }
 }

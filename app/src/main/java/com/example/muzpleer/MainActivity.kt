@@ -69,22 +69,6 @@ class MainActivity : AppCompatActivity() {
 
        //получаем разрешения
         checkPermissions()
-
-      //initMenu()
-    }
-
-    fun initMenu(){
-        // Add menu items without overriding methods in the Activity
-        addMenuProvider(object : MenuProvider {
-            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-                // Add menu items here
-                menuInflater.inflate(R.menu.main, menu)
-            }
-            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-                // Handle the menu selection
-                return true
-            }
-        })
     }
 
     override fun onSupportNavigateUp(): Boolean {
