@@ -1,6 +1,5 @@
 package com.example.muzpleer.ui.local.frags
 
-import android.content.ContentUris
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -10,7 +9,6 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.SearchView
-import androidx.core.net.toUri
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
@@ -20,15 +18,10 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.viewpager.widget.ViewPager
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentSingersBinding
-import com.example.muzpleer.model.Album
 import com.example.muzpleer.model.Artist
-import com.example.muzpleer.model.Song
 import com.example.muzpleer.ui.local.adapters.ArtistsAdapter
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
-import org.koin.androidx.viewmodel.ext.android.viewModel
-import kotlin.collections.plus
-import kotlin.getValue
 
 class ArtistsFragment:Fragment() {
     private var _binding: FragmentSingersBinding? = null

@@ -1,6 +1,5 @@
 package com.example.muzpleer.ui.local.frags
 
-import android.content.ContentUris
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -10,7 +9,6 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.SearchView
-import androidx.core.net.toUri
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
@@ -21,12 +19,9 @@ import androidx.viewpager.widget.ViewPager
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentAlbumBinding
 import com.example.muzpleer.model.Album
-import com.example.muzpleer.model.Song
 import com.example.muzpleer.ui.local.adapters.AlbumsAdapter
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
-import org.koin.androidx.viewmodel.ext.android.viewModel
-import kotlin.getValue
 
 
 class AlbumFragment: Fragment() {
@@ -139,13 +134,6 @@ class AlbumFragment: Fragment() {
                 })
             }
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-//                return when (menuItem.itemId) {
-//                    R.id.search_toolbar -> {
-//                        Log.d(TAG, "#AlbumFragment onMenuItemSelected:  id = AlbumFragment ")
-//                        true
-//                    }
-//                    else -> false
-//                }
                 return false
             }
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)

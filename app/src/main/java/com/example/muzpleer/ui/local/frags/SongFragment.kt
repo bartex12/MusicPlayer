@@ -16,19 +16,13 @@ import androidx.lifecycle.Lifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.viewpager.widget.ViewPager
-import com.example.muzpleer.MainActivity
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentSongsBinding
 import com.example.muzpleer.model.Song
 import com.example.muzpleer.model.SongAndPlaylist
-import com.example.muzpleer.ui.local.TabLocalFragment
 import com.example.muzpleer.ui.local.adapters.SongsAdapter
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
-import com.example.muzpleer.ui.player.PlayerFragment
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
-import org.koin.androidx.viewmodel.ext.android.viewModel
-import java.util.Locale
-import kotlin.getValue
 
 class SongFragment : Fragment() {
     private var _binding: FragmentSongsBinding? = null
@@ -153,13 +147,6 @@ class SongFragment : Fragment() {
             }
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-//                return when (menuItem.itemId) {
-//                    R.id.search_toolbar -> {
-//                        Log.d(TAG, "#SongFragment onMenuItemSelected:  id = songFragment ")
-//                        true
-//                    }
-//                    else -> false
-//                }
                 return false
             }
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
