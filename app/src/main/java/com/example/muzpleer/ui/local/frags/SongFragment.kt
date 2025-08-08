@@ -3,35 +3,40 @@ package com.example.muzpleer.ui.local.frags
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.widget.SearchView
+import androidx.core.view.MenuHost
+import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.viewpager.widget.ViewPager
 import com.example.muzpleer.R
-import com.example.muzpleer.databinding.FragmentLocalBinding
+import com.example.muzpleer.databinding.FragmentSongsBinding
 import com.example.muzpleer.model.Song
 import com.example.muzpleer.model.SongAndPlaylist
 import com.example.muzpleer.ui.local.adapters.SongsAdapter
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
-import com.example.muzpleer.ui.player.PlayerFragment
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
-import org.koin.androidx.viewmodel.ext.android.viewModel
-import kotlin.getValue
 
 class SongFragment : Fragment() {
-    private var _binding: FragmentLocalBinding? = null
+    private var _binding: FragmentSongsBinding? = null
     private val binding get() = _binding!!
     private val viewModel: SharedViewModel by activityViewModel()
     private lateinit var adapter: SongsAdapter
+    private var currentSearchQuery = ""
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentLocalBinding.inflate(inflater, container, false)
+        _binding = FragmentSongsBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -40,17 +45,19 @@ class SongFragment : Fragment() {
 
         adapter = SongsAdapter { song ->
 
-            val playlist = viewModel.songs.value?:listOf()
-            Log.d(TAG, "*** SongsFragment onViewCreated SongsAdapter  song.title = ${song.title} " +
-                    " playlist.size = ${playlist.size} ")
+            val playlist = viewModel.songs.value ?: listOf()
+            Log.d(
+                TAG, "*** SongsFragment onViewCreated SongsAdapter  song.title = ${song.title} " +
+                        " playlist.size = ${playlist.size} "
+            )
             viewModel.setSongAndPlaylist(
                 SongAndPlaylist(
                     song = song,
-                    playlist = playlist)
+                    playlist = playlist
+                )
             )
             // Обработка клика по треку
-            findNavController().navigate( R.id.action_tabsLocalFragment_to_playerFragment)
-            //PlayerFragment.Companion.newInstance(song, playlist).arguments
+            findNavController().navigate(R.id.action_tabsLocalFragment_to_playerFragment)
         }
 
         binding.localRecyclerView.apply {
@@ -59,18 +66,25 @@ class SongFragment : Fragment() {
         }
 
         viewModel.songs.observe(viewLifecycleOwner) { songs ->
-            Log.d(TAG, "3 LocalFragment onViewCreated musicList.observe: songs.size= ${songs.size} ")
+            Log.d( TAG,"31 SongsFragment onViewCreated songs.observe: songs.size= ${songs.size} ")
             if (songs.isEmpty()) {
                 binding.progressBar.visibility = View.VISIBLE
                 binding.imageHolder3.visibility = View.VISIBLE
-                Log.d(TAG, "4 LocalFragment onViewCreated musicList.observe: progressBar.visibility = View.VISIBLE ")
-            }else{
+            } else {
                 binding.progressBar.visibility = View.GONE
                 binding.imageHolder3.visibility = View.GONE
             }
-            val sortedData =  getSortedData(songs)
+            val sortedData = getSortedData(songs)
             adapter.data = sortedData  //передаём данные в адаптер
         }
+
+        viewModel.filteredSongs.observe(viewLifecycleOwner) { filteredSongs ->
+            Log.d( TAG,"32 SongsFragment onViewCreated filteredSongs.observe: filteredSongs.size= ${filteredSongs.size} ")
+            val sortedData = getSortedData(filteredSongs)
+            adapter.data = sortedData  //передаём данные в адаптер
+        }
+
+        initMenu()
     }
 
     private fun getSortedData(tracks:List<Song>):List<Song>{
@@ -98,5 +112,43 @@ class SongFragment : Fragment() {
             this.viewPager = viewPager
             return SongFragment()
         }
+    }
+
+    fun initMenu() {
+        val menuHost: MenuHost = requireActivity()
+        menuHost.addMenuProvider(object : MenuProvider {
+
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                menuInflater.inflate(R.menu.main, menu)
+
+                val searchItem: MenuItem = menu.findItem(R.id.search_toolbar)
+                val searchView =searchItem.actionView as SearchView
+                //значок лупы слева в развёрнутом сост и сворачиваем строку поиска (true)
+                searchView.setIconifiedByDefault(true)
+                //пишем подсказку в строке поиска
+                searchView.queryHint = getString(R.string.search_song)
+                //устанавливаем в панели действий кнопку ( > )для отправки поискового запроса
+                searchView.isSubmitButtonEnabled = true
+
+                //Сохраняем состояние поиска при смене ориентации:
+                if (       currentSearchQuery.isNotEmpty()) {
+                    searchItem.expandActionView()
+                    searchView.setQuery(currentSearchQuery, false)
+                }
+                //устанавливаем слушатель
+                searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+                    override fun onQueryTextSubmit(query: String?) = false
+
+                    override fun onQueryTextChange(newText: String?): Boolean {
+                        viewModel.filterSongs(newText.orEmpty())
+                        return true
+                    }
+                })
+            }
+
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                return false
+            }
+        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
     }
 }

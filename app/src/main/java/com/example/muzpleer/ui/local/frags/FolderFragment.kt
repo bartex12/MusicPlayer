@@ -1,31 +1,29 @@
 package com.example.muzpleer.ui.local.frags
 
-import android.content.ContentUris
-import android.content.Context
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.provider.MediaStore
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.RequiresApi
-import androidx.core.net.toUri
+import androidx.appcompat.widget.SearchView
+import androidx.core.view.MenuHost
+import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.viewpager.widget.ViewPager
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentFoldersBinding
-import com.example.muzpleer.model.Artist
 import com.example.muzpleer.model.Folder
-import com.example.muzpleer.model.Song
 import com.example.muzpleer.ui.local.adapters.FoldersAdapter
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
-import org.koin.androidx.viewmodel.ext.android.viewModel
-import kotlin.getValue
 
 class FolderFragment : Fragment(){
     private var _binding: FragmentFoldersBinding? = null
@@ -74,6 +72,13 @@ class FolderFragment : Fragment(){
             val sortedFolders = getSortedData(folders)
             adapter.folders = sortedFolders  //передаём данные в адаптер
         }
+
+        viewModel.filteredFolders.observe(viewLifecycleOwner) { filteredFolders ->
+            Log.d(TAG,"32 FolderFragment onViewCreated filteredFolders.observe: filteredFolders.size= ${filteredFolders.size} ")
+            val sortedData = getSortedData(filteredFolders)
+            adapter.folders = sortedData  //передаём данные в адаптер
+        }
+        initMenu()
     }
 
     private fun getSortedData( folders:List<Folder>):List<Folder>{
@@ -101,5 +106,36 @@ class FolderFragment : Fragment(){
             this.viewPager = viewPager
             return FolderFragment()
         }
+    }
+
+    fun initMenu() {
+        val menuHost: MenuHost = requireActivity()
+        menuHost.addMenuProvider(object : MenuProvider {
+
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                menuInflater.inflate(R.menu.main, menu)
+
+                val searchItem: MenuItem = menu.findItem(R.id.search_toolbar)
+                val searchView =searchItem.actionView as SearchView
+                //значок лупы слева в развёрнутом сост и сворачиваем строку поиска (true)
+                searchView.setIconifiedByDefault(true)
+                //пишем подсказку в строке поиска
+                searchView.queryHint = getString(R.string.search_folder)
+                //устанавливаем в панели действий кнопку ( > )для отправки поискового запроса
+                searchView.isSubmitButtonEnabled = true
+                //устанавливаем слушатель
+                searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+                    override fun onQueryTextSubmit(query: String?) = false
+
+                    override fun onQueryTextChange(newText: String?): Boolean {
+                        viewModel.filterFolders(newText.orEmpty())
+                        return true
+                    }
+                })
+            }
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                return false
+            }
+        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
     }
 }

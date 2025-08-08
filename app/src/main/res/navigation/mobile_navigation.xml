@@ -10,9 +10,9 @@
         android:name="com.example.muzpleer.ui.player.PlayerFragment"
         android:label="Воспроизведение" />
     <fragment
-        android:id="@+id/localFragment"
+        android:id="@+id/songFragment"
         android:name="com.example.muzpleer.ui.local.frags.SongFragment"
-        android:label="Аудио телефона" />
+        android:label="Музыкальные треки" />
     <fragment
         android:id="@+id/homeFragment"
         android:name="com.example.muzpleer.home.HomeFragment"
@@ -25,7 +25,7 @@
             app:destination="@id/tabsFragment" />
         <action
             android:id="@+id/action_homeFragment_to_tabsLocalFragment"
-            app:destination="@id/tabsLocalFragment" />
+            app:destination="@id/tabLocalFragment" />
     </fragment>
     <fragment
         android:id="@+id/settingsFragment"
@@ -40,9 +40,9 @@
             app:destination="@id/playerFragment" />
     </fragment>
     <fragment
-        android:id="@+id/tabsLocalFragment"
-        android:name="com.example.muzpleer.ui.local.TabsLocalFragment"
-        android:label="TabsLocalFragment" >
+        android:id="@+id/tabLocalFragment"
+        android:name="com.example.muzpleer.ui.local.TabLocalFragment"
+        android:label="Музыка в телефоне" >
         <action
             android:id="@+id/action_tabsLocalFragment_to_playerFragment"
             app:destination="@id/playerFragment" />

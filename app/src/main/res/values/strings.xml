@@ -17,6 +17,12 @@
     <string name="albums">Альбомы</string>
     <string name="album_art_description">Обложка альбома</string>
     <string name="folders">Папки</string>
+    <string name="forExit">Для выхода нажмите  НАЗАД  ещё раз</string>
+    <string name="search">Поиск</string>
+    <string name="search_song">поиск трека</string>
+    <string name="search_album">поиск альбома</string>
+    <string name="search_artist">поиск исполнителя</string>
+    <string name="search_folder">поиск папки</string>
 
     <string-array name="sound_level_entry_number">
         <item>Без звука</item>
@@ -37,7 +43,7 @@
     </string-array>
 
     <string-array name="MenuMain">
-        <item>Музыка на телефоне</item>
+        <item>Музыка в телефоне</item>
         <item>Своя музыка</item>
         <item>Настройки</item>
     </string-array>
