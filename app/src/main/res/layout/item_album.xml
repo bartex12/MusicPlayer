@@ -34,10 +34,7 @@
         app:layout_constraintStart_toEndOf="@id/albumArt"
         app:layout_constraintTop_toTopOf="@+id/albumArt"
         tools:text="Название альбома" />
-
-    <!-- Исполнитель -->
-
-    <!-- Количество треков -->
+<!--    android:textColor="@color/bright_gray"-->
 
     <TextView
         android:id="@+id/albumArtist"
