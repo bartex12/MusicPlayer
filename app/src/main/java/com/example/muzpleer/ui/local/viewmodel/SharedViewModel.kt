@@ -254,4 +254,12 @@ class SharedViewModel(
         }
         _filteredFolders.value = filteredFolderList
     }
+
+    fun getSong():List<Song> {
+       return songs.value
+    }
+
+    fun getPlaylist():List<Song> {
+        return playlist.value
+    }
 }

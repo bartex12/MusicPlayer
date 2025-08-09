@@ -21,6 +21,7 @@ import com.example.muzpleer.databinding.FragmentSingersBinding
 import com.example.muzpleer.model.Artist
 import com.example.muzpleer.ui.local.adapters.ArtistsAdapter
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
+import com.example.muzpleer.util.getSortedDataArtist
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 
 class ArtistsFragment:Fragment() {
@@ -44,6 +45,7 @@ class ArtistsFragment:Fragment() {
         adapter = ArtistsAdapter { artist ->
 
             viewModel.setPlaylist(artist.songs) //устанавливаем список песен как плейлист
+
             // Навигация через Bundle
             val bundle = Bundle().apply {
                 putString("artistId", artist.id)
@@ -57,38 +59,14 @@ class ArtistsFragment:Fragment() {
             adapter = this@ArtistsFragment.adapter
         }
 
-        viewModel.artists.observe(viewLifecycleOwner) { artists ->
-            Log.d(TAG, "3 ArtistsFragment onViewCreated musicList.observe  artists.size= ${artists.size} ")
-            if (artists.isEmpty()) {
-                binding.progressBarSingers.visibility = View.VISIBLE
-                binding.imageHolder3Singers.visibility = View.VISIBLE
-                Log.d(TAG, "4 ArtistsFragment onViewCreated musicList.observe: progressBar.visibility = View.VISIBLE ")
-            }else{
-                binding.progressBarSingers.visibility = View.GONE
-                binding.imageHolder3Singers.visibility = View.GONE
-            }
-
-            val sortedData = getSortedData(artists)
-            adapter.data = sortedData  //передаём данные в адаптер
-        }
-
         viewModel.filteredArtists.observe(viewLifecycleOwner) { filteredArtists ->
-            Log.d(TAG,"32 ArtistsFragment onViewCreated filteredArtists.observe: filteredArtists.size= ${filteredArtists.size} ")
-            val sortedData = getSortedData(filteredArtists)
+            Log.d(TAG,"34 ArtistsFragment onViewCreated filteredArtists.observe: filteredArtists.size= ${filteredArtists.size} ")
+            if (viewModel.getSong().isEmpty()) binding.progressBarSingers.visibility = View.VISIBLE else binding.progressBarSingers.visibility = View.GONE
+            if (filteredArtists.isEmpty()) binding.imageHolder3Singers.visibility = View.VISIBLE else binding.imageHolder3Singers.visibility = View.GONE
+            val sortedData =getSortedDataArtist(filteredArtists)
             adapter.data = sortedData  //передаём данные в адаптер
         }
         initMenu()
-    }
-    private fun getSortedData(artists:List<Artist>):List<Artist>{
-        return artists.sortedWith(compareBy(
-            { artist -> when {
-                artist.name.matches(Regex("^[а-яА-ЯёЁ].*")) -> 0
-                artist.name.matches(Regex("^[a-zA-Z].*")) -> 1
-                else -> 2}
-            },
-            { artist -> artist.name.lowercase() }
-        )
-        )
     }
 
     override fun onDestroyView() {

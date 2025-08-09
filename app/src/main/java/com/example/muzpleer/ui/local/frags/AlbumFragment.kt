@@ -21,6 +21,7 @@ import com.example.muzpleer.databinding.FragmentAlbumBinding
 import com.example.muzpleer.model.Album
 import com.example.muzpleer.ui.local.adapters.AlbumsAdapter
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
+import com.example.muzpleer.util.getSortedDataAlbum
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 
 
@@ -45,6 +46,7 @@ class AlbumFragment: Fragment() {
         adapter = AlbumsAdapter { album ->
 
             viewModel.setPlaylist(album.songs) //устанавливаем список песен как плейлист
+
             // Навигация через Bundle
             val bundle = Bundle().apply {
                 putString("albumId", album.id)
@@ -57,40 +59,16 @@ class AlbumFragment: Fragment() {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = this@AlbumFragment.adapter
         }
-        viewModel.albums.observe(viewLifecycleOwner) { musicAlbums ->
-            Log.d(TAG, "3 AlbumFragment onViewCreated musicList.observe: musicAlbums.size= ${musicAlbums.size} ")
-            if (musicAlbums.isEmpty()) {
-                binding.progressBarAlbum.visibility = View.VISIBLE
-                binding.imageHolder3Album.visibility = View.VISIBLE
-                Log.d(TAG, "4 AlbumFragment onViewCreated musicList.observe: progressBar.visibility = View.VISIBLE ")
-            }else{
-                binding.progressBarAlbum.visibility = View.GONE
-                binding.imageHolder3Album.visibility = View.GONE
-            }
-
-            val sortedAlbums = getSortedData(musicAlbums)
-            adapter.albums = sortedAlbums  //передаём данные в адаптер
-        }
 
         viewModel.filteredAlbums.observe(viewLifecycleOwner) { filteredAlbums ->
-            Log.d(TAG,"32 AlbumFragment onViewCreated filteredAlbums.observe: filteredAlbums.size= ${filteredAlbums.size} ")
-            val sortedData = getSortedData(filteredAlbums)
+            Log.d(TAG,"33 AlbumFragment onViewCreated filteredAlbums.observe: filteredAlbums.size= ${filteredAlbums.size} ")
+            if (viewModel.getSong().isEmpty()) binding.progressBarAlbum.visibility = View.VISIBLE else binding.progressBarAlbum.visibility = View.GONE
+            if (filteredAlbums.isEmpty()) binding.imageHolder3Album.visibility = View.VISIBLE else binding.imageHolder3Album.visibility = View.GONE
+            val sortedData =getSortedDataAlbum(filteredAlbums)
             adapter.albums = sortedData  //передаём данные в адаптер
         }
 
         initMenu()
-    }
-
-    private fun getSortedData(tracks:List<Album>):List<Album>{
-        return tracks.sortedWith(compareBy(
-            { album -> when {
-                album.title.matches(Regex("^[а-яА-ЯёЁ].*")) -> 0
-                album.title.matches(Regex("^[a-zA-Z].*")) -> 1
-                else -> 2}
-            },
-            { album -> album.title.lowercase() }
-        )
-        )
     }
 
     override fun onDestroyView() {

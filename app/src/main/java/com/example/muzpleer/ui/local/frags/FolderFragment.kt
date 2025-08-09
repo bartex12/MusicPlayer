@@ -23,6 +23,7 @@ import com.example.muzpleer.databinding.FragmentFoldersBinding
 import com.example.muzpleer.model.Folder
 import com.example.muzpleer.ui.local.adapters.FoldersAdapter
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
+import com.example.muzpleer.util.getSortedDataFolder
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 
 class FolderFragment : Fragment(){
@@ -45,7 +46,9 @@ class FolderFragment : Fragment(){
         super.onViewCreated(view, savedInstanceState)
 
         adapter = FoldersAdapter { folder ->
+
             viewModel.setPlaylist(folder.songs) //устанавливаем список песен как плейлист
+
             // Навигация через Bundle
             val bundle = Bundle().apply {
                 putString("folderPath", folder.path)
@@ -58,39 +61,16 @@ class FolderFragment : Fragment(){
             layoutManager = LinearLayoutManager(requireContext())
             adapter = this@FolderFragment.adapter
         }
-        viewModel.folders.observe(viewLifecycleOwner) { folders ->
-            Log.d(TAG, "3 FolderFragment onViewCreated musicList.observe: folders.size= ${folders.size} ")
-            if (folders.isEmpty()) {
-                binding.progressBarFolder.visibility = View.VISIBLE
-                binding.imageHolder3Folder.visibility = View.VISIBLE
-                Log.d(TAG, "4 FolderFragment onViewCreated musicList.observe: progressBar.visibility = View.VISIBLE ")
-            }else{
-                binding.progressBarFolder.visibility = View.GONE
-                binding.imageHolder3Folder.visibility = View.GONE
-            }
-
-            val sortedFolders = getSortedData(folders)
-            adapter.folders = sortedFolders  //передаём данные в адаптер
-        }
 
         viewModel.filteredFolders.observe(viewLifecycleOwner) { filteredFolders ->
-            Log.d(TAG,"32 FolderFragment onViewCreated filteredFolders.observe: filteredFolders.size= ${filteredFolders.size} ")
-            val sortedData = getSortedData(filteredFolders)
+            Log.d(TAG,"35 FolderFragment onViewCreated filteredFolders.observe: filteredFolders.size= ${filteredFolders.size} ")
+            if (viewModel.getSong().isEmpty()) binding.progressBarFolder.visibility = View.VISIBLE else binding.progressBarFolder.visibility = View.GONE
+            if (filteredFolders.isEmpty()) binding.imageHolder3Folder.visibility = View.VISIBLE else binding.imageHolder3Folder.visibility = View.GONE
+            val sortedData =getSortedDataFolder(filteredFolders)
             adapter.folders = sortedData  //передаём данные в адаптер
         }
-        initMenu()
-    }
 
-    private fun getSortedData( folders:List<Folder>):List<Folder>{
-        return folders.sortedWith(compareBy(
-            { folder -> when {
-                folder.name.matches(Regex("^[а-яА-ЯёЁ].*")) -> 0
-                folder.name.matches(Regex("^[a-zA-Z].*")) -> 1
-                else -> 2}
-            },
-            { folder -> folder.name.lowercase() }
-        )
-        )
+        initMenu()
     }
 
     override fun onDestroyView() {

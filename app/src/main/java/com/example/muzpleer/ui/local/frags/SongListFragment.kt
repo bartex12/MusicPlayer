@@ -17,6 +17,7 @@ import com.example.muzpleer.model.SongAndPlaylist
 import com.example.muzpleer.ui.local.adapters.SongsAdapter
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 import com.example.muzpleer.ui.player.PlayerFragment
+import com.example.muzpleer.util.getSortedDataSong
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 import kotlin.getValue
 
@@ -41,7 +42,9 @@ class SongListFragment:Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         adapter = SongsAdapter { song ->
-            val playlist = viewModel.playlist.value?:listOf()
+
+            val playlist = viewModel.getPlaylist()
+
             Log.d(TAG, "### SongsListFragment onViewCreated SongsAdapter  song.title = ${song.title} " +
                     " playlist.size = ${playlist.size} ")
 
@@ -69,21 +72,21 @@ class SongListFragment:Fragment() {
                 val albumId = arguments?.getString("albumId")!!
 
                 viewModel.getSongsByAlbum(albumId).observe(viewLifecycleOwner) { songs ->
-                    adapter.data = songs
+                    adapter.data = getSortedDataSong(songs)
                 }
             }
 
             arguments?.getString("artistId") != null -> {
                 val artistId = arguments?.getString("artistId")!!
                 viewModel.getSongsByArtist(artistId).observe(viewLifecycleOwner) { songs ->
-                    adapter.data = songs
+                    adapter.data = getSortedDataSong(songs)
                 }
             }
 
             arguments?.getString("folderPath") != null -> {
                 val folderPath = arguments?.getString("folderPath")!!
                 viewModel.getSongsByFolder(folderPath).observe(viewLifecycleOwner) { songs ->
-                    adapter.data = songs
+                    adapter.data = getSortedDataSong(songs)
                 }
             }
         }

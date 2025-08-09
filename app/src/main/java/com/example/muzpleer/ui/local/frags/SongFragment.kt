@@ -22,6 +22,7 @@ import com.example.muzpleer.model.Song
 import com.example.muzpleer.model.SongAndPlaylist
 import com.example.muzpleer.ui.local.adapters.SongsAdapter
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
+import com.example.muzpleer.util.getSortedDataSong
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 
 class SongFragment : Fragment() {
@@ -45,7 +46,8 @@ class SongFragment : Fragment() {
 
         adapter = SongsAdapter { song ->
 
-            val playlist = viewModel.songs.value ?: listOf()
+            val playlist =viewModel.getSong() //устанавливаем список песен как плейлист
+
             Log.d(
                 TAG, "*** SongsFragment onViewCreated SongsAdapter  song.title = ${song.title} " +
                         " playlist.size = ${playlist.size} "
@@ -65,38 +67,15 @@ class SongFragment : Fragment() {
             adapter = this@SongFragment.adapter
         }
 
-        viewModel.songs.observe(viewLifecycleOwner) { songs ->
-            Log.d( TAG,"31 SongsFragment onViewCreated songs.observe: songs.size= ${songs.size} ")
-            if (songs.isEmpty()) {
-                binding.progressBar.visibility = View.VISIBLE
-                binding.imageHolder3.visibility = View.VISIBLE
-            } else {
-                binding.progressBar.visibility = View.GONE
-                binding.imageHolder3.visibility = View.GONE
-            }
-            val sortedData = getSortedData(songs)
-            adapter.data = sortedData  //передаём данные в адаптер
-        }
-
         viewModel.filteredSongs.observe(viewLifecycleOwner) { filteredSongs ->
             Log.d( TAG,"32 SongsFragment onViewCreated filteredSongs.observe: filteredSongs.size= ${filteredSongs.size} ")
-            val sortedData = getSortedData(filteredSongs)
+            if (viewModel.getSong().isEmpty()) binding.progressBar.visibility = View.VISIBLE else binding.progressBar.visibility = View.GONE
+            if (filteredSongs.isEmpty()) binding.imageHolder3.visibility = View.VISIBLE else binding.imageHolder3.visibility = View.GONE
+            val sortedData = getSortedDataSong(filteredSongs)
             adapter.data = sortedData  //передаём данные в адаптер
         }
 
         initMenu()
-    }
-
-    private fun getSortedData(tracks:List<Song>):List<Song>{
-        return tracks.sortedWith(compareBy(
-            { track -> when {
-                track.title.matches(Regex("^[а-яА-ЯёЁ].*")) -> 0
-                track.title.matches(Regex("^[a-zA-Z].*")) -> 1
-                else -> 2}
-            },
-            { track -> track.title.lowercase() }
-        )
-        )
     }
 
     override fun onDestroyView() {

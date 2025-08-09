@@ -55,18 +55,18 @@ class FoldersAdapter(
             )
 
             ///обложка имеет Uri track.artworkUri
-            Log.d(TAG, " %%% FolderAdapter FolderViewHolder bind: albumArtUri =  $albumArtUri")
-            try {
-                binding.root.context.contentResolver.openInputStream(albumArtUri)?.use { stream ->
-                    //val bitmap = BitmapFactory.decodeStream(stream)
-                   // Log.d(TAG, "MusicViewHolder Обложка найдена: ${bitmap.width}x${bitmap.height}")
-                    Log.d(TAG, "FolderViewHolder Обложка найдена")
-                } ?: {
-                    Log.d(TAG,  "FolderViewHolder Обложка не найдена")
-                }
-            } catch (e: Exception) {
-                Log.d(TAG, "FolderViewHolder Ошибка: ${e.message}")
-            }
+//            Log.d(TAG, " %%% FolderAdapter FolderViewHolder bind: albumArtUri =  $albumArtUri")
+//            try {
+//                binding.root.context.contentResolver.openInputStream(albumArtUri)?.use { stream ->
+//                    //val bitmap = BitmapFactory.decodeStream(stream)
+//                   // Log.d(TAG, "MusicViewHolder Обложка найдена: ${bitmap.width}x${bitmap.height}")
+//                    Log.d(TAG, "FolderViewHolder Обложка найдена")
+//                } ?: {
+//                    Log.d(TAG,  "FolderViewHolder Обложка не найдена")
+//                }
+//            } catch (e: Exception) {
+//                Log.d(TAG, "FolderViewHolder Ошибка: ${e.message}")
+//            }
             // Загрузка обложки первого трека списка песен папки
                 Glide.with(binding.root.context)
                     .load(albumArtUri)
