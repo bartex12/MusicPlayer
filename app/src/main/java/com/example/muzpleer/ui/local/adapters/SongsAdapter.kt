@@ -73,7 +73,7 @@ class SongsAdapter(
 //                    Log.d(TAG,  "MusicViewHolder Обложка не найдена")
 //                }
 //            } catch (e: Exception) {
-//                Log.e(TAG, "MusicViewHolder Ошибка: ${e.message}")
+//                Log.d(TAG, "MusicViewHolder Ошибка: ${e.message}")
 //            }
 
             // Загрузка обложки
