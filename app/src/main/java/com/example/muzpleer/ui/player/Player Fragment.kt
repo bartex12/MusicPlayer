@@ -1,11 +1,13 @@
 package com.example.muzpleer.ui.player
 
+import android.content.ContentUris
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.SeekBar
+import androidx.core.net.toUri
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
@@ -34,15 +36,6 @@ class PlayerFragment : Fragment() {
         _binding = FragmentPlayerBinding.inflate(inflater, container, false)
         return binding.root
     }
-
-//    override fun onCreate(savedInstanceState: Bundle?) {
-//        super.onCreate(savedInstanceState)
-//
-//        arguments?.let {
-//            track = it.getParcelable(ARG_TRACK) ?: throw IllegalStateException("Track argument is required")
-//            playlist = it.getParcelableArrayList(ARG_PLAYLIST) ?: listOf(track)
-//        }
-//    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -90,7 +83,7 @@ class PlayerFragment : Fragment() {
             Log.d(TAG, "*** PlayerFragment onViewCreated currentSong.observe: " +
                     " currentSong = ${songAndPlaylist.song} currentPlayList.size = ${songAndPlaylist.playlist.size}")
 
-            viewModel.setCurrentSong(songAndPlaylist.song)
+            //viewModel.setCurrentSong(songAndPlaylist.song)
 
             //находим индекс трека в плейлисте
             val indexOfTrack = if(songAndPlaylist.song.isLocal){
@@ -111,10 +104,16 @@ class PlayerFragment : Fragment() {
             currentSong?. let{
                 binding.tvTitle.text = it.title
                 binding.tvArtist.text = it.artist
+                // Загружаем обложку, если есть
+                val albumArtUri = ContentUris.withAppendedId(
+                    "content://media/external/audio/albumart".toUri(),
+                    currentSong.albumId)
+
 
                 Glide.with(requireContext())
-                    .load(if (currentSong.isLocal) it.artworkUri else it.cover)
-                    .placeholder(R.drawable.placeholder2)
+                    .load(if (currentSong.isLocal) albumArtUri else it.cover)
+                    .placeholder(R.drawable.muz_player3)
+                    .error(R.drawable.muz_player3)
                     .into(binding.artworkImageView)
             }
         }
