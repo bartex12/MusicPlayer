@@ -30,43 +30,44 @@
         android:maxLines="1"
         android:textAppearance="@style/TextAppearance.AppCompat.Medium"
         android:textStyle="bold"
-        app:layout_constraintStart_toEndOf="@id/albumArt"
-        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/albumArt"
+        app:layout_constraintTop_toTopOf="@+id/albumArt"
         tools:text="Название альбома" />
 
     <!-- Исполнитель -->
+
+    <!-- Количество треков -->
+
     <TextView
         android:id="@+id/albumArtist"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
         android:layout_marginStart="12dp"
-        android:layout_marginTop="4dp"
+        android:layout_marginTop="8dp"
         android:ellipsize="end"
         android:maxLines="1"
         android:textAppearance="@style/TextAppearance.AppCompat.Caption"
         app:layout_constraintStart_toEndOf="@id/albumArt"
-        app:layout_constraintTop_toBottomOf="@id/albumTitle"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/albumTitle"
+        app:layout_constraintEnd_toStartOf="@+id/tracksCount"
         tools:text="Исполнитель" />
 
-    <!-- Количество треков -->
     <TextView
         android:id="@+id/tracksCount"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="12dp"
-        android:layout_marginTop="4dp"
-        android:layout_marginBottom="8dp"
         android:textAppearance="@style/TextAppearance.AppCompat.Caption"
         android:textColor="?attr/colorPrimary"
-        app:layout_constraintStart_toEndOf="@id/albumArt"
-        app:layout_constraintTop_toBottomOf="@id/albumArtist"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toBottomOf="@+id/albumArtist"
+        app:layout_constraintStart_toEndOf="@id/albumArtist"
+        app:layout_constraintTop_toTopOf="@+id/albumArtist"
         tools:text="12 треков" />
 
     <!-- Divider -->
     <View
+        android:id="@+id/view"
         android:layout_width="0dp"
         android:layout_height="2dp"
         android:background="@color/background"

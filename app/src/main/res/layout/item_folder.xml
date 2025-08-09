@@ -3,13 +3,13 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="72dp"
-    android:padding="12dp">
+    android:padding="8dp">
 
     <ImageView
         android:id="@+id/ivFolderIcon"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:src="@drawable/gimme"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:src="@drawable/placeholder2"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"/>
 
@@ -40,6 +40,7 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
         android:text="12 песен"
+        android:textColor="?attr/colorPrimary"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"/>
 

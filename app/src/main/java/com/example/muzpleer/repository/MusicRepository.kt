@@ -106,10 +106,6 @@ class MusicRepository(private val context: Context) {
 //                        " album = $album albumId = $albumId ")
             }
         }
-//        musicList.sortWith(compareBy(
-//            { !it.title.matches(Regex(".*[А-Яа-яЁё].*")) },
-//            { it.title.lowercase() }
-//        ))
         // Build albums, artists and folders
         buildCollections(musicList)
         Log.d(TAG, "#%# MediaScanner scanMusicApi29Plus musicList.size = ${musicList.size}")
@@ -122,50 +118,84 @@ class MusicRepository(private val context: Context) {
         artists.clear()
         folders.clear()
 
-//        songs.groupBy { "${it.album}|${it.artist}" }.forEach { (key, albumSongs) ->
-//            val parts = key.split("|")
-//            val albumName = parts[0]
-//            val artistName = parts[1]
+//   //      Группировка по альбомам (без учета исполнителя)
+//      //   albumName-ключ, albumSongs-значение мапы после группировки
+//        songs.groupBy { it.album }.forEach { (albumName, albumSongs) ->
+//            // Собираем всех исполнителей в альбоме
+//            val artistsInAlbum = albumSongs.map { it.artist }.distinct()
 //
-//            albums[key] = Album(
-//                id = key,
-//                title = albumName,
-//                artist = artistName,
-//                artworkUri = albumSongs.firstOrNull()?.artworkUri,
+////            // Создаем строку с перечислением исполнителей-пока не используется
+////            val artistsString = if (artistsInAlbum.size > 3) {
+////                "${artistsInAlbum.take(3).joinToString()} и ещё ${artistsInAlbum.size - 3}"
+////            } else {
+////                artistsInAlbum.joinToString()
+////            }
+//
+//            albums[albumName.toString()] = Album(
+//                id = albumName.toString(),
+//                title = albumName.toString(),
+//                // Для отображения можно использовать "Разные исполнители" или список исполнителей
+//                artist = if (artistsInAlbum.size > 1) "Разные исполнители" else artistsInAlbum.first(),
+//                artists = artistsInAlbum, // Сохраняем всех исполнителей
+//                artworkUri = albumSongs.maxByOrNull { it.duration }?.artworkUri, // Берём обложку из самой длинной песни
 //                songs = albumSongs
 //            )
 //        }
 
-        // Группировка по альбомам (без учета исполнителя)
-        songs.groupBy { it.album }.forEach { (albumName, albumSongs) ->
-            // Собираем всех исполнителей в альбоме
-            val artistsInAlbum = albumSongs.map { it.artist }.distinct()
+        //Группировка по albumId и названию - избегаем дублирования альбомов
+        songs.groupBy { it.albumId to it.album } // Группируем по albumId и названию
+            .forEach { (albumKey, albumSongs) ->
+                val (albumId, albumName) = albumKey
+                // Собираем всех исполнителей в альбоме
+                val artistsInAlbum = albumSongs.map { it.artist }.distinct()
+                // Находим песню с обложкой (если есть) или первую песню
+                val artworkSong = albumSongs.firstOrNull { it.artworkUri != null } ?: albumSongs.firstOrNull()
 
-            // Создаем строку с перечислением исполнителей
-            val artistsString = if (artistsInAlbum.size > 3) {
-                "${artistsInAlbum.take(3).joinToString()} и ещё ${artistsInAlbum.size - 3}"
-            } else {
-                artistsInAlbum.joinToString()
+//               //Создаем строку с перечислением исполнителей-пока не используется
+//            val artistsString = if (artistsInAlbum.size > 3) {
+//                "${artistsInAlbum.take(3).joinToString()} и ещё ${artistsInAlbum.size - 3}"
+//            } else {
+//                artistsInAlbum.joinToString()
+//            }
+
+                albums[albumId.toString()] = Album(
+                    id = albumId.toString(),
+                    title = albumName.toString(),
+                    artist = if (artistsInAlbum.size > 1) "Разные исполнители" else artistsInAlbum.first(),
+                    artists = artistsInAlbum,
+                    artworkUri = artworkSong?.artworkUri,
+                    albumId = albumId, // Сохраняем albumId для последующей загрузки обложки
+                    songs = albumSongs
+                )
             }
 
-            albums[albumName.toString()] = Album(
-                id = albumName.toString(),
-                title = albumName.toString(),
-                // Для отображения можно использовать "Various Artists" или список исполнителей
-                artist = if (artistsInAlbum.size > 1) "Various Artists" else artistsInAlbum.first(),
-                artists = artistsInAlbum, // Сохраняем всех исполнителей
-                artworkUri = albumSongs.maxByOrNull { it.duration }?.artworkUri, // Берём обложку из самой длинной песни
-                songs = albumSongs
-            )
-        }
-
+        // группировка по исполнителям с добавлением списка альбомов
+        // в альбомы каждого исполнителя добавлено поле artists со списком исполнителей
         songs.groupBy { it.artist }.forEach { (artistName, artistSongs) ->
             //val artistArtUri = getArtworkUriFromMediaStore(artistSongs)
+            // Получаем уникальные альбомы исполнителя
+            val artistAlbums =
+                artistSongs.groupBy {  it.albumId to it.album} // Группируем песни по альбомам
+                            .mapValues { (albumKey, albumSongs) ->
+                                val (albumId, albumName) = albumKey
+                                val artists = albumSongs.map { it.artist }.distinct()
+                          Album(
+                              id = albumId.toString(),
+                              title =albumName.toString(),
+                              artist = if (artists.size > 1) "Разные исполнители" else artists.first(),
+                              songs = albumSongs,
+                              artists = artists,
+                              albumId = albumId,
+                              artworkUri = albumSongs.firstOrNull { it.artworkUri != null }?.artworkUri
+                          )
+                 }.map {it.value}
+
             artists[artistName] = Artist(
                 id = artistName,
                 name = artistName,
                 songs = artistSongs,
-                artworkUri = artistSongs.firstOrNull()?.artworkUri
+                artworkUri = artistSongs.firstOrNull()?.artworkUri,
+                albums = artistAlbums // Добавляем список альбомов
             )
         }
 

@@ -1,13 +1,17 @@
 package com.example.muzpleer.ui.local.adapters
 
 import android.annotation.SuppressLint
+import android.content.ContentUris
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.core.net.toUri
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.ItemArtistBinding
 import com.example.muzpleer.model.Artist
+import com.example.muzpleer.util.getAlbumsCountString
+import com.example.muzpleer.util.getTracksCountString
 
 class ArtistsAdapter(
     private val onItemClick: (Artist) -> Unit
@@ -46,13 +50,21 @@ class ArtistsAdapter(
 
         fun bind(artist: Artist) {
             binding.tvArtistName.text = artist.name
-            binding.tvTracksCount.text = " Песен: ${artist.songs.size}"
+            binding.tvTracksCount.text =buildString {
+                append("${getAlbumsCountString(artist.albums.size)}, ")
+                append(getTracksCountString(artist.songs.size))
+            }
+            // Загружаем обложку, если есть
+            val albumArtUri = ContentUris.withAppendedId(
+                "content://media/external/audio/albumart".toUri(),
+                artist.albums.firstOrNull()?.albumId ?: -1
+            )
 
             // Загрузка обложки
             Glide.with(binding.root.context)
-                .load(artist.artworkUri)
-                .placeholder(R.drawable.placeholder2)
-                .error(R.drawable.placeholder2)
+                .load(albumArtUri)
+                .placeholder(R.drawable.muz_player2)
+                .error(R.drawable.muz_player2)
                 .into(binding.ivArtistArtwork)
 
             binding.root.setOnClickListener { onItemClick(artist) }
