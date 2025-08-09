@@ -24,7 +24,6 @@ class SongListFragment:Fragment() {
     private var _binding: FragmentAlltracksBinding? = null
     private val binding get() = _binding!!
     private lateinit var adapter: SongsAdapter
-   // private lateinit var alltrackslist: List<Song>
     private val viewModel: SharedViewModel by activityViewModel()
 
 

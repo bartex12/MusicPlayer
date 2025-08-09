@@ -2,6 +2,8 @@ package com.example.muzpleer.ui.local.adapters
 
 import android.annotation.SuppressLint
 import android.content.ContentUris
+import android.graphics.BitmapFactory
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.net.toUri
@@ -64,9 +66,12 @@ class SongsAdapter(
 //            Log.d(TAG, " %%% MusicAdapter MusicViewHolder bind: albumArtUri =  $albumArtUri  title = ${track.title}")
 //            try {
 //                binding.root.context.contentResolver.openInputStream(albumArtUri)?.use { stream ->
-//                    val bitmap = BitmapFactory.decodeStream(stream)
-//                    Log.d(TAG, "MusicViewHolder Обложка найдена: ${bitmap.width}x${bitmap.height}")
-//                } ?: Log.d(TAG,  "MusicViewHolder Обложка не найдена")
+//                    //val bitmap = BitmapFactory.decodeStream(stream)
+//                   // Log.d(TAG, "MusicViewHolder Обложка найдена: ${bitmap.width}x${bitmap.height}")
+//                    Log.d(TAG, "MusicViewHolder Обложка найдена")
+//                } ?: {
+//                    Log.d(TAG,  "MusicViewHolder Обложка не найдена")
+//                }
 //            } catch (e: Exception) {
 //                Log.e(TAG, "MusicViewHolder Ошибка: ${e.message}")
 //            }
@@ -74,8 +79,8 @@ class SongsAdapter(
             // Загрузка обложки
                 Glide.with(binding.root.context)
                     .load(albumArtUri)
-                    .placeholder(R.drawable.placeholder2)
-                    .error(R.drawable.placeholder2)
+                    .placeholder(R.drawable.muz_player3)
+                    .error(R.drawable.muz_player3)
                     .diskCacheStrategy(DiskCacheStrategy.ALL)
                     .into(binding.trackArtwork)
 

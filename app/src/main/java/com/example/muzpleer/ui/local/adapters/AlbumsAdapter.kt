@@ -1,13 +1,17 @@
 package com.example.muzpleer.ui.local.adapters
 
 import android.annotation.SuppressLint
+import android.content.ContentUris
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.core.net.toUri
 import androidx.recyclerview.widget.RecyclerView
 import com.example.muzpleer.databinding.ItemAlbumBinding
 import com.example.muzpleer.model.Album
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.example.muzpleer.R
+import com.example.muzpleer.util.getTracksCountString
 
 class AlbumsAdapter(
     private val onAlbumClick: (Album) -> Unit
@@ -42,15 +46,31 @@ class AlbumsAdapter(
         fun bind(album: Album) {
             binding.albumTitle.text = album.title
             binding.albumArtist.text = album.artist
-            binding.tracksCount.text = "${album.songs.size} треков"
+            binding.tracksCount.text = getTracksCountString( album.songs.size)
+
+            // Загружаем обложку, если есть
+            val albumArtUri = ContentUris.withAppendedId(
+                "content://media/external/audio/albumart".toUri(),
+                album.albumId)
 
             // Загрузка обложки альбома
             Glide.with(binding.root.context)
-                .load(album.artworkUri)
-                .placeholder(R.drawable.placeholder1024)
+                .load(albumArtUri)
+                .placeholder(R.drawable.muz_player4)
+                .error(R.drawable.muz_player4)
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
                 .into(binding.albumArt)
 
             itemView.setOnClickListener { onAlbumClick(album) }
         }
     }
+
+//    fun getTracksCountString(count: Int): String {
+//        return when {
+//            count % 100 in 11..14 -> "$count треков"
+//            count % 10 == 1 -> "$count трек"
+//            count % 10 in 2..4 -> "$count трека"
+//            else -> "$count треков"
+//        }
+//    }
 }

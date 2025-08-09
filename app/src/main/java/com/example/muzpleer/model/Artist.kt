@@ -6,5 +6,6 @@ data class Artist(
     val id: String,
     val name: String,
     val songs: List<Song>,
-    val artworkUri: Uri? = null
+    val artworkUri: Uri? = null,
+    val albums: List<Album> // Добавляем список альбомов
 )

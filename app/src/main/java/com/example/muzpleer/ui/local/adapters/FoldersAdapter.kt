@@ -8,6 +8,7 @@ import com.bumptech.glide.Glide
 import com.example.muzpleer.databinding.ItemFolderBinding
 import com.example.muzpleer.model.Folder
 import com.example.muzpleer.R
+import com.example.muzpleer.util.getTracksCountString
 
 class FoldersAdapter(
     private val onFolderClick: (Folder) -> Unit
@@ -41,13 +42,14 @@ class FoldersAdapter(
         fun bind(folder: Folder) {
             binding.tvFolderName.text = folder.name
             binding.tvFolderPath.text = folder.path
-            binding.tvTracksCount.text = "${folder.songs.size} треков"
+            binding.tvTracksCount.text = getTracksCountString(folder.songs.size)
 
             // Загрузка обложки первого трека
             folder.artworkUri?.let { uri ->
                 Glide.with(binding.root.context)
                     .load(uri)
-                    .placeholder(R.drawable.gimme)
+                    .placeholder(R.drawable.muz_player1)
+                    .error(R.drawable.muz_player1)
                     .into(binding.ivFolderIcon)
             }
 

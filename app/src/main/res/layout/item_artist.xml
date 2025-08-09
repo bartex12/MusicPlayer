@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="80dp"
     xmlns:tools="http://schemas.android.com/tools"
-    android:padding="12dp">
+    android:padding="4dp">
 
     <ImageView
         android:id="@+id/ivArtistArtwork"
