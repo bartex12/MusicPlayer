@@ -83,8 +83,8 @@ class TabLocalFragment: Fragment()  {
         viewPager.adapter = adapter
         tabLayout.setupWithViewPager(viewPager)
         //устанавливаем цвет текста черный а при выделении - синий
-        tabLayout.setTabTextColors(Color.GREEN, Color.WHITE)
-        tabLayout.setSelectedTabIndicatorColor(Color.WHITE)
+        tabLayout.setTabTextColors(Color.WHITE, Color.GREEN)
+        tabLayout.setSelectedTabIndicatorColor(Color.GREEN)
     }
 
 }

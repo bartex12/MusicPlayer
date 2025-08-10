@@ -92,12 +92,12 @@ class MainActivity : AppCompatActivity() {
     private fun initViews() {
         //viewPager = binding.viewPagerLocal
         //tabLayout = binding.tabLayoutLocal
-        title = binding.appBarMain.contentMain.playerBottom.title
-        artist = binding.appBarMain.contentMain.playerBottom.artist
-        artWork = binding.appBarMain.contentMain.playerBottom.artwork
-        previous = binding.appBarMain.contentMain.playerBottom.previous
-        playPause = binding.appBarMain.contentMain.playerBottom.playPause
-        next = binding.appBarMain.contentMain.playerBottom.next
+        title = binding.appBarMain.contentMain.title
+        artist = binding.appBarMain.contentMain.artist
+        artWork = binding.appBarMain.contentMain.artwork
+        previous = binding.appBarMain.contentMain.previous
+        playPause = binding.appBarMain.contentMain.playPause
+        next = binding.appBarMain.contentMain.next
 
         previous.setOnClickListener { viewModel.playPrevious() }
         playPause.setOnClickListener { viewModel.togglePlayPause() }
