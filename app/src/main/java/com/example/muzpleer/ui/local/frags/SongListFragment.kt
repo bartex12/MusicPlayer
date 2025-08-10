@@ -52,12 +52,12 @@ class SongListFragment:Fragment() {
                     playlist = playlist)
             )
 
-            viewModel.setCurrentSong(song)
-
-            // Обработка клика по треку
-            findNavController().navigate(
-                R.id.action_alltracksFragment_to_playerFragment)
-                //PlayerFragment.Companion.newInstance(track, alltrackslist).arguments)
+            if (song != viewModel.getCurrentSong()){
+                viewModel.setCurrentSong(song)
+            }else{
+                // Обработка клика по треку, если клик по этому треку не первый
+                findNavController().navigate(R.id.action_alltracksFragment_to_playerFragment)
+            }
         }
 
         binding.alltracksRecyclerView.apply {

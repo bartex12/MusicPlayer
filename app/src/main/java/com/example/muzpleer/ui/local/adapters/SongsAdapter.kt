@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.annotation.experimental.Experimental
 import androidx.core.net.toUri
 import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.RecyclerView
@@ -55,9 +56,12 @@ class SongsAdapter(
         }
         viewModel.currentSong
             .observe(holder.itemView.context as LifecycleOwner) { currentSong ->
-                holder.itemView.isSelected =  data[position].title == currentSong?.title
+                try{
+                    holder.itemView.isSelected =  data[position].id == currentSong?.id
+                }catch(e: Exception){
+                    Log.d(TAG, "SongsAdapter Ошибка: ${e.message}")
+                }
             }
-
     }
 
     override fun getItemCount(): Int {
@@ -86,7 +90,7 @@ class SongsAdapter(
                     .into(binding.trackArtwork)
 
             binding.root.setOnClickListener {
-                viewModel.setSelectedPosition(absoluteAdapterPosition)
+                viewModel.setSelectedPosition(adapterPosition)
                 onItemClick(track)
             }
         }

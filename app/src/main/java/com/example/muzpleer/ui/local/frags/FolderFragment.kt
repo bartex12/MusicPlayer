@@ -55,7 +55,6 @@ class FolderFragment : Fragment(){
                 putString("folderPath", folder.path)
             }
             findNavController().navigate( R.id.alltracksFragment, bundle)
-                //AlltracksFragment.newInstance( folderTracks).arguments)
         }
 
         binding.foldersRecyclerView.apply {

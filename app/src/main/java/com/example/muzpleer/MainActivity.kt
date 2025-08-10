@@ -1,6 +1,7 @@
 package com.example.muzpleer
 
 import android.Manifest
+import android.content.ContentUris
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -14,6 +15,8 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
+import android.widget.ImageView
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
@@ -31,7 +34,13 @@ import androidx.core.net.toUri
 import androidx.core.view.GravityCompat
 import androidx.core.view.MenuProvider
 import androidx.navigation.NavController
+import com.bumptech.glide.Glide
+import com.example.muzpleer.ui.local.TabLocalFragment
+import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 import com.google.android.material.snackbar.Snackbar
+import org.koin.androidx.viewmodel.ext.android.activityViewModel
+import org.koin.androidx.viewmodel.ext.android.viewModel
+import kotlin.getValue
 
 class MainActivity : AppCompatActivity() {
 
@@ -39,6 +48,13 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private var doubleBackToExitPressedOnce = false
     private lateinit var navController:NavController
+    private val viewModel: SharedViewModel by viewModel()
+    private lateinit var title: TextView
+    private lateinit var artist: TextView
+    private lateinit var artWork: ImageView
+    private lateinit var previous: ImageView
+    private lateinit var playPause: ImageView
+    private lateinit var next: ImageView
 
     private val storagePermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -69,6 +85,23 @@ class MainActivity : AppCompatActivity() {
 
        //получаем разрешения
         checkPermissions()
+
+        initViews()
+    }
+
+    private fun initViews() {
+        //viewPager = binding.viewPagerLocal
+        //tabLayout = binding.tabLayoutLocal
+        title = binding.appBarMain.contentMain.playerBottom.title
+        artist = binding.appBarMain.contentMain.playerBottom.artist
+        artWork = binding.appBarMain.contentMain.playerBottom.artwork
+        previous = binding.appBarMain.contentMain.playerBottom.previous
+        playPause = binding.appBarMain.contentMain.playerBottom.playPause
+        next = binding.appBarMain.contentMain.playerBottom.next
+
+        previous.setOnClickListener { viewModel.playPrevious() }
+        playPause.setOnClickListener { viewModel.togglePlayPause() }
+        next.setOnClickListener { viewModel.playNext()  }
     }
 
     override fun onSupportNavigateUp(): Boolean {
@@ -198,6 +231,48 @@ class MainActivity : AppCompatActivity() {
         //navController.navigate(R.id.localFragment)
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
+
+        viewModel.isPlaying.observe(this) { isPlaying ->
+            playPause.setImageResource(
+                if (isPlaying) R.drawable.ic_pause_white else R.drawable.ic_play_white
+            )
+        }
+
+        viewModel.songAndPlaylist.observe(this) { songAndPlaylist ->
+            //находим индекс трека в плейлисте
+            val indexOfTrack = if(songAndPlaylist.song.isLocal){
+                songAndPlaylist.playlist.indexOfFirst { it.mediaUri == songAndPlaylist.song.mediaUri }
+            }else{
+                songAndPlaylist.playlist.indexOfFirst { it.resourceId == songAndPlaylist.song.resourceId  }
+            }
+            Log.d(TAG, "###MainActivity scanForMusic " +
+                    "indexOfTrack = $indexOfTrack " +
+                    "songAndPlaylist.playlist.size = ${songAndPlaylist.playlist.size}" +
+                    " currentSong title= ${songAndPlaylist.song.title} ")
+
+            Log.d(TAG, "###MainActivity scanForMusic songAndPlaylist.playlist = " +
+                    "${songAndPlaylist.playlist.map { it.title }}")
+
+            viewModel.setPlaylistForHandler(songAndPlaylist.playlist, indexOfTrack)
+        }
+
+        viewModel.currentSong.observe(this) {currentSong->
+            currentSong?. let {
+                title.text=currentSong.title
+                artist.text=currentSong.artist
+                // Загружаем обложку, если есть
+                val albumArtUri=ContentUris.withAppendedId(
+                    "content://media/external/audio/albumart".toUri(),
+                    currentSong.albumId
+                )
+                Glide.with(this)
+                    .load(if (currentSong.isLocal) albumArtUri else it.cover)
+                    .placeholder(R.drawable.muz_player3)
+                    .error(R.drawable.muz_player3)
+                    .into(artWork)
+            }
+        }
+
     }
 
     //при нажатии на кнопку Назад если фрагмент реализует BackButtonListener, вызываем метод backPressed

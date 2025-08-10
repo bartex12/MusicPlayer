@@ -82,9 +82,11 @@ class PlayerFragment : Fragment() {
 
             //находим индекс трека в плейлисте
             val indexOfTrack = if(songAndPlaylist.song.isLocal){
-                songAndPlaylist.playlist.indexOfFirst { it.mediaUri == songAndPlaylist.song.mediaUri }
+                songAndPlaylist.playlist.indexOfFirst {song->
+                    song.mediaUri == songAndPlaylist.song.mediaUri }
             }else{
-                songAndPlaylist.playlist.indexOfFirst { it.resourceId == songAndPlaylist.song.resourceId  }
+                songAndPlaylist.playlist.indexOfFirst {song->
+                    song.resourceId == songAndPlaylist.song.resourceId  }
             }
 
             Log.d(TAG, "*** PlayerFragment onViewCreated indexOfTrack = $indexOfTrack " +

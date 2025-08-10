@@ -46,12 +46,6 @@ class TabLocalFragment: Fragment()  {
     private lateinit var adapter: ViewPageAdapterLocal
     private val viewModel: SharedViewModel by activityViewModel()
 
-    private lateinit var title: TextView
-    private lateinit var artist: TextView
-    private lateinit var artWork: ImageView
-    private lateinit var previous: ImageView
-    private lateinit var playPause: ImageView
-    private lateinit var next: ImageView
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -71,46 +65,6 @@ class TabLocalFragment: Fragment()  {
 
         //устанавливаем текущую вкладку - берём из преференсис
         viewPager.currentItem  =  viewModel.getTabsLocalPosition()
-
-        //Log.d(TAG, "***TabsFragment setFragmentResultListener tabPosition = ${viewPager.currentItem}")
-        viewModel.currentSong.observe(viewLifecycleOwner) {currentSong->
-            currentSong?. let {
-                title.text=currentSong.title
-                artist.text=currentSong.artist
-                // Загружаем обложку, если есть
-                val albumArtUri=ContentUris.withAppendedId(
-                    "content://media/external/audio/albumart".toUri(),
-                    currentSong.albumId
-                )
-                Glide.with(requireContext())
-                    .load(if (currentSong.isLocal) albumArtUri else it.cover)
-                    .placeholder(R.drawable.muz_player3)
-                    .error(R.drawable.muz_player3)
-                    .into(artWork)
-            }
-        }
-
-        viewModel.isPlaying.observe(viewLifecycleOwner) { isPlaying ->
-            playPause.setImageResource(
-                if (isPlaying) R.drawable.ic_pause_white else R.drawable.ic_play_white
-            )
-        }
-
-        viewModel.songAndPlaylist.observe(viewLifecycleOwner) { songAndPlaylist ->
-            //находим индекс трека в плейлисте
-            val indexOfTrack = if(songAndPlaylist.song.isLocal){
-                songAndPlaylist.playlist.indexOfFirst { it.mediaUri == songAndPlaylist.song.mediaUri }
-            }else{
-                songAndPlaylist.playlist.indexOfFirst { it.resourceId == songAndPlaylist.song.resourceId  }
-            }
-            Log.d(TAG, "###TabLocalFragment onViewCreated " +
-                    "indexOfTrack = $indexOfTrack " +
-                    "songAndPlaylist.playlist.size = ${songAndPlaylist.playlist.size}" +
-                    " currentSong = ${songAndPlaylist.song} " +
-                    "currentPlayList.size = ${songAndPlaylist.playlist.size}")
-
-            viewModel.setPlaylistForHandler(songAndPlaylist.playlist, indexOfTrack)
-        }
     }
 
     override fun onPause() {
@@ -122,16 +76,6 @@ class TabLocalFragment: Fragment()  {
     private fun initViews() {
         viewPager = binding.viewPagerLocal
         tabLayout = binding.tabLayoutLocal
-        title = binding.playerBottom.title
-        artist = binding.playerBottom.artist
-        artWork = binding.playerBottom.artwork
-        previous = binding.playerBottom.previous
-        playPause = binding.playerBottom.playPause
-        next = binding.playerBottom.next
-
-        previous.setOnClickListener { viewModel.playPrevious() }
-        playPause.setOnClickListener { viewModel.togglePlayPause() }
-        next.setOnClickListener { viewModel.playNext()  }
     }
 
     private fun initPageAdapter() {
