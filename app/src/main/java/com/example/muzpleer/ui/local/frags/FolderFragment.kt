@@ -24,6 +24,7 @@ import com.example.muzpleer.model.Folder
 import com.example.muzpleer.ui.local.adapters.FoldersAdapter
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 import com.example.muzpleer.util.getSortedDataFolder
+import com.example.muzpleer.util.getSortedDataSong
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 
 class FolderFragment : Fragment(){
@@ -46,8 +47,8 @@ class FolderFragment : Fragment(){
         super.onViewCreated(view, savedInstanceState)
 
         adapter = FoldersAdapter { folder ->
-
-            viewModel.setPlaylist(folder.songs) //устанавливаем список песен как плейлист
+            val playlist = getSortedDataSong(folder.songs)
+            viewModel.setPlaylist(playlist) //устанавливаем список песен как плейлист
 
             // Навигация через Bundle
             val bundle = Bundle().apply {
@@ -69,8 +70,20 @@ class FolderFragment : Fragment(){
             val sortedData =getSortedDataFolder(filteredFolders)
             adapter.folders = sortedData  //передаём данные в адаптер
         }
+        //восстанавливаем позицию списка после поворота или возвращения на экран
+        binding.foldersRecyclerView.layoutManager?.scrollToPosition(viewModel.getPositionFolder())
 
         initMenu()
+    }
+
+    //запоминаем  позицию списка, на которой сделан клик - на случай поворота экрана
+    override fun onPause() {
+        super.onPause()
+        //определяем первую видимую позицию
+        val manager = binding.foldersRecyclerView.layoutManager as LinearLayoutManager
+        val firstPosition = manager.findFirstVisibleItemPosition()
+        viewModel.savePositionFolder(firstPosition)
+        Log.d(TAG, "FolderFragment onPause firstPosition = $firstPosition")
     }
 
     override fun onDestroyView() {

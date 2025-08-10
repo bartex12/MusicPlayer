@@ -25,9 +25,6 @@ class PlayerFragment : Fragment() {
     private val binding get() = _binding!!
     private val viewModel: SharedViewModel by activityViewModel()
 
-    //private lateinit var track: Song
-    //private lateinit var playlist: List<Song>
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -82,8 +79,6 @@ class PlayerFragment : Fragment() {
         viewModel.songAndPlaylist.observe(viewLifecycleOwner) { songAndPlaylist ->
             Log.d(TAG, "*** PlayerFragment onViewCreated currentSong.observe: " +
                     " currentSong = ${songAndPlaylist.song} currentPlayList.size = ${songAndPlaylist.playlist.size}")
-
-            //viewModel.setCurrentSong(songAndPlaylist.song)
 
             //находим индекс трека в плейлисте
             val indexOfTrack = if(songAndPlaylist.song.isLocal){

@@ -27,6 +27,7 @@ import com.example.muzpleer.model.Song
 import com.example.muzpleer.ui.local.adapters.ViewPageAdapterLocal
 import com.example.muzpleer.ui.local.frags.SongFragment
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
+import com.example.muzpleer.ui.player.PlayerFragment
 import com.google.android.material.tabs.TabLayout
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 import org.w3c.dom.Text
@@ -68,8 +69,9 @@ class TabLocalFragment: Fragment()  {
         initViews()
         initPageAdapter()
 
-        //устанавливаем текущую вкладку - берём из преференсис     0- вкладка секундомера
-        viewPager.currentItem  =  0
+        //устанавливаем текущую вкладку - берём из преференсис
+        viewPager.currentItem  =  viewModel.getTabsLocalPosition()
+
         //Log.d(TAG, "***TabsFragment setFragmentResultListener tabPosition = ${viewPager.currentItem}")
         viewModel.currentSong.observe(viewLifecycleOwner) {currentSong->
             currentSong?. let {
@@ -87,11 +89,34 @@ class TabLocalFragment: Fragment()  {
                     .into(artWork)
             }
         }
+
+        viewModel.isPlaying.observe(viewLifecycleOwner) { isPlaying ->
+            playPause.setImageResource(
+                if (isPlaying) R.drawable.ic_pause_white else R.drawable.ic_play_white
+            )
+        }
+
+        viewModel.songAndPlaylist.observe(viewLifecycleOwner) { songAndPlaylist ->
+            //находим индекс трека в плейлисте
+            val indexOfTrack = if(songAndPlaylist.song.isLocal){
+                songAndPlaylist.playlist.indexOfFirst { it.mediaUri == songAndPlaylist.song.mediaUri }
+            }else{
+                songAndPlaylist.playlist.indexOfFirst { it.resourceId == songAndPlaylist.song.resourceId  }
+            }
+            Log.d(TAG, "###TabLocalFragment onViewCreated " +
+                    "indexOfTrack = $indexOfTrack " +
+                    "songAndPlaylist.playlist.size = ${songAndPlaylist.playlist.size}" +
+                    " currentSong = ${songAndPlaylist.song} " +
+                    "currentPlayList.size = ${songAndPlaylist.playlist.size}")
+
+            viewModel.setPlaylistForHandler(songAndPlaylist.playlist, indexOfTrack)
+        }
     }
 
     override fun onPause() {
         super.onPause()
-        //baseViewModel.saveTabPosition(viewPager.currentItem)
+        //запоминаем текущую вкладку
+        viewModel.saveTabsLocalPosition(viewPager.currentItem)
     }
 
     private fun initViews() {
@@ -104,9 +129,9 @@ class TabLocalFragment: Fragment()  {
         playPause = binding.playerBottom.playPause
         next = binding.playerBottom.next
 
-        previous.setOnClickListener {  }
-        playPause.setOnClickListener {  }
-        next.setOnClickListener {  }
+        previous.setOnClickListener { viewModel.playPrevious() }
+        playPause.setOnClickListener { viewModel.togglePlayPause() }
+        next.setOnClickListener { viewModel.playNext()  }
     }
 
     private fun initPageAdapter() {

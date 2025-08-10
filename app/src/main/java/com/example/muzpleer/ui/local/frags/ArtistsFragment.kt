@@ -22,6 +22,7 @@ import com.example.muzpleer.model.Artist
 import com.example.muzpleer.ui.local.adapters.ArtistsAdapter
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 import com.example.muzpleer.util.getSortedDataArtist
+import com.example.muzpleer.util.getSortedDataSong
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 
 class ArtistsFragment:Fragment() {
@@ -43,8 +44,8 @@ class ArtistsFragment:Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         adapter = ArtistsAdapter { artist ->
-
-            viewModel.setPlaylist(artist.songs) //устанавливаем список песен как плейлист
+            val playlist = getSortedDataSong(artist.songs)
+            viewModel.setPlaylist(playlist) //устанавливаем список песен как плейлист
 
             // Навигация через Bundle
             val bundle = Bundle().apply {
@@ -66,7 +67,20 @@ class ArtistsFragment:Fragment() {
             val sortedData =getSortedDataArtist(filteredArtists)
             adapter.data = sortedData  //передаём данные в адаптер
         }
+        //восстанавливаем позицию списка после поворота или возвращения на экран
+        binding.singersRecyclerView.layoutManager?.scrollToPosition(viewModel.getPositionArtist())
+
         initMenu()
+    }
+
+    //запоминаем  позицию списка, на которой сделан клик - на случай поворота экрана
+    override fun onPause() {
+        super.onPause()
+        //определяем первую видимую позицию
+        val manager = binding.singersRecyclerView.layoutManager as LinearLayoutManager
+        val firstPosition = manager.findFirstVisibleItemPosition()
+        viewModel.savePositionArtist(firstPosition)
+        Log.d(TAG, "ArtistsFragment onPause firstPosition = $firstPosition")
     }
 
     override fun onDestroyView() {

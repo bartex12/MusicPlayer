@@ -22,6 +22,7 @@ import com.example.muzpleer.model.Album
 import com.example.muzpleer.ui.local.adapters.AlbumsAdapter
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 import com.example.muzpleer.util.getSortedDataAlbum
+import com.example.muzpleer.util.getSortedDataSong
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 
 
@@ -44,8 +45,8 @@ class AlbumFragment: Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         adapter = AlbumsAdapter { album ->
-
-            viewModel.setPlaylist(album.songs) //устанавливаем список песен как плейлист
+            val playlist = getSortedDataSong(album.songs)
+            viewModel.setPlaylist(playlist) //устанавливаем список песен как плейлист
 
             // Навигация через Bundle
             val bundle = Bundle().apply {
@@ -67,8 +68,20 @@ class AlbumFragment: Fragment() {
             val sortedData =getSortedDataAlbum(filteredAlbums)
             adapter.albums = sortedData  //передаём данные в адаптер
         }
+        //восстанавливаем позицию списка после поворота или возвращения на экран
+        binding.albumRecyclerView.layoutManager?.scrollToPosition(viewModel.getPositionAlbum())
 
         initMenu()
+    }
+
+    //запоминаем  позицию списка, на которой сделан клик - на случай поворота экрана
+    override fun onPause() {
+        super.onPause()
+        //определяем первую видимую позицию
+        val manager = binding.albumRecyclerView.layoutManager as LinearLayoutManager
+        val firstPosition = manager.findFirstVisibleItemPosition()
+        viewModel.savePositionAlbum(firstPosition)
+        Log.d(TAG, "AlbumFragment onPause firstPosition = $firstPosition")
     }
 
     override fun onDestroyView() {

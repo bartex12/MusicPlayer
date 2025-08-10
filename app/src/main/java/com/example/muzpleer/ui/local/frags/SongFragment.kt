@@ -15,10 +15,10 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager.widget.ViewPager
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentSongsBinding
-import com.example.muzpleer.model.Song
 import com.example.muzpleer.model.SongAndPlaylist
 import com.example.muzpleer.ui.local.adapters.SongsAdapter
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
@@ -44,22 +44,26 @@ class SongFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        adapter = SongsAdapter { song ->
+        adapter = SongsAdapter(viewModel) { song ->
+            //устанавливаем список песен как плейлист
+            val playlist = getSortedDataSong(viewModel.getSong())
+            viewModel.setPlaylist(playlist) //устанавливаем список песен как плейлист
 
-            val playlist =viewModel.getSong() //устанавливаем список песен как плейлист
-
-            Log.d(
-                TAG, "*** SongsFragment onViewCreated SongsAdapter  song.title = ${song.title} " +
+            Log.d(TAG, "*** SongsFragment onViewCreated SongsAdapter  " +
+                        "song.title = ${song.title} " +
                         " playlist.size = ${playlist.size} "
             )
-            viewModel.setSongAndPlaylist(
-                SongAndPlaylist(
+            viewModel.setSongAndPlaylist( SongAndPlaylist(
                     song = song,
                     playlist = playlist
                 )
             )
-            // Обработка клика по треку
-            findNavController().navigate(R.id.action_tabsLocalFragment_to_playerFragment)
+            if (song != viewModel.getCurrentSong()){
+                viewModel.setCurrentSong(song)
+            }else{
+                // Обработка клика по треку, если клик по этому треку не первый
+                findNavController().navigate(R.id.action_tabsLocalFragment_to_playerFragment)
+            }
         }
 
         binding.localRecyclerView.apply {
@@ -73,14 +77,38 @@ class SongFragment : Fragment() {
             if (filteredSongs.isEmpty()) binding.imageHolder3.visibility = View.VISIBLE else binding.imageHolder3.visibility = View.GONE
             val sortedData = getSortedDataSong(filteredSongs)
             adapter.data = sortedData  //передаём данные в адаптер
+            Log.d( TAG,"32 SongsFragment onViewCreated sortedData = ${sortedData.map{it.title}} ")
         }
 
+        // Сброс выделения при возврате к фрагменту
+        viewModel.selectedSongPosition.observe(viewLifecycleOwner) { position ->
+            if (position != RecyclerView.NO_POSITION) {
+                binding.localRecyclerView.post {
+                    adapter.notifyItemChanged(position)
+                }
+            }
+        }
+
+        //восстанавливаем позицию списка после поворота или возвращения на экран
+        binding.localRecyclerView.layoutManager?.scrollToPosition(viewModel.getPositionSong())
+
         initMenu()
+    }
+
+    //запоминаем  позицию списка, на которой сделан клик - на случай поворота экрана
+    override fun onPause() {
+        super.onPause()
+        //определяем первую видимую позицию
+        val manager = binding.localRecyclerView.layoutManager as LinearLayoutManager
+        val firstPosition = manager.findFirstVisibleItemPosition()
+        viewModel.savePositionSong(firstPosition)
+        Log.d(TAG, "SongFragment onPause firstPosition = $firstPosition")
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+        viewModel.resetSelection()
     }
 
     companion object {

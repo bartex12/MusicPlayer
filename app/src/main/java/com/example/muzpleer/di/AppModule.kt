@@ -9,6 +9,8 @@ import com.example.muzpleer.model.Song
 import com.example.muzpleer.model.MyRepository
 import com.example.muzpleer.repository.MusicRepository
 import com.example.muzpleer.service.MusicServiceHandler
+import com.example.muzpleer.ui.local.helper.IPreferenceHelper
+import com.example.muzpleer.ui.local.helper.PreferenceHelperImpl
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 import com.example.muzpleer.ui.tabs.base.MyStorage
 import com.example.muzpleer.ui.tabs.base.MyStorageImpl
@@ -18,7 +20,7 @@ import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 
 val appModule = module {
-
+    single<IPreferenceHelper> { PreferenceHelperImpl(get()) }
     single <MyStorage>{ MyStorageImpl(get())}
     single <HomeStorage>{ HomeStorageImpl(get())}
     single { MusicRepository(get()) }
@@ -31,7 +33,7 @@ val appModule = module {
             callback = get() // Получаем реализацию колбэка из контейнера
         )
     }
-    viewModel { SharedViewModel(get(),get())}
+    viewModel { SharedViewModel(get(),get(),get())}
     viewModel { MyViewModel(get())}
     viewModel { HomeViewModel(get()) }
 

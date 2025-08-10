@@ -27,8 +27,6 @@ class SongListFragment:Fragment() {
     private lateinit var adapter: SongsAdapter
     private val viewModel: SharedViewModel by activityViewModel()
 
-
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -41,7 +39,7 @@ class SongListFragment:Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        adapter = SongsAdapter { song ->
+        adapter = SongsAdapter(viewModel) { song ->
 
             val playlist = viewModel.getPlaylist()
 
