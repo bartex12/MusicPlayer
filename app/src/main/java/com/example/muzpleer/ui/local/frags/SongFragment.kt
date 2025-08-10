@@ -45,8 +45,9 @@ class SongFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         adapter = SongsAdapter(viewModel) { song ->
+
             //устанавливаем список песен как плейлист
-            val playlist = getSortedDataSong(viewModel.getSong())
+            val playlist = getSortedDataSong(viewModel.getSongs())
             viewModel.setPlaylist(playlist) //устанавливаем список песен как плейлист
 
             Log.d(TAG, "*** SongsFragment onViewCreated SongsAdapter  " +
@@ -54,16 +55,12 @@ class SongFragment : Fragment() {
                         " playlist.size = ${playlist.size} "
             )
             viewModel.setSongAndPlaylist( SongAndPlaylist(
-                    song = song,
-                    playlist = playlist
+                    song = song,  //текущая песня
+                    playlist = playlist //текущий плейлист
                 )
             )
-            if (song != viewModel.getCurrentSong()){
-                viewModel.setCurrentSong(song)
-            }else{
-                // Обработка клика по треку, если клик по этому треку не первый
-                findNavController().navigate(R.id.action_tabsLocalFragment_to_playerFragment)
-            }
+
+            findNavController().navigate(R.id.action_tabsLocalFragment_to_playerFragment)
         }
 
         binding.localRecyclerView.apply {
@@ -73,7 +70,7 @@ class SongFragment : Fragment() {
 
         viewModel.filteredSongs.observe(viewLifecycleOwner) { filteredSongs ->
             Log.d( TAG,"32 SongsFragment onViewCreated filteredSongs.observe: filteredSongs.size= ${filteredSongs.size} ")
-            if (viewModel.getSong().isEmpty()) binding.progressBar.visibility = View.VISIBLE else binding.progressBar.visibility = View.GONE
+            if (viewModel.getSongs().isEmpty()) binding.progressBar.visibility = View.VISIBLE else binding.progressBar.visibility = View.GONE
             if (filteredSongs.isEmpty()) binding.imageHolder3.visibility = View.VISIBLE else binding.imageHolder3.visibility = View.GONE
             val sortedData = getSortedDataSong(filteredSongs)
             adapter.data = sortedData  //передаём данные в адаптер

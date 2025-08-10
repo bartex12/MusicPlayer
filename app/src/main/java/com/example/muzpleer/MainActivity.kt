@@ -19,6 +19,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import com.google.android.material.navigation.NavigationView
 import androidx.navigation.findNavController
@@ -86,7 +87,6 @@ class MainActivity : AppCompatActivity() {
        //получаем разрешения
         checkPermissions()
 
-        initViews()
     }
 
     private fun initViews() {
@@ -218,6 +218,9 @@ class MainActivity : AppCompatActivity() {
 
 
     private fun scanForMusic() {
+
+        initViews()
+
         setSupportActionBar(binding.appBarMain.toolbar)
         val drawerLayout: DrawerLayout = binding.drawerLayout
         val navView: NavigationView = binding.navView
@@ -241,7 +244,7 @@ class MainActivity : AppCompatActivity() {
         viewModel.songAndPlaylist.observe(this) { songAndPlaylist ->
             //находим индекс трека в плейлисте
             val indexOfTrack = if(songAndPlaylist.song.isLocal){
-                songAndPlaylist.playlist.indexOfFirst { it.mediaUri == songAndPlaylist.song.mediaUri }
+                songAndPlaylist.playlist.indexOfFirst { it.title == songAndPlaylist.song.title }
             }else{
                 songAndPlaylist.playlist.indexOfFirst { it.resourceId == songAndPlaylist.song.resourceId  }
             }

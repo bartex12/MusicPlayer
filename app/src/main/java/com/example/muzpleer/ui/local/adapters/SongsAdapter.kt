@@ -56,8 +56,13 @@ class SongsAdapter(
         }
         viewModel.currentSong
             .observe(holder.itemView.context as LifecycleOwner) { currentSong ->
+
                 try{
-                    holder.itemView.isSelected =  data[position].id == currentSong?.id
+                    holder.itemView.isSelected =  if (data[position].isLocal){
+                         data[position].mediaUri == currentSong?.mediaUri
+                     }else{
+                          data[position].resourceId == currentSong?.resourceId
+                     }
                 }catch(e: Exception){
                     Log.d(TAG, "SongsAdapter Ошибка: ${e.message}")
                 }

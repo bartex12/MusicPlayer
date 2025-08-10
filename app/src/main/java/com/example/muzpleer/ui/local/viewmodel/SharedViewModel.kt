@@ -155,11 +155,10 @@ class SharedViewModel(
 
     override fun onTrackChanged(track: Song) {
         Log.d(TAG, "SharedViewModel onTrackChanged track = $track")
-        _currentSong.postValue(track)
-    }
+        _currentSong.value = track  }
 
     override fun onPlaybackStateChanged(isPlaying: Boolean) {
-        _isPlaying.postValue(isPlaying)
+        _isPlaying.value = isPlaying
     }
 
     override fun onPositionChanged(position: Long, duration: Long) {
@@ -176,12 +175,12 @@ class SharedViewModel(
     }
 
     fun setCurrentSong(song: Song) {
-        Log.d(TAG, "PlayerViewModel setCurrentSong ")
-        _currentSong.postValue(song)
+        Log.d(TAG, "SharedViewModel setCurrentSong song = $song")
+        _currentSong.value = song
     }
 
     fun getCurrentSong() : Song?{
-        Log.d(TAG, "PlayerViewModel getCurrentSong ")
+        //Log.d(TAG, "SharedViewModel getCurrentSong ")
          return currentSong.value
     }
 
@@ -263,7 +262,7 @@ class SharedViewModel(
         _filteredFolders.value = filteredFolderList
     }
 
-    fun getSong():List<Song> {
+    fun getSongs():List<Song> {
        return songs.value
     }
 

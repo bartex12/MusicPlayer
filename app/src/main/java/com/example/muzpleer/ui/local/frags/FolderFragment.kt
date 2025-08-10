@@ -20,7 +20,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.viewpager.widget.ViewPager
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentFoldersBinding
-import com.example.muzpleer.model.Folder
 import com.example.muzpleer.ui.local.adapters.FoldersAdapter
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 import com.example.muzpleer.util.getSortedDataFolder
@@ -64,7 +63,7 @@ class FolderFragment : Fragment(){
 
         viewModel.filteredFolders.observe(viewLifecycleOwner) { filteredFolders ->
             Log.d(TAG,"35 FolderFragment onViewCreated filteredFolders.observe: filteredFolders.size= ${filteredFolders.size} ")
-            if (viewModel.getSong().isEmpty()) binding.progressBarFolder.visibility = View.VISIBLE else binding.progressBarFolder.visibility = View.GONE
+            if (viewModel.getSongs().isEmpty()) binding.progressBarFolder.visibility = View.VISIBLE else binding.progressBarFolder.visibility = View.GONE
             if (filteredFolders.isEmpty()) binding.imageHolder3Folder.visibility = View.VISIBLE else binding.imageHolder3Folder.visibility = View.GONE
             val sortedData =getSortedDataFolder(filteredFolders)
             adapter.folders = sortedData  //передаём данные в адаптер
