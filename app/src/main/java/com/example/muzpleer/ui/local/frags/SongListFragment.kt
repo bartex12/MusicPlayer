@@ -9,17 +9,14 @@ import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.viewpager.widget.ViewPager
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentAlltracksBinding
 import com.example.muzpleer.model.Song
 import com.example.muzpleer.model.SongAndPlaylist
 import com.example.muzpleer.ui.local.adapters.SongsAdapter
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
-import com.example.muzpleer.ui.player.PlayerFragment
 import com.example.muzpleer.util.getSortedDataSong
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
-import kotlin.getValue
 
 class SongListFragment:Fragment() {
     private var _binding: FragmentAlltracksBinding? = null
@@ -39,26 +36,24 @@ class SongListFragment:Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        adapter = SongsAdapter(viewModel) { song ->
-
+        adapter = SongsAdapter(viewModel, { song ->
             val playlist = viewModel.getPlaylist()
-
-            Log.d(TAG, "### SongsListFragment onViewCreated SongsAdapter  song.title = ${song.title} " +
-                    " playlist.size = ${playlist.size} ")
-
             viewModel.setSongAndPlaylist(
                 SongAndPlaylist(
                     song = song,
                     playlist = playlist)
             )
-
-            if (song != viewModel.getCurrentSong()){
-                viewModel.setCurrentSong(song)
-            }else{
-                // Обработка клика по треку, если клик по этому треку не первый
-                findNavController().navigate(R.id.action_alltracksFragment_to_playerFragment)
-            }
-        }
+            viewModel.setCurrentSong(song)
+        },{song->
+            val playlist = viewModel.getPlaylist()
+            viewModel.setSongAndPlaylist(
+                SongAndPlaylist(
+                    song = song,
+                    playlist = playlist)
+            )
+            viewModel.setCurrentSong(song)
+            findNavController().navigate(R.id.action_alltracksFragment_to_playerFragment)
+        })
 
         binding.alltracksRecyclerView.apply {
             layoutManager = LinearLayoutManager(requireContext())

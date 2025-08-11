@@ -23,6 +23,8 @@
     <string name="search_album">поиск альбома</string>
     <string name="search_artist">поиск исполнителя</string>
     <string name="search_folder">поиск папки</string>
+    <string name="my_tracks">Избранное</string>
+    <string name="little_king">МП</string>
 
     <string-array name="sound_level_entry_number">
         <item>Без звука</item>

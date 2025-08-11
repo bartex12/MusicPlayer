@@ -15,4 +15,13 @@ interface IPreferenceHelper {
 
     fun saveTabsLocalPosition(tabLocaPosition:Int)
     fun getTabsLocalPosition(): Int
+
+    fun saveCurrentSongId(id:Long)
+    fun getCurrentSongId(): Long
+
+    fun getPositionMyTracks(): Int
+    fun savePositionMyTracks(position: Int)
+
+    fun getPositionMyKing(): Int
+    fun savePositionMyKing(position: Int)
 }

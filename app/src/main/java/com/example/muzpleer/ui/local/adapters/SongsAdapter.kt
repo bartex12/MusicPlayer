@@ -2,11 +2,9 @@ package com.example.muzpleer.ui.local.adapters
 
 import android.annotation.SuppressLint
 import android.content.ContentUris
-import android.graphics.BitmapFactory
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.annotation.experimental.Experimental
 import androidx.core.net.toUri
 import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.RecyclerView
@@ -19,13 +17,13 @@ import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 
 class SongsAdapter(
     private val viewModel: SharedViewModel,
-    private val onItemClick: (Song) -> Unit
+    private val onItemClick: (Song) -> Unit,
+    private val onLongClickListener:(Song)->Unit
 ) : RecyclerView.Adapter<SongsAdapter.MusicViewHolder>() {
+
     companion object{
         const val TAG = "33333"
     }
-
-    private var selectedPosition = RecyclerView.NO_POSITION
 
     var data:List<Song> = listOf()
         @SuppressLint("NotifyDataSetChanged")
@@ -49,14 +47,15 @@ class SongsAdapter(
         position: Int
     ) {
         holder.bind(data[position])
+
         // Следим за изменениями выбранной позиции
         viewModel.selectedSongPosition
             .observe(holder.itemView.context as LifecycleOwner) { selectedPos ->
                 holder.itemView.isSelected = position == selectedPos
         }
+        //следим за текущей песней
         viewModel.currentSong
             .observe(holder.itemView.context as LifecycleOwner) { currentSong ->
-
                 try{
                     holder.itemView.isSelected =  if (data[position].isLocal){
                          data[position].mediaUri == currentSong?.mediaUri
@@ -95,8 +94,14 @@ class SongsAdapter(
                     .into(binding.trackArtwork)
 
             binding.root.setOnClickListener {
-                viewModel.setSelectedPosition(adapterPosition)
+                viewModel.setSelectedPosition(absoluteAdapterPosition)
                 onItemClick(track)
+            }
+            // устанавливаем слушатель долгих нажатий на списке
+            binding.root.setOnLongClickListener {
+                viewModel.setSelectedPosition(absoluteAdapterPosition)
+                onLongClickListener(track)
+                false
             }
         }
 

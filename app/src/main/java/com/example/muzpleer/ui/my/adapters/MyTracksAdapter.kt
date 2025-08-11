@@ -1,17 +1,24 @@
-package com.example.muzpleer.ui.tabs.adapters
+package com.example.muzpleer.ui.my.adapters
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.muzpleer.R
 import com.example.muzpleer.model.Song
+import com.example.muzpleer.ui.local.adapters.SongsAdapter.Companion.TAG
+import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 
-class RecyclerViewTabAdapter(val onLineListener:(Song)->Unit, val onLongClickListener:(Song)->Unit)
-    : RecyclerView.Adapter<RecyclerViewTabAdapter.ViewHolder>() {
+class MyTracksAdapter(
+    private val viewModel: SharedViewModel,
+    val onLineListener:(Song)->Unit,
+    val onLongClickListener:(Song)->Unit)
+    : RecyclerView.Adapter<MyTracksAdapter.ViewHolder>() {
 
     var data:List<Song> = listOf()
         set(value){
@@ -27,6 +34,25 @@ class RecyclerViewTabAdapter(val onLineListener:(Song)->Unit, val onLongClickLis
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         holder.bind(data[position])
+
+        // Следим за изменениями выбранной позиции
+        viewModel.selectedSongPosition
+            .observe(holder.itemView.context as LifecycleOwner) { selectedPos ->
+                holder.itemView.isSelected = position == selectedPos
+            }
+
+        viewModel.currentSong
+            .observe(holder.itemView.context as LifecycleOwner) { currentSong ->
+                try{
+                    holder.itemView.isSelected =  if (data[position].isLocal){
+                        data[position].mediaUri == currentSong?.mediaUri
+                    }else{
+                        data[position].resourceId == currentSong?.resourceId
+                    }
+                }catch(e: Exception){
+                    Log.d(TAG, "SongsAdapter Ошибка: ${e.message}")
+                }
+            }
     }
 
     override fun getItemCount(): Int = data.size
@@ -46,11 +72,12 @@ class RecyclerViewTabAdapter(val onLineListener:(Song)->Unit, val onLongClickLis
 
                 //устанавливаем слущатель щелчков на списке
                 itemView.setOnClickListener {
+                    viewModel.setSelectedPosition(absoluteAdapterPosition)
                     onLineListener.invoke(item)
                 }
-                // устанавливаем слушатель долгих нажатий на списке для вызова контекстного меню
-                //передаём имя файла раскладки
+                // устанавливаем слушатель долгих нажатий на списке
                 itemView.setOnLongClickListener {
+                    viewModel.setSelectedPosition(absoluteAdapterPosition)
                     onLongClickListener.invoke(item)
                     false
                 }

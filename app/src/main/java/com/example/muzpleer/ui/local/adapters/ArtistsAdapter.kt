@@ -5,15 +5,18 @@ import android.content.ContentUris
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.net.toUri
+import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.ItemArtistBinding
 import com.example.muzpleer.model.Artist
+import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 import com.example.muzpleer.util.getAlbumsCountString
 import com.example.muzpleer.util.getTracksCountString
 
 class ArtistsAdapter(
+    private val viewModel: SharedViewModel,
     private val onItemClick: (Artist) -> Unit
 ) : RecyclerView.Adapter<ArtistsAdapter.ArtistViewHolder>() {
 
@@ -39,6 +42,12 @@ class ArtistsAdapter(
         position: Int
     ) {
         holder.bind(data[position])
+
+        // Следим за изменениями выбранной позиции
+        viewModel.selectedArtistPosition
+            .observe(holder.itemView.context as LifecycleOwner) { selectedPos ->
+                holder.itemView.isSelected = position == selectedPos
+            }
     }
 
     override fun getItemCount(): Int {
@@ -67,7 +76,10 @@ class ArtistsAdapter(
                 .error(R.drawable.muz_player2)
                 .into(binding.ivArtistArtwork)
 
-            binding.root.setOnClickListener { onItemClick(artist) }
+            binding.root.setOnClickListener {
+                viewModel.setSelectedArtistPosition(absoluteAdapterPosition)
+                onItemClick(artist)
+            }
         }
     }
 }

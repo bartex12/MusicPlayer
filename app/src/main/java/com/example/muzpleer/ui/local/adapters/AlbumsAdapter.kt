@@ -2,18 +2,23 @@ package com.example.muzpleer.ui.local.adapters
 
 import android.annotation.SuppressLint
 import android.content.ContentUris
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.net.toUri
+import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.RecyclerView
 import com.example.muzpleer.databinding.ItemAlbumBinding
 import com.example.muzpleer.model.Album
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.example.muzpleer.R
+import com.example.muzpleer.ui.local.adapters.SongsAdapter.Companion.TAG
+import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 import com.example.muzpleer.util.getTracksCountString
 
 class AlbumsAdapter(
+    private val viewModel: SharedViewModel,
     private val onAlbumClick: (Album) -> Unit
 ) : RecyclerView.Adapter<AlbumsAdapter.AlbumViewHolder>() {
 
@@ -36,6 +41,12 @@ class AlbumsAdapter(
 
     override fun onBindViewHolder(holder: AlbumViewHolder, position: Int) {
         holder.bind(albums[position])
+
+        // Следим за изменениями выбранной позиции
+        viewModel.selectedAlbumPosition
+            .observe(holder.itemView.context as LifecycleOwner) { selectedPos ->
+                holder.itemView.isSelected = position == selectedPos
+            }
     }
 
     override fun getItemCount() = albums.size
@@ -56,12 +67,15 @@ class AlbumsAdapter(
             // Загрузка обложки альбома
             Glide.with(binding.root.context)
                 .load(albumArtUri)
-                .placeholder(R.drawable.muz_player4)
-                .error(R.drawable.muz_player4)
+                .placeholder(R.drawable.muz_player5)
+                .error(R.drawable.muz_player5)
                 .diskCacheStrategy(DiskCacheStrategy.ALL)
                 .into(binding.albumArt)
 
-            itemView.setOnClickListener { onAlbumClick(album) }
+            itemView.setOnClickListener {
+                viewModel.setSelectedAlbumPosition(absoluteAdapterPosition)
+                onAlbumClick(album)
+            }
         }
     }
 

@@ -1,15 +1,16 @@
-package com.example.muzpleer.ui.tabs.base
+package com.example.muzpleer.ui.my.viewmodel
 
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.muzpleer.model.Song
+import com.example.muzpleer.ui.my.storage.MyStorage
 import com.example.muzpleer.util.Constants
 import kotlinx.coroutines.*
 
 open class MyViewModel(
-    private val storage:MyStorage
+    private val storage: MyStorage
 ): ViewModel() {
     private val _data:MutableLiveData<List<Song>> = MutableLiveData<List<Song>>() //список файлов
     val data:LiveData<List<Song>> = _data
@@ -71,5 +72,13 @@ companion object {
     override fun onCleared() {
         super.onCleared()
         cancelJob()
+    }
+
+    fun getDataKing():List<Song>{
+        return dataKing.value
+    }
+
+    fun getDataMy():List<Song>{
+        return dataMy.value
     }
 }

@@ -1,14 +1,13 @@
-package com.example.muzpleer.ui.tabs.adapters
+package com.example.muzpleer.ui.my.adapters
 
 import android.content.Context
-import android.util.Log
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentPagerAdapter
 import androidx.viewpager.widget.ViewPager
 import com.example.muzpleer.R
-import com.example.muzpleer.ui.tabs.frags.MykingsFragment
-import com.example.muzpleer.ui.tabs.frags.MytracksFragment
+import com.example.muzpleer.ui.my.frags.MyKingsFragment
+import com.example.muzpleer.ui.my.frags.MyTracksFragment
 
 
 class ViewPageAdapter(private val context: Context, fragmentManager : FragmentManager,
@@ -20,15 +19,15 @@ class ViewPageAdapter(private val context: Context, fragmentManager : FragmentMa
     }
 
     private val fragments = arrayOf(
-        MytracksFragment.newInstance(viewPager) ,
-        MykingsFragment.newInstance(viewPager),
-        MykingsFragment.newInstance(viewPager)
+        MyTracksFragment.newInstance(viewPager) ,
+        MyKingsFragment.newInstance(viewPager),
+       // MyKingsFragment.newInstance(viewPager)
     )
 
     private val titles = arrayOf(
         context.getString(R.string.mytracks),
         context.getString(R.string.mykings),
-        context.getString(R.string.local)
+        //context.getString(R.string.local)
     )
 
     override fun getCount(): Int {

@@ -1,4 +1,4 @@
-package com.example.muzpleer.ui.tabs
+package com.example.muzpleer.ui.my
 
 import android.graphics.Color
 import android.os.Bundle
@@ -10,8 +10,8 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.viewpager.widget.ViewPager
 import com.example.muzpleer.databinding.FragmentTabsBinding
-import com.example.muzpleer.ui.tabs.adapters.ViewPageAdapter
-import com.example.muzpleer.ui.tabs.base.MyViewModel
+import com.example.muzpleer.ui.my.adapters.ViewPageAdapter
+import com.example.muzpleer.ui.my.viewmodel.MyViewModel
 import com.google.android.material.tabs.TabLayout
 
 class MyTabsFragment: Fragment() {

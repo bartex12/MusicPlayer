@@ -10,10 +10,13 @@ class PreferenceHelperImpl(private  val app: Application): IPreferenceHelper {
     companion object{
         const val TAG = "33333"
         const val FIRST_POSITION_SONG = "FIRST_POSITION_SONG"
+        const val FIRST_POSITION_MY_TRACKS = "FIRST_POSITION_MY_TRACKS"
+        const val FIRST_POSITION_MY_KING = "FIRST_POSITION_MY_KING"
         const val FIRST_POSITION_ALBUM = "FIRST_POSITION_ALBUM"
         const val FIRST_POSITION_ARTIST ="FIRST_POSITION_ARTIST"
         const val FIRST_POSITION_FOLDER ="FIRST_POSITION_FOLDER"
         const val PAGER_LOCAL_POSITION ="PAGER_LOCAL_POSITION"
+        const val CURRENT_SONG_KEY = "CURRENT_SONG_KEY"
     }
 
     private val prefs: SharedPreferences by lazy {
@@ -35,6 +38,7 @@ class PreferenceHelperImpl(private  val app: Application): IPreferenceHelper {
             else -> error("Only primitives!!!")
         }
     }
+
 
     override fun savePositionSong(position: Int) {
         putValue(FIRST_POSITION_SONG to position )
@@ -86,6 +90,36 @@ class PreferenceHelperImpl(private  val app: Application): IPreferenceHelper {
 
     override fun getTabsLocalPosition(): Int {
         return  prefs.getInt(PAGER_LOCAL_POSITION, 0)
+    }
+
+    override fun saveCurrentSongId(id: Long) {
+        putValue(CURRENT_SONG_KEY to id)
+    }
+
+    override fun getCurrentSongId(): Long {
+        return  prefs.getLong(CURRENT_SONG_KEY, -1L)
+    }
+
+    override fun getPositionMyTracks(): Int {
+        val position = prefs .getInt(FIRST_POSITION_MY_TRACKS, 0)
+        Log.d(TAG, "PreferenceHelper getPositionMyTracks position = $position")
+        return position
+    }
+
+    override fun savePositionMyTracks(position: Int) {
+        putValue(FIRST_POSITION_MY_TRACKS to position )
+        Log.d(TAG,"PreferenceHelper savePositionMyTracks position = $position" )
+    }
+
+    override fun getPositionMyKing(): Int {
+        val position = prefs .getInt(FIRST_POSITION_MY_KING, 0)
+        Log.d(TAG, "PreferenceHelper getPositionMyKing position = $position")
+        return position
+    }
+
+    override fun savePositionMyKing(position: Int) {
+        putValue(FIRST_POSITION_MY_KING to position )
+        Log.d(TAG,"PreferenceHelper savePositionMyKing position = $position" )
     }
 
     fun getSoundLevel(): Int {

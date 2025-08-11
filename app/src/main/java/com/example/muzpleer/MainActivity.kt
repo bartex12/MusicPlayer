@@ -12,36 +12,31 @@ import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
 import android.util.Log
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
-import com.google.android.material.navigation.NavigationView
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
+import androidx.core.view.GravityCompat
+import androidx.drawerlayout.widget.DrawerLayout
+import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
-import androidx.drawerlayout.widget.DrawerLayout
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
-import com.example.muzpleer.databinding.ActivityMainBinding
-import androidx.core.net.toUri
-import androidx.core.view.GravityCompat
-import androidx.core.view.MenuProvider
-import androidx.navigation.NavController
 import com.bumptech.glide.Glide
-import com.example.muzpleer.ui.local.TabLocalFragment
+import com.example.muzpleer.databinding.ActivityMainBinding
+import com.example.muzpleer.model.Song
+import com.example.muzpleer.ui.local.helper.IPreferenceHelper
+import com.example.muzpleer.ui.local.helper.PreferenceHelperImpl
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
+import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
-import org.koin.androidx.viewmodel.ext.android.activityViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
-import kotlin.getValue
 
 class MainActivity : AppCompatActivity() {
 
@@ -56,6 +51,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var previous: ImageView
     private lateinit var playPause: ImageView
     private lateinit var next: ImageView
+
+    private lateinit var appPreferences: IPreferenceHelper
+    private var currentSong: Song? = null
 
     private val storagePermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -84,20 +82,84 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
         navController = findNavController(R.id.nav_host_fragment_content_main)
 
+        appPreferences =PreferenceHelperImpl(this.application)
+        // Восстанавливаем последнюю песню
+        val savedSongId = appPreferences.getCurrentSongId()
+        if (savedSongId != -1L) {
+            viewModel.setCurrentSongById(savedSongId)
+        }
        //получаем разрешения
         checkPermissions()
+    }
 
+    private fun scanForMusic() {
+
+        initViews()
+
+        setSupportActionBar(binding.appBarMain.toolbar)
+        val drawerLayout: DrawerLayout = binding.drawerLayout
+        val navView: NavigationView = binding.navView
+        // Passing each menu ID as a set of Ids because each
+        // menu should be considered as top level destinations.
+        appBarConfiguration = AppBarConfiguration(
+            setOf(
+                R.id.homeFragment,  R.id.tracksFragment, R.id.playerFragment, R.id.songFragment
+            ), drawerLayout
+        )
+        //navController.navigate(R.id.localFragment)
+        setupActionBarWithNavController(navController, appBarConfiguration)
+        navView.setupWithNavController(navController)
+
+        viewModel.isPlaying.observe(this) { isPlaying ->
+            playPause.setImageResource(
+                if (isPlaying) R.drawable.ic_pause_white else R.drawable.ic_play_white
+            )
+        }
+
+        viewModel.songAndPlaylist.observe(this) { songAndPlaylist ->
+            //находим индекс трека в плейлисте
+            val indexOfTrack = if(songAndPlaylist.song.isLocal){
+                songAndPlaylist.playlist.indexOfFirst { it.mediaUri == songAndPlaylist.song.mediaUri }
+            }else{
+                songAndPlaylist.playlist.indexOfFirst { it.resourceId == songAndPlaylist.song.resourceId  }
+            }
+            Log.d(TAG, "###MainActivity scanForMusic " +
+                    "indexOfTrack = $indexOfTrack " +
+                    "songAndPlaylist.playlist.size = ${songAndPlaylist.playlist.size}" +
+                    " currentSong title= ${songAndPlaylist.song.title} ")
+
+            Log.d(TAG, "###MainActivity scanForMusic songAndPlaylist.playlist = " +
+                    "${songAndPlaylist.playlist.map { it.title }}")
+
+            viewModel.setPlaylistForHandler(songAndPlaylist.playlist, indexOfTrack)
+        }
+
+        viewModel.currentSong.observe(this) {songCurrent->
+            currentSong = songCurrent
+            songCurrent?. let {
+                title.text=songCurrent.title
+                artist.text=songCurrent.artist
+                // Загружаем обложку, если есть
+                val albumArtUri=ContentUris.withAppendedId(
+                    "content://media/external/audio/albumart".toUri(),
+                    songCurrent.albumId
+                )
+                Glide.with(this)
+                    .load(if (songCurrent.isLocal) albumArtUri else it.cover)
+                    .placeholder(R.drawable.muz_player3)
+                    .error(R.drawable.muz_player3)
+                    .into(artWork)
+            }
+        }
     }
 
     private fun initViews() {
-        //viewPager = binding.viewPagerLocal
-        //tabLayout = binding.tabLayoutLocal
-        title = binding.appBarMain.contentMain.playerBottom.title
-        artist = binding.appBarMain.contentMain.playerBottom.artist
-        artWork = binding.appBarMain.contentMain.playerBottom.artwork
-        previous = binding.appBarMain.contentMain.playerBottom.previous
-        playPause = binding.appBarMain.contentMain.playerBottom.playPause
-        next = binding.appBarMain.contentMain.playerBottom.next
+        title = binding.appBarMain.contentMain.title
+        artist = binding.appBarMain.contentMain.artist
+        artWork = binding.appBarMain.contentMain.artwork
+        previous = binding.appBarMain.contentMain.previous
+        playPause = binding.appBarMain.contentMain.playPause
+        next = binding.appBarMain.contentMain.next
 
         previous.setOnClickListener { viewModel.playPrevious() }
         playPause.setOnClickListener { viewModel.togglePlayPause() }
@@ -110,11 +172,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
-        // Только если не происходит смена конфигурации
-//        if (!isChangingConfigurations) {
-//            getKoin().get<MusicServiceHandler>().releasePlayer()
-//        }
         super.onDestroy()
+        // Сохраняем текущую песню при закрытии
+        currentSong?.let { appPreferences.saveCurrentSongId(it.id)  }
     }
 
     private fun checkPermissions() {
@@ -214,68 +274,6 @@ class MainActivity : AppCompatActivity() {
         val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
         intent.data = Uri.fromParts("package", packageName, null)
         startActivity(intent)
-    }
-
-
-    private fun scanForMusic() {
-
-        initViews()
-
-        setSupportActionBar(binding.appBarMain.toolbar)
-        val drawerLayout: DrawerLayout = binding.drawerLayout
-        val navView: NavigationView = binding.navView
-        // Passing each menu ID as a set of Ids because each
-        // menu should be considered as top level destinations.
-        appBarConfiguration = AppBarConfiguration(
-            setOf(
-                R.id.homeFragment,  R.id.tracksFragment, R.id.playerFragment, R.id.songFragment
-            ), drawerLayout
-        )
-        //navController.navigate(R.id.localFragment)
-        setupActionBarWithNavController(navController, appBarConfiguration)
-        navView.setupWithNavController(navController)
-
-        viewModel.isPlaying.observe(this) { isPlaying ->
-            playPause.setImageResource(
-                if (isPlaying) R.drawable.ic_pause_white else R.drawable.ic_play_white
-            )
-        }
-
-        viewModel.songAndPlaylist.observe(this) { songAndPlaylist ->
-            //находим индекс трека в плейлисте
-            val indexOfTrack = if(songAndPlaylist.song.isLocal){
-                songAndPlaylist.playlist.indexOfFirst { it.title == songAndPlaylist.song.title }
-            }else{
-                songAndPlaylist.playlist.indexOfFirst { it.resourceId == songAndPlaylist.song.resourceId  }
-            }
-            Log.d(TAG, "###MainActivity scanForMusic " +
-                    "indexOfTrack = $indexOfTrack " +
-                    "songAndPlaylist.playlist.size = ${songAndPlaylist.playlist.size}" +
-                    " currentSong title= ${songAndPlaylist.song.title} ")
-
-            Log.d(TAG, "###MainActivity scanForMusic songAndPlaylist.playlist = " +
-                    "${songAndPlaylist.playlist.map { it.title }}")
-
-            viewModel.setPlaylistForHandler(songAndPlaylist.playlist, indexOfTrack)
-        }
-
-        viewModel.currentSong.observe(this) {currentSong->
-            currentSong?. let {
-                title.text=currentSong.title
-                artist.text=currentSong.artist
-                // Загружаем обложку, если есть
-                val albumArtUri=ContentUris.withAppendedId(
-                    "content://media/external/audio/albumart".toUri(),
-                    currentSong.albumId
-                )
-                Glide.with(this)
-                    .load(if (currentSong.isLocal) albumArtUri else it.cover)
-                    .placeholder(R.drawable.muz_player3)
-                    .error(R.drawable.muz_player3)
-                    .into(artWork)
-            }
-        }
-
     }
 
     //при нажатии на кнопку Назад если фрагмент реализует BackButtonListener, вызываем метод backPressed

@@ -44,24 +44,24 @@ class SongFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        adapter = SongsAdapter(viewModel) { song ->
-
+        adapter = SongsAdapter(viewModel, { song ->
             //устанавливаем список песен как плейлист
             val playlist = getSortedDataSong(viewModel.getSongs())
             viewModel.setPlaylist(playlist) //устанавливаем список песен как плейлист
-
-            Log.d(TAG, "*** SongsFragment onViewCreated SongsAdapter  " +
-                        "song.title = ${song.title} " +
-                        " playlist.size = ${playlist.size} "
-            )
             viewModel.setSongAndPlaylist( SongAndPlaylist(
                     song = song,  //текущая песня
                     playlist = playlist //текущий плейлист
-                )
-            )
-
+                ))
+        }, {song->
+            //устанавливаем список песен как плейлист
+            val playlist = getSortedDataSong(viewModel.getSongs())
+            viewModel.setPlaylist(playlist) //устанавливаем список песен как плейлист
+            viewModel.setSongAndPlaylist( SongAndPlaylist(
+                song = song,  //текущая песня
+                playlist = playlist //текущий плейлист
+            ))
             findNavController().navigate(R.id.action_tabsLocalFragment_to_playerFragment)
-        }
+        })
 
         binding.localRecyclerView.apply {
             layoutManager = LinearLayoutManager(requireContext())
@@ -85,7 +85,6 @@ class SongFragment : Fragment() {
                 }
             }
         }
-
         //восстанавливаем позицию списка после поворота или возвращения на экран
         binding.localRecyclerView.layoutManager?.scrollToPosition(viewModel.getPositionSong())
 

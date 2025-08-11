@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/mobile_navigation"
     app:startDestination="@id/homeFragment">
 
@@ -33,7 +32,7 @@
         android:label="Настройки" />
     <fragment
         android:id="@+id/tabsFragment"
-        android:name="com.example.muzpleer.ui.tabs.MyTabsFragment"
+        android:name="com.example.muzpleer.ui.my.MyTabsFragment"
         android:label="Моя музыка" >
         <action
             android:id="@+id/action_tabsFragment_to_playerFragment"
@@ -67,6 +66,14 @@
             android:id="@+id/action_alltracksFragment_to_playerFragment"
             app:destination="@id/playerFragment" />
     </fragment>
+    <fragment
+        android:id="@+id/myKingsFragment"
+        android:name="com.example.muzpleer.ui.my.frags.MyKingsFragment"
+        android:label="MyKingsFragment" />
+    <fragment
+        android:id="@+id/myTracksFragment"
+        android:name="com.example.muzpleer.ui.my.frags.MyTracksFragment"
+        android:label="MyTracksFragment" />
 
 
 </navigation>
