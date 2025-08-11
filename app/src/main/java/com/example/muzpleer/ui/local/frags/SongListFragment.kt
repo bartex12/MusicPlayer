@@ -36,26 +36,24 @@ class SongListFragment:Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        adapter = SongsAdapter(viewModel) { song ->
-
+        adapter = SongsAdapter(viewModel, { song ->
             val playlist = viewModel.getPlaylist()
-
-            Log.d(TAG, "### SongsListFragment onViewCreated SongsAdapter  song.title = ${song.title} " +
-                    " playlist.size = ${playlist.size} ")
-
             viewModel.setSongAndPlaylist(
                 SongAndPlaylist(
                     song = song,
                     playlist = playlist)
             )
-
-            if (song != viewModel.getCurrentSong()){
-                viewModel.setCurrentSong(song)
-            }else{
-                // Обработка клика по треку, если клик по этому треку не первый
-                findNavController().navigate(R.id.action_alltracksFragment_to_playerFragment)
-            }
-        }
+            viewModel.setCurrentSong(song)
+        },{song->
+            val playlist = viewModel.getPlaylist()
+            viewModel.setSongAndPlaylist(
+                SongAndPlaylist(
+                    song = song,
+                    playlist = playlist)
+            )
+            viewModel.setCurrentSong(song)
+            findNavController().navigate(R.id.action_alltracksFragment_to_playerFragment)
+        })
 
         binding.alltracksRecyclerView.apply {
             layoutManager = LinearLayoutManager(requireContext())

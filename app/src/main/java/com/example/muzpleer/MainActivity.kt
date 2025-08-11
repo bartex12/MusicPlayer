@@ -88,10 +88,8 @@ class MainActivity : AppCompatActivity() {
         if (savedSongId != -1L) {
             viewModel.setCurrentSongById(savedSongId)
         }
-
        //получаем разрешения
         checkPermissions()
-
     }
 
     private fun scanForMusic() {

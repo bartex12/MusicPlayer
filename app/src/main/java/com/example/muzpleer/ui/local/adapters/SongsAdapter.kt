@@ -17,13 +17,13 @@ import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 
 class SongsAdapter(
     private val viewModel: SharedViewModel,
-    private val onItemClick: (Song) -> Unit
+    private val onItemClick: (Song) -> Unit,
+    private val onLongClickListener:(Song)->Unit
 ) : RecyclerView.Adapter<SongsAdapter.MusicViewHolder>() {
+
     companion object{
         const val TAG = "33333"
     }
-
-    private var selectedPosition = RecyclerView.NO_POSITION
 
     var data:List<Song> = listOf()
         @SuppressLint("NotifyDataSetChanged")
@@ -53,7 +53,7 @@ class SongsAdapter(
             .observe(holder.itemView.context as LifecycleOwner) { selectedPos ->
                 holder.itemView.isSelected = position == selectedPos
         }
-
+        //следим за текущей песней
         viewModel.currentSong
             .observe(holder.itemView.context as LifecycleOwner) { currentSong ->
                 try{
@@ -96,6 +96,12 @@ class SongsAdapter(
             binding.root.setOnClickListener {
                 viewModel.setSelectedPosition(absoluteAdapterPosition)
                 onItemClick(track)
+            }
+            // устанавливаем слушатель долгих нажатий на списке
+            binding.root.setOnLongClickListener {
+                viewModel.setSelectedPosition(absoluteAdapterPosition)
+                onLongClickListener(track)
+                false
             }
         }
 

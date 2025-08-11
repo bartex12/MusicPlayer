@@ -32,7 +32,7 @@
         android:label="Настройки" />
     <fragment
         android:id="@+id/tabsFragment"
-        android:name="com.example.muzpleer.ui.tabs.MyTabsFragment"
+        android:name="com.example.muzpleer.ui.my.MyTabsFragment"
         android:label="Моя музыка" >
         <action
             android:id="@+id/action_tabsFragment_to_playerFragment"
@@ -66,6 +66,14 @@
             android:id="@+id/action_alltracksFragment_to_playerFragment"
             app:destination="@id/playerFragment" />
     </fragment>
+    <fragment
+        android:id="@+id/myKingsFragment"
+        android:name="com.example.muzpleer.ui.my.frags.MyKingsFragment"
+        android:label="MyKingsFragment" />
+    <fragment
+        android:id="@+id/myTracksFragment"
+        android:name="com.example.muzpleer.ui.my.frags.MyTracksFragment"
+        android:label="MyTracksFragment" />
 
 
 </navigation>
