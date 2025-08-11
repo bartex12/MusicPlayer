@@ -50,7 +50,7 @@ class MykingsFragment : Fragment() {
         navController = findNavController()
 
         adapter = RecyclerViewTabAdapter({ myTrack ->
-            val playlist: List<Song> = baseViewModel.dataKing.value ?: listOf()
+            val playlist: List<Song> = baseViewModel.getDataKing()
 
             sharedViewModel.setSongAndPlaylist(
                 SongAndPlaylist(

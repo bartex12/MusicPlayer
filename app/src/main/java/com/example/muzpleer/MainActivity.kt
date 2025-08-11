@@ -81,6 +81,67 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    private fun scanForMusic() {
+
+        initViews()
+
+        setSupportActionBar(binding.appBarMain.toolbar)
+        val drawerLayout: DrawerLayout = binding.drawerLayout
+        val navView: NavigationView = binding.navView
+        // Passing each menu ID as a set of Ids because each
+        // menu should be considered as top level destinations.
+        appBarConfiguration = AppBarConfiguration(
+            setOf(
+                R.id.homeFragment,  R.id.tracksFragment, R.id.playerFragment, R.id.songFragment
+            ), drawerLayout
+        )
+        //navController.navigate(R.id.localFragment)
+        setupActionBarWithNavController(navController, appBarConfiguration)
+        navView.setupWithNavController(navController)
+
+        viewModel.isPlaying.observe(this) { isPlaying ->
+            playPause.setImageResource(
+                if (isPlaying) R.drawable.ic_pause_white else R.drawable.ic_play_white
+            )
+        }
+
+        viewModel.songAndPlaylist.observe(this) { songAndPlaylist ->
+            //находим индекс трека в плейлисте
+            val indexOfTrack = if(songAndPlaylist.song.isLocal){
+                songAndPlaylist.playlist.indexOfFirst { it.mediaUri == songAndPlaylist.song.mediaUri }
+            }else{
+                songAndPlaylist.playlist.indexOfFirst { it.resourceId == songAndPlaylist.song.resourceId  }
+            }
+            Log.d(TAG, "###MainActivity scanForMusic " +
+                    "indexOfTrack = $indexOfTrack " +
+                    "songAndPlaylist.playlist.size = ${songAndPlaylist.playlist.size}" +
+                    " currentSong title= ${songAndPlaylist.song.title} ")
+
+            Log.d(TAG, "###MainActivity scanForMusic songAndPlaylist.playlist = " +
+                    "${songAndPlaylist.playlist.map { it.title }}")
+
+            viewModel.setPlaylistForHandler(songAndPlaylist.playlist, indexOfTrack)
+        }
+
+        viewModel.currentSong.observe(this) {currentSong->
+            currentSong?. let {
+                title.text=currentSong.title
+                artist.text=currentSong.artist
+                // Загружаем обложку, если есть
+                val albumArtUri=ContentUris.withAppendedId(
+                    "content://media/external/audio/albumart".toUri(),
+                    currentSong.albumId
+                )
+                Glide.with(this)
+                    .load(if (currentSong.isLocal) albumArtUri else it.cover)
+                    .placeholder(R.drawable.muz_player3)
+                    .error(R.drawable.muz_player3)
+                    .into(artWork)
+            }
+        }
+
+    }
+
     private fun initViews() {
         //viewPager = binding.viewPagerLocal
         //tabLayout = binding.tabLayoutLocal
@@ -206,68 +267,6 @@ class MainActivity : AppCompatActivity() {
         val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
         intent.data = Uri.fromParts("package", packageName, null)
         startActivity(intent)
-    }
-
-
-    private fun scanForMusic() {
-
-        initViews()
-
-        setSupportActionBar(binding.appBarMain.toolbar)
-        val drawerLayout: DrawerLayout = binding.drawerLayout
-        val navView: NavigationView = binding.navView
-        // Passing each menu ID as a set of Ids because each
-        // menu should be considered as top level destinations.
-        appBarConfiguration = AppBarConfiguration(
-            setOf(
-                R.id.homeFragment,  R.id.tracksFragment, R.id.playerFragment, R.id.songFragment
-            ), drawerLayout
-        )
-        //navController.navigate(R.id.localFragment)
-        setupActionBarWithNavController(navController, appBarConfiguration)
-        navView.setupWithNavController(navController)
-
-        viewModel.isPlaying.observe(this) { isPlaying ->
-            playPause.setImageResource(
-                if (isPlaying) R.drawable.ic_pause_white else R.drawable.ic_play_white
-            )
-        }
-
-        viewModel.songAndPlaylist.observe(this) { songAndPlaylist ->
-            //находим индекс трека в плейлисте
-            val indexOfTrack = if(songAndPlaylist.song.isLocal){
-                songAndPlaylist.playlist.indexOfFirst { it.title == songAndPlaylist.song.title }
-            }else{
-                songAndPlaylist.playlist.indexOfFirst { it.resourceId == songAndPlaylist.song.resourceId  }
-            }
-            Log.d(TAG, "###MainActivity scanForMusic " +
-                    "indexOfTrack = $indexOfTrack " +
-                    "songAndPlaylist.playlist.size = ${songAndPlaylist.playlist.size}" +
-                    " currentSong title= ${songAndPlaylist.song.title} ")
-
-            Log.d(TAG, "###MainActivity scanForMusic songAndPlaylist.playlist = " +
-                    "${songAndPlaylist.playlist.map { it.title }}")
-
-            viewModel.setPlaylistForHandler(songAndPlaylist.playlist, indexOfTrack)
-        }
-
-        viewModel.currentSong.observe(this) {currentSong->
-            currentSong?. let {
-                title.text=currentSong.title
-                artist.text=currentSong.artist
-                // Загружаем обложку, если есть
-                val albumArtUri=ContentUris.withAppendedId(
-                    "content://media/external/audio/albumart".toUri(),
-                    currentSong.albumId
-                )
-                Glide.with(this)
-                    .load(if (currentSong.isLocal) albumArtUri else it.cover)
-                    .placeholder(R.drawable.muz_player3)
-                    .error(R.drawable.muz_player3)
-                    .into(artWork)
-            }
-        }
-
     }
 
     //при нажатии на кнопку Назад если фрагмент реализует BackButtonListener, вызываем метод backPressed

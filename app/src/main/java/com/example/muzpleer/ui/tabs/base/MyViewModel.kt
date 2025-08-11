@@ -72,4 +72,12 @@ companion object {
         super.onCleared()
         cancelJob()
     }
+
+    fun getDataKing():List<Song>{
+        return dataKing.value
+    }
+
+    fun getDataMy():List<Song>{
+        return dataMy.value
+    }
 }

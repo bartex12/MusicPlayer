@@ -51,7 +51,7 @@ class MytracksFragment(): Fragment() {
 
         adapter = RecyclerViewTabAdapter({ myTrack ->
 
-            val playlist: List<Song> = baseViewModel.dataMy.value ?: listOf()
+            val playlist: List<Song> = baseViewModel.getDataMy()
             sharedViewModel.setSongAndPlaylist(
                 SongAndPlaylist(
                     song = myTrack,
