@@ -2,7 +2,7 @@
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/mobile_navigation"
-    app:startDestination="@id/homeFragment">
+    app:startDestination="@id/tabLocalFragment">
 
     <fragment
         android:id="@+id/playerFragment"
@@ -13,35 +13,13 @@
         android:name="com.example.muzpleer.ui.local.frags.SongFragment"
         android:label="Музыкальные треки" />
     <fragment
-        android:id="@+id/homeFragment"
-        android:name="com.example.muzpleer.home.HomeFragment"
-        android:label="Аудиоплеер" >
-        <action
-            android:id="@+id/action_homeFragment_to_settingsFragment"
-            app:destination="@id/settingsFragment" />
-            <action
-            android:id="@+id/action_homeFragment_to_tabsFragment"
-            app:destination="@id/tabsFragment" />
-        <action
-            android:id="@+id/action_homeFragment_to_tabsLocalFragment"
-            app:destination="@id/tabLocalFragment" />
-    </fragment>
-    <fragment
         android:id="@+id/settingsFragment"
         android:name="com.example.muzpleer.setting.SettingsFragment"
         android:label="Настройки" />
     <fragment
-        android:id="@+id/tabsFragment"
-        android:name="com.example.muzpleer.ui.my.MyTabsFragment"
-        android:label="Моя музыка" >
-        <action
-            android:id="@+id/action_tabsFragment_to_playerFragment"
-            app:destination="@id/playerFragment" />
-    </fragment>
-    <fragment
         android:id="@+id/tabLocalFragment"
         android:name="com.example.muzpleer.ui.local.TabLocalFragment"
-        android:label="Музыка в телефоне" >
+        android:label="Музыка на ладони" >
         <action
             android:id="@+id/action_tabsLocalFragment_to_playerFragment"
             app:destination="@id/playerFragment" />

@@ -103,9 +103,9 @@ class MainActivity : AppCompatActivity() {
         // menu should be considered as top level destinations.
         appBarConfiguration = AppBarConfiguration(
             setOf(
-                R.id.homeFragment,  R.id.tracksFragment, R.id.playerFragment, R.id.songFragment
-            ), drawerLayout
+                R.id.tabLocalFragment,  R.id.settingsFragment), drawerLayout
         )
+
         //navController.navigate(R.id.localFragment)
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
@@ -283,7 +283,7 @@ class MainActivity : AppCompatActivity() {
         //если мы в homeFragment, то при нажатии Назад показываем Snackbar и при повторном
         //нажати в течении 2 секунд закрываем приложение
         Log.d(TAG,"MainActivity onBackPressed  Destination = ${navController.currentDestination?.label}")
-        if( navController.currentDestination?.id  == R.id.homeFragment){
+        if( navController.currentDestination?.id  == R.id.tabLocalFragment){
             Log.d(TAG, "MainActivity onBackPressed  это HomeFragment")
             //если флаг = true - а это при двойном щелчке - закрываем программу
             if (doubleBackToExitPressedOnce) {
