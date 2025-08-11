@@ -6,20 +6,26 @@ import android.graphics.BitmapFactory
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.annotation.experimental.Experimental
 import androidx.core.net.toUri
+import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.ItemMusicBinding
 import com.example.muzpleer.model.Song
+import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 
 class SongsAdapter(
+    private val viewModel: SharedViewModel,
     private val onItemClick: (Song) -> Unit
 ) : RecyclerView.Adapter<SongsAdapter.MusicViewHolder>() {
     companion object{
         const val TAG = "33333"
     }
+
+    private var selectedPosition = RecyclerView.NO_POSITION
 
     var data:List<Song> = listOf()
         @SuppressLint("NotifyDataSetChanged")
@@ -43,6 +49,24 @@ class SongsAdapter(
         position: Int
     ) {
         holder.bind(data[position])
+        // Следим за изменениями выбранной позиции
+        viewModel.selectedSongPosition
+            .observe(holder.itemView.context as LifecycleOwner) { selectedPos ->
+                holder.itemView.isSelected = position == selectedPos
+        }
+        viewModel.currentSong
+            .observe(holder.itemView.context as LifecycleOwner) { currentSong ->
+
+                try{
+                    holder.itemView.isSelected =  if (data[position].isLocal){
+                         data[position].mediaUri == currentSong?.mediaUri
+                     }else{
+                          data[position].resourceId == currentSong?.resourceId
+                     }
+                }catch(e: Exception){
+                    Log.d(TAG, "SongsAdapter Ошибка: ${e.message}")
+                }
+            }
     }
 
     override fun getItemCount(): Int {
@@ -62,6 +86,30 @@ class SongsAdapter(
                 "content://media/external/audio/albumart".toUri(),
                 track.albumId)
 
+            // Загрузка обложки
+                Glide.with(binding.root.context)
+                    .load(albumArtUri)
+                    .placeholder(R.drawable.muz_player3)
+                    .error(R.drawable.muz_player3)
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .into(binding.trackArtwork)
+
+            binding.root.setOnClickListener {
+                viewModel.setSelectedPosition(adapterPosition)
+                onItemClick(track)
+            }
+        }
+
+        @SuppressLint("DefaultLocale")
+        private fun Long.formatAsTime(): String {
+            val seconds = this / 1000
+            val minutes = seconds / 60
+            val remainingSeconds = seconds % 60
+            return String.format("%02d:%02d", minutes, remainingSeconds)
+        }
+    }
+}
+
 //            ///обложка имеет Uri track.artworkUri
 //            Log.d(TAG, " %%% MusicAdapter MusicViewHolder bind: albumArtUri =  $albumArtUri  title = ${track.title}")
 //            try {
@@ -75,24 +123,3 @@ class SongsAdapter(
 //            } catch (e: Exception) {
 //                Log.d(TAG, "MusicViewHolder Ошибка: ${e.message}")
 //            }
-
-            // Загрузка обложки
-                Glide.with(binding.root.context)
-                    .load(albumArtUri)
-                    .placeholder(R.drawable.muz_player3)
-                    .error(R.drawable.muz_player3)
-                    .diskCacheStrategy(DiskCacheStrategy.ALL)
-                    .into(binding.trackArtwork)
-
-            binding.root.setOnClickListener { onItemClick(track) }
-        }
-
-        @SuppressLint("DefaultLocale")
-        private fun Long.formatAsTime(): String {
-            val seconds = this / 1000
-            val minutes = seconds / 60
-            val remainingSeconds = seconds % 60
-            return String.format("%02d:%02d", minutes, remainingSeconds)
-        }
-    }
-}

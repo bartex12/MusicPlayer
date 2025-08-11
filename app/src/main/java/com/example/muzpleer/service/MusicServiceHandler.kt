@@ -1,6 +1,7 @@
 package com.example.muzpleer.service
 
 import android.content.Context
+import android.util.Log
 import androidx.core.net.toUri
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
@@ -73,7 +74,10 @@ class MusicServiceHandler(
         if (index !in playlist.indices) return
 
         currentIndex = index
+
         val track = playlist[index]
+
+        Log.d(TAG, "@@@MusicServiceHandler playTrack: index = $index  track = ${track.title}")
 
         player?.let { p ->
             val mediaItem = if(track.isLocal) {
@@ -136,6 +140,10 @@ class MusicServiceHandler(
         positionUpdateJob?.cancel()
         player?.release()
         player = null
+    }
+
+    companion object{
+        const val TAG = "33333"
     }
 }
 

@@ -6,6 +6,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.liveData
 import androidx.lifecycle.viewModelScope
+import androidx.recyclerview.widget.RecyclerView
 import com.example.muzpleer.model.Album
 import com.example.muzpleer.model.Artist
 import com.example.muzpleer.model.Folder
@@ -13,6 +14,7 @@ import com.example.muzpleer.model.Song
 import com.example.muzpleer.model.SongAndPlaylist
 import com.example.muzpleer.repository.MusicRepository
 import com.example.muzpleer.service.MusicServiceHandler
+import com.example.muzpleer.ui.local.helper.IPreferenceHelper
 import kotlinx.coroutines.launch
 import java.util.Locale
 import kotlin.collections.find
@@ -20,6 +22,7 @@ import kotlin.let
 import kotlin.ranges.coerceAtLeast
 
 class SharedViewModel(
+    var helper : IPreferenceHelper,
     private val repository: MusicRepository,
     private val playerHandler: MusicServiceHandler
 ) : ViewModel(), MusicServiceHandler.PlayerCallback{
@@ -74,6 +77,10 @@ class SharedViewModel(
 
     private val _errorMessage = MutableLiveData<String?>()
     val errorMessage: LiveData<String?> = _errorMessage
+
+    //выделенная строка в адаптере песни при щелчке но ней
+    private val _selectedSongPosition = MutableLiveData<Int>(RecyclerView.NO_POSITION)
+    val selectedSongPosition: LiveData<Int> = _selectedSongPosition
 
     init {
         Log.d(TAG, "SharedViewModel init ")
@@ -148,11 +155,10 @@ class SharedViewModel(
 
     override fun onTrackChanged(track: Song) {
         Log.d(TAG, "SharedViewModel onTrackChanged track = $track")
-        _currentSong.postValue(track)
-    }
+        _currentSong.value = track  }
 
     override fun onPlaybackStateChanged(isPlaying: Boolean) {
-        _isPlaying.postValue(isPlaying)
+        _isPlaying.value = isPlaying
     }
 
     override fun onPositionChanged(position: Long, duration: Long) {
@@ -169,8 +175,13 @@ class SharedViewModel(
     }
 
     fun setCurrentSong(song: Song) {
-        Log.d(TAG, "PlayerViewModel setCurrentSong ")
-        _currentSong.postValue(song)
+        Log.d(TAG, "SharedViewModel setCurrentSong song = $song")
+        _currentSong.value = song
+    }
+
+    fun getCurrentSong() : Song?{
+        //Log.d(TAG, "SharedViewModel getCurrentSong ")
+         return currentSong.value
     }
 
     companion object{
@@ -180,10 +191,6 @@ class SharedViewModel(
     override fun onCleared() {
         super.onCleared()
         playerHandler.release()
-    }
-
-    internal fun setFilteredSongs(filteredSongs: List<Song>) {
-        _filteredSongs.value = filteredSongs
     }
 
     internal fun filterSongs(query: String) {
@@ -254,4 +261,30 @@ class SharedViewModel(
         }
         _filteredFolders.value = filteredFolderList
     }
+
+    fun getSongs():List<Song> {
+       return songs.value
+    }
+
+    fun getPlaylist():List<Song> {
+        return playlist.value
+    }
+
+    fun getPositionSong(): Int{  return helper.getPositionSong() }
+    fun savePositionSong(position: Int){helper.savePositionSong(position)}
+
+    fun getPositionAlbum(): Int{  return helper.getPositionAlbum() }
+    fun savePositionAlbum(position: Int){helper.savePositionAlbum(position)}
+
+    fun getPositionArtist(): Int{  return helper.getPositionArtist() }
+    fun savePositionArtist(position: Int){helper.savePositionArtist(position)}
+
+    fun getPositionFolder(): Int{  return helper.getPositionFolder() }
+    fun savePositionFolder(position: Int){helper.savePositionFolder(position)}
+
+    fun getTabsLocalPosition():Int = helper.getTabsLocalPosition()
+    fun saveTabsLocalPosition(currentItem: Int) = helper.saveTabsLocalPosition(currentItem)
+
+    fun setSelectedPosition(position: Int) { _selectedSongPosition.value = position }
+    fun resetSelection() {_selectedSongPosition.value = RecyclerView.NO_POSITION}
 }

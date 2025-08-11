@@ -17,6 +17,7 @@ import com.example.muzpleer.model.SongAndPlaylist
 import com.example.muzpleer.ui.local.adapters.SongsAdapter
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 import com.example.muzpleer.ui.player.PlayerFragment
+import com.example.muzpleer.util.getSortedDataSong
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 import kotlin.getValue
 
@@ -25,8 +26,6 @@ class SongListFragment:Fragment() {
     private val binding get() = _binding!!
     private lateinit var adapter: SongsAdapter
     private val viewModel: SharedViewModel by activityViewModel()
-
-
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -40,8 +39,10 @@ class SongListFragment:Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        adapter = SongsAdapter { song ->
-            val playlist = viewModel.playlist.value?:listOf()
+        adapter = SongsAdapter(viewModel) { song ->
+
+            val playlist = viewModel.getPlaylist()
+
             Log.d(TAG, "### SongsListFragment onViewCreated SongsAdapter  song.title = ${song.title} " +
                     " playlist.size = ${playlist.size} ")
 
@@ -51,12 +52,12 @@ class SongListFragment:Fragment() {
                     playlist = playlist)
             )
 
-            viewModel.setCurrentSong(song)
-
-            // Обработка клика по треку
-            findNavController().navigate(
-                R.id.action_alltracksFragment_to_playerFragment)
-                //PlayerFragment.Companion.newInstance(track, alltrackslist).arguments)
+            if (song != viewModel.getCurrentSong()){
+                viewModel.setCurrentSong(song)
+            }else{
+                // Обработка клика по треку, если клик по этому треку не первый
+                findNavController().navigate(R.id.action_alltracksFragment_to_playerFragment)
+            }
         }
 
         binding.alltracksRecyclerView.apply {
@@ -69,21 +70,21 @@ class SongListFragment:Fragment() {
                 val albumId = arguments?.getString("albumId")!!
 
                 viewModel.getSongsByAlbum(albumId).observe(viewLifecycleOwner) { songs ->
-                    adapter.data = songs
+                    adapter.data = getSortedDataSong(songs)
                 }
             }
 
             arguments?.getString("artistId") != null -> {
                 val artistId = arguments?.getString("artistId")!!
                 viewModel.getSongsByArtist(artistId).observe(viewLifecycleOwner) { songs ->
-                    adapter.data = songs
+                    adapter.data = getSortedDataSong(songs)
                 }
             }
 
             arguments?.getString("folderPath") != null -> {
                 val folderPath = arguments?.getString("folderPath")!!
                 viewModel.getSongsByFolder(folderPath).observe(viewLifecycleOwner) { songs ->
-                    adapter.data = songs
+                    adapter.data = getSortedDataSong(songs)
                 }
             }
         }

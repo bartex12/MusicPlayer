@@ -18,9 +18,10 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.viewpager.widget.ViewPager
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentAlbumBinding
-import com.example.muzpleer.model.Album
 import com.example.muzpleer.ui.local.adapters.AlbumsAdapter
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
+import com.example.muzpleer.util.getSortedDataAlbum
+import com.example.muzpleer.util.getSortedDataSong
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 
 
@@ -43,8 +44,9 @@ class AlbumFragment: Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         adapter = AlbumsAdapter { album ->
+            val playlist = getSortedDataSong(album.songs)
+            viewModel.setPlaylist(playlist) //устанавливаем список песен как плейлист
 
-            viewModel.setPlaylist(album.songs) //устанавливаем список песен как плейлист
             // Навигация через Bundle
             val bundle = Bundle().apply {
                 putString("albumId", album.id)
@@ -57,40 +59,28 @@ class AlbumFragment: Fragment() {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = this@AlbumFragment.adapter
         }
-        viewModel.albums.observe(viewLifecycleOwner) { musicAlbums ->
-            Log.d(TAG, "3 AlbumFragment onViewCreated musicList.observe: musicAlbums.size= ${musicAlbums.size} ")
-            if (musicAlbums.isEmpty()) {
-                binding.progressBarAlbum.visibility = View.VISIBLE
-                binding.imageHolder3Album.visibility = View.VISIBLE
-                Log.d(TAG, "4 AlbumFragment onViewCreated musicList.observe: progressBar.visibility = View.VISIBLE ")
-            }else{
-                binding.progressBarAlbum.visibility = View.GONE
-                binding.imageHolder3Album.visibility = View.GONE
-            }
-
-            val sortedAlbums = getSortedData(musicAlbums)
-            adapter.albums = sortedAlbums  //передаём данные в адаптер
-        }
 
         viewModel.filteredAlbums.observe(viewLifecycleOwner) { filteredAlbums ->
-            Log.d(TAG,"32 AlbumFragment onViewCreated filteredAlbums.observe: filteredAlbums.size= ${filteredAlbums.size} ")
-            val sortedData = getSortedData(filteredAlbums)
+            Log.d(TAG,"33 AlbumFragment onViewCreated filteredAlbums.observe: filteredAlbums.size= ${filteredAlbums.size} ")
+            if (viewModel.getSongs().isEmpty()) binding.progressBarAlbum.visibility = View.VISIBLE else binding.progressBarAlbum.visibility = View.GONE
+            if (filteredAlbums.isEmpty()) binding.imageHolder3Album.visibility = View.VISIBLE else binding.imageHolder3Album.visibility = View.GONE
+            val sortedData =getSortedDataAlbum(filteredAlbums)
             adapter.albums = sortedData  //передаём данные в адаптер
         }
+        //восстанавливаем позицию списка после поворота или возвращения на экран
+        binding.albumRecyclerView.layoutManager?.scrollToPosition(viewModel.getPositionAlbum())
 
         initMenu()
     }
 
-    private fun getSortedData(tracks:List<Album>):List<Album>{
-        return tracks.sortedWith(compareBy(
-            { album -> when {
-                album.title.matches(Regex("^[а-яА-ЯёЁ].*")) -> 0
-                album.title.matches(Regex("^[a-zA-Z].*")) -> 1
-                else -> 2}
-            },
-            { album -> album.title.lowercase() }
-        )
-        )
+    //запоминаем  позицию списка, на которой сделан клик - на случай поворота экрана
+    override fun onPause() {
+        super.onPause()
+        //определяем первую видимую позицию
+        val manager = binding.albumRecyclerView.layoutManager as LinearLayoutManager
+        val firstPosition = manager.findFirstVisibleItemPosition()
+        viewModel.savePositionAlbum(firstPosition)
+        Log.d(TAG, "AlbumFragment onPause firstPosition = $firstPosition")
     }
 
     override fun onDestroyView() {
