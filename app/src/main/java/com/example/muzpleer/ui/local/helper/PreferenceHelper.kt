@@ -14,6 +14,7 @@ class PreferenceHelperImpl(private  val app: Application): IPreferenceHelper {
         const val FIRST_POSITION_ARTIST ="FIRST_POSITION_ARTIST"
         const val FIRST_POSITION_FOLDER ="FIRST_POSITION_FOLDER"
         const val PAGER_LOCAL_POSITION ="PAGER_LOCAL_POSITION"
+        const val CURRENT_SONG_KEY = "CURRENT_SONG_KEY"
     }
 
     private val prefs: SharedPreferences by lazy {
@@ -35,6 +36,7 @@ class PreferenceHelperImpl(private  val app: Application): IPreferenceHelper {
             else -> error("Only primitives!!!")
         }
     }
+
 
     override fun savePositionSong(position: Int) {
         putValue(FIRST_POSITION_SONG to position )
@@ -86,6 +88,14 @@ class PreferenceHelperImpl(private  val app: Application): IPreferenceHelper {
 
     override fun getTabsLocalPosition(): Int {
         return  prefs.getInt(PAGER_LOCAL_POSITION, 0)
+    }
+
+    override fun saveCurrentSongId(id: Long) {
+        putValue(CURRENT_SONG_KEY to id)
+    }
+
+    override fun getCurrentSongId(): Long {
+        return  prefs.getLong(CURRENT_SONG_KEY, -1L)
     }
 
     fun getSoundLevel(): Int {

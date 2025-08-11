@@ -45,7 +45,7 @@ class FolderFragment : Fragment(){
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        adapter = FoldersAdapter { folder ->
+        adapter = FoldersAdapter(viewModel){ folder ->
             val playlist = getSortedDataSong(folder.songs)
             viewModel.setPlaylist(playlist) //устанавливаем список песен как плейлист
 

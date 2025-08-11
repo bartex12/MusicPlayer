@@ -15,6 +15,7 @@ import com.example.muzpleer.model.SongAndPlaylist
 import com.example.muzpleer.repository.MusicRepository
 import com.example.muzpleer.service.MusicServiceHandler
 import com.example.muzpleer.ui.local.helper.IPreferenceHelper
+import com.example.muzpleer.util.getSortedDataSong
 import kotlinx.coroutines.launch
 import java.util.Locale
 import kotlin.collections.find
@@ -81,6 +82,15 @@ class SharedViewModel(
     //выделенная строка в адаптере песни при щелчке но ней
     private val _selectedSongPosition = MutableLiveData<Int>(RecyclerView.NO_POSITION)
     val selectedSongPosition: LiveData<Int> = _selectedSongPosition
+
+    private val _selectedAlbumPosition = MutableLiveData<Int>(RecyclerView.NO_POSITION)
+    val selectedAlbumPosition: LiveData<Int> = _selectedAlbumPosition
+
+    private val _selectedArtistPosition = MutableLiveData<Int>(RecyclerView.NO_POSITION)
+    val selectedArtistPosition: LiveData<Int> = _selectedArtistPosition
+
+    private val _selectedFolderPosition = MutableLiveData<Int>(RecyclerView.NO_POSITION)
+    val selectedFolderPosition: LiveData<Int> = _selectedFolderPosition
 
     init {
         Log.d(TAG, "SharedViewModel init ")
@@ -287,4 +297,17 @@ class SharedViewModel(
 
     fun setSelectedPosition(position: Int) { _selectedSongPosition.value = position }
     fun resetSelection() {_selectedSongPosition.value = RecyclerView.NO_POSITION}
+    fun setSelectedAlbumPosition(position: Int) { _selectedAlbumPosition.value = position }
+    fun setSelectedArtistPosition(position: Int) { _selectedArtistPosition.value = position }
+    fun setSelectedFolderPosition(position: Int) { _selectedFolderPosition.value = position }
+
+    fun setCurrentSongById(songId: Long) {
+        songs.value?.find { it.id == songId }?.let { song ->
+            _currentSong.value = song //передаём сохранённую песню из преференсис
+            setSongAndPlaylist( SongAndPlaylist( //передаём плейлист и текущую песню
+                song = song,  //текущая песня
+                playlist =getSortedDataSong(getSongs()) //текущий плейлист
+            ))
+        }
+    }
 }

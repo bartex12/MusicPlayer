@@ -5,14 +5,17 @@ import android.content.ContentUris
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.net.toUri
+import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.ItemFolderBinding
 import com.example.muzpleer.model.Folder
+import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 import com.example.muzpleer.util.getTracksCountString
 
 class FoldersAdapter(
+    private val viewModel: SharedViewModel,
     private val onFolderClick: (Folder) -> Unit
 ) : RecyclerView.Adapter<FoldersAdapter.FolderViewHolder>() {
 
@@ -34,6 +37,12 @@ class FoldersAdapter(
 
     override fun onBindViewHolder(holder: FolderViewHolder, position: Int) {
         holder.bind(folders[position])
+
+        // Следим за изменениями выбранной позиции
+        viewModel.selectedFolderPosition
+            .observe(holder.itemView.context as LifecycleOwner) { selectedPos ->
+                holder.itemView.isSelected = position == selectedPos
+            }
     }
 
     override fun getItemCount() = folders.size
@@ -68,12 +77,15 @@ class FoldersAdapter(
             // Загрузка обложки первого трека списка песен папки
                 Glide.with(binding.root.context)
                     .load(albumArtUri)
-                    .placeholder(R.drawable.muz_player1)
-                    .error(R.drawable.muz_player1)
+                    .placeholder(R.drawable.muz_player4)
+                    .error(R.drawable.muz_player4)
                     .into(binding.ivFolderIcon)
 
 
-            binding.root.setOnClickListener { onFolderClick(folder) }
+            binding.root.setOnClickListener {
+                viewModel.setSelectedFolderPosition(absoluteAdapterPosition)
+                onFolderClick(folder)
+            }
         }
     }
     companion object{

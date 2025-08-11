@@ -30,6 +30,9 @@ import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.bumptech.glide.Glide
 import com.example.muzpleer.databinding.ActivityMainBinding
+import com.example.muzpleer.model.Song
+import com.example.muzpleer.ui.local.helper.IPreferenceHelper
+import com.example.muzpleer.ui.local.helper.PreferenceHelperImpl
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
@@ -48,6 +51,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var previous: ImageView
     private lateinit var playPause: ImageView
     private lateinit var next: ImageView
+
+    private lateinit var appPreferences: IPreferenceHelper
+    private var currentSong: Song? = null
 
     private val storagePermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -75,6 +81,13 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         navController = findNavController(R.id.nav_host_fragment_content_main)
+
+        appPreferences =PreferenceHelperImpl(this.application)
+        // Восстанавливаем последнюю песню
+        val savedSongId = appPreferences.getCurrentSongId()
+        if (savedSongId != -1L) {
+            viewModel.setCurrentSongById(savedSongId)
+        }
 
        //получаем разрешения
         checkPermissions()
@@ -123,28 +136,26 @@ class MainActivity : AppCompatActivity() {
             viewModel.setPlaylistForHandler(songAndPlaylist.playlist, indexOfTrack)
         }
 
-        viewModel.currentSong.observe(this) {currentSong->
-            currentSong?. let {
-                title.text=currentSong.title
-                artist.text=currentSong.artist
+        viewModel.currentSong.observe(this) {songCurrent->
+            currentSong = songCurrent
+            songCurrent?. let {
+                title.text=songCurrent.title
+                artist.text=songCurrent.artist
                 // Загружаем обложку, если есть
                 val albumArtUri=ContentUris.withAppendedId(
                     "content://media/external/audio/albumart".toUri(),
-                    currentSong.albumId
+                    songCurrent.albumId
                 )
                 Glide.with(this)
-                    .load(if (currentSong.isLocal) albumArtUri else it.cover)
+                    .load(if (songCurrent.isLocal) albumArtUri else it.cover)
                     .placeholder(R.drawable.muz_player3)
                     .error(R.drawable.muz_player3)
                     .into(artWork)
             }
         }
-
     }
 
     private fun initViews() {
-        //viewPager = binding.viewPagerLocal
-        //tabLayout = binding.tabLayoutLocal
         title = binding.appBarMain.contentMain.title
         artist = binding.appBarMain.contentMain.artist
         artWork = binding.appBarMain.contentMain.artwork
@@ -163,11 +174,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
-        // Только если не происходит смена конфигурации
-//        if (!isChangingConfigurations) {
-//            getKoin().get<MusicServiceHandler>().releasePlayer()
-//        }
         super.onDestroy()
+        // Сохраняем текущую песню при закрытии
+        currentSong?.let { appPreferences.saveCurrentSongId(it.id)  }
     }
 
     private fun checkPermissions() {

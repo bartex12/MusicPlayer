@@ -85,7 +85,6 @@ class SongFragment : Fragment() {
                 }
             }
         }
-
         //восстанавливаем позицию списка после поворота или возвращения на экран
         binding.localRecyclerView.layoutManager?.scrollToPosition(viewModel.getPositionSong())
 

@@ -19,6 +19,8 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="@color/album_text_color"
         android:text="Название папки"
         app:layout_constraintStart_toEndOf="@id/ivFolderIcon"
         app:layout_constraintTop_toTopOf="parent"/>

@@ -47,14 +47,15 @@ class SongsAdapter(
         position: Int
     ) {
         holder.bind(data[position])
+
         // Следим за изменениями выбранной позиции
         viewModel.selectedSongPosition
             .observe(holder.itemView.context as LifecycleOwner) { selectedPos ->
                 holder.itemView.isSelected = position == selectedPos
         }
+
         viewModel.currentSong
             .observe(holder.itemView.context as LifecycleOwner) { currentSong ->
-
                 try{
                     holder.itemView.isSelected =  if (data[position].isLocal){
                          data[position].mediaUri == currentSong?.mediaUri
@@ -93,7 +94,7 @@ class SongsAdapter(
                     .into(binding.trackArtwork)
 
             binding.root.setOnClickListener {
-                viewModel.setSelectedPosition(adapterPosition)
+                viewModel.setSelectedPosition(absoluteAdapterPosition)
                 onItemClick(track)
             }
         }
