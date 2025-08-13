@@ -12,16 +12,24 @@ import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
 import android.util.Log
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.core.view.GravityCompat
+import androidx.core.view.MenuHost
+import androidx.core.view.MenuProvider
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
@@ -45,6 +53,8 @@ class MainActivity : AppCompatActivity() {
     private var doubleBackToExitPressedOnce = false
     private lateinit var navController:NavController
     private val viewModel: SharedViewModel by viewModel()
+
+    private lateinit var playerLayout: ConstraintLayout
     private lateinit var title: TextView
     private lateinit var artist: TextView
     private lateinit var artWork: ImageView
@@ -151,9 +161,41 @@ class MainActivity : AppCompatActivity() {
                     .into(artWork)
             }
         }
+
+        initMenu()
+    }
+
+    private fun initMenu() {
+        val menuHost: MenuHost = this
+
+        menuHost.addMenuProvider(object : MenuProvider{
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                menuInflater.inflate(R.menu.main, menu)
+            }
+
+            override fun onPrepareMenu(menu: Menu) {
+                super.onPrepareMenu(menu)
+                Log.d(TAG, "MainActivity onPrepareOptionsMenu ")
+                val id = navController.currentDestination?.id
+                playerLayout.visibility = when(id){
+                    R.id.playerFragment -> View.GONE
+                    else -> View.VISIBLE
+                }
+            }
+
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                return when (menuItem.itemId) {
+                    R.id.nav_settings -> {
+                        true
+                    }
+                    else -> false
+                }
+            }
+        }, this, Lifecycle.State.RESUMED)
     }
 
     private fun initViews() {
+        playerLayout = binding.appBarMain.contentMain.playerBottom
         title = binding.appBarMain.contentMain.title
         artist = binding.appBarMain.contentMain.artist
         artWork = binding.appBarMain.contentMain.artwork
