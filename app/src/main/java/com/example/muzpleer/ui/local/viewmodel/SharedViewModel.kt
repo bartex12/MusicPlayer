@@ -92,6 +92,9 @@ class SharedViewModel(
     private val _selectedFolderPosition = MutableLiveData<Int>(RecyclerView.NO_POSITION)
     val selectedFolderPosition: LiveData<Int> = _selectedFolderPosition
 
+    private val _playerVisibility = MutableLiveData<Boolean>(true)
+    val playerVisibility: LiveData<Boolean> = _playerVisibility
+
     init {
         Log.d(TAG, "SharedViewModel init ")
         viewModelScope.launch {
@@ -107,6 +110,10 @@ class SharedViewModel(
             _folders.value = repository.getFolders()
             _filteredFolders.value = _folders.value
         }
+    }
+
+    fun setPlayerVisibility(visible: Boolean) {
+        _playerVisibility.value = visible
     }
 
     fun getSongsByAlbum(albumId: String): LiveData<List<Song>> {

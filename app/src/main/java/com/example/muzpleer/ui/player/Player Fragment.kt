@@ -11,6 +11,7 @@ import androidx.core.net.toUri
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
+import com.example.muzpleer.MainActivity
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentPlayerBinding
 import com.example.muzpleer.model.Song
@@ -34,8 +35,11 @@ class PlayerFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
         setupControls()
         observeViewModel()
+        // Скрыть плеер при открытии фрагмента
+        hideActivityPlayer()
     }
 
     private fun setupControls() {
@@ -144,8 +148,10 @@ class PlayerFragment : Fragment() {
     }
 
     override fun onDestroyView() {
-        super.onDestroyView()
+        // Показать плеер при закрытии фрагмента
+        showActivityPlayer()
         _binding = null
+        super.onDestroyView()
     }
 
     companion object {
@@ -160,6 +166,14 @@ class PlayerFragment : Fragment() {
                     ARG_PLAYLIST to ArrayList(playlist))
             }
         }
+    }
+
+    private fun hideActivityPlayer() {
+        viewModel.setPlayerVisibility(false)
+    }
+
+    private fun showActivityPlayer() {
+        viewModel.setPlayerVisibility(true)
     }
 }
 

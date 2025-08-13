@@ -161,51 +161,29 @@ class MainActivity : AppCompatActivity() {
                     .into(artWork)
             }
         }
-
-        initMenu()
-    }
-
-    private fun initMenu() {
-        val menuHost: MenuHost = this
-
-        menuHost.addMenuProvider(object : MenuProvider{
-            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-                menuInflater.inflate(R.menu.main, menu)
+           //управление видимостью нижнего плеера из фрагмента PlayerFragment:
+            viewModel.playerVisibility.observe(this) { isVisible ->
+                playerLayout.visibility = if (isVisible) View.VISIBLE else View.GONE
             }
 
-            override fun onPrepareMenu(menu: Menu) {
-                super.onPrepareMenu(menu)
-                Log.d(TAG, "MainActivity onPrepareOptionsMenu ")
-                val id = navController.currentDestination?.id
-                playerLayout.visibility = when(id){
-                    R.id.playerFragment -> View.GONE
-                    else -> View.VISIBLE
-                }
-            }
-
-            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-                return when (menuItem.itemId) {
-                    R.id.nav_settings -> {
-                        true
-                    }
-                    else -> false
-                }
-            }
-        }, this, Lifecycle.State.RESUMED)
+       //initMenu() нельзя - иначе двоится меню тулбара
     }
 
     private fun initViews() {
-        playerLayout = binding.appBarMain.contentMain.playerBottom
-        title = binding.appBarMain.contentMain.title
-        artist = binding.appBarMain.contentMain.artist
-        artWork = binding.appBarMain.contentMain.artwork
-        previous = binding.appBarMain.contentMain.previous
-        playPause = binding.appBarMain.contentMain.playPause
-        next = binding.appBarMain.contentMain.next
+        playerLayout=binding.appBarMain.contentMain.playerBottom
+
+        title=binding.appBarMain.contentMain.title
+        artist=binding.appBarMain.contentMain.artist
+        artWork=binding.appBarMain.contentMain.artwork
+        previous=binding.appBarMain.contentMain.previous
+        playPause=binding.appBarMain.contentMain.playPause
+        next=binding.appBarMain.contentMain.next
 
         previous.setOnClickListener { viewModel.playPrevious() }
         playPause.setOnClickListener { viewModel.togglePlayPause() }
-        next.setOnClickListener { viewModel.playNext()  }
+        next.setOnClickListener { viewModel.playNext() }
+
+        artWork.setOnClickListener { navController.navigate(R.id.playerFragment) }
     }
 
     override fun onSupportNavigateUp(): Boolean {
