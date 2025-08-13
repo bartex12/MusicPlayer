@@ -134,7 +134,7 @@ class SongFragment : Fragment() {
                 searchView.isSubmitButtonEnabled = true
 
                 //Сохраняем состояние поиска при смене ориентации:
-                if (       currentSearchQuery.isNotEmpty()) {
+                if ( currentSearchQuery.isNotEmpty()) {
                     searchItem.expandActionView()
                     searchView.setQuery(currentSearchQuery, false)
                 }
@@ -146,10 +146,34 @@ class SongFragment : Fragment() {
                         viewModel.filterSongs(newText.orEmpty())
                         return true
                     }
+
                 })
+
+                //не работает
+//                searchView.setOnCloseListener(object : SearchView.OnCloseListener{
+//                    override fun onClose(): Boolean {
+//                        val pos = viewModel.getPositionSong()
+//                        Log.d(TAG, "*SongFragment onCreateMenu firstPosition = $pos")
+//                        binding.localRecyclerView.scrollToPosition(pos)
+//                        return false
+//                    }
+//                })
             }
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                when(menuItem.itemId){
+                    R.id.action_to->{
+                        val pos = viewModel.getSelectedPosition()
+                        val posAlbum = viewModel.selectedAlbumPosition.value
+                        Log.d(TAG, "$$$ SongFragment onMenuItemSelected pos = $pos posAlbum = $posAlbum")
+                        if(pos >=0 ){
+                            binding.localRecyclerView.layoutManager?.scrollToPosition(pos)
+                        }else{
+                            binding.localRecyclerView.layoutManager?.scrollToPosition(0)
+                        }
+                        return true
+                    }
+                }
                 return false
             }
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
