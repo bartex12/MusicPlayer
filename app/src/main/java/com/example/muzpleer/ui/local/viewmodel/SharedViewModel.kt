@@ -17,6 +17,7 @@ import com.example.muzpleer.service.MusicServiceHandler
 import com.example.muzpleer.ui.local.helper.IPreferenceHelper
 import com.example.muzpleer.util.getSortedDataSong
 import kotlinx.coroutines.launch
+import org.koin.core.definition._createDefinition
 import java.util.Locale
 import kotlin.collections.find
 import kotlin.let
@@ -171,8 +172,14 @@ class SharedViewModel(
     }
 
     override fun onTrackChanged(track: Song) {
-        Log.d(TAG, "SharedViewModel onTrackChanged track = $track")
-        _currentSong.value = track  }
+        //Log.d(TAG, "SharedViewModel onTrackChanged track = $track")
+        _currentSong.value = track
+//        _songAndPlaylist.value = SongAndPlaylist(
+//            song = track,
+//            playlist = getPlaylist()
+//        )
+        Log.d(TAG, "SharedViewModel onTrackChanged currentTrack = ${getCurrentSong()}")
+    }
 
     override fun onPlaybackStateChanged(isPlaying: Boolean) {
         _isPlaying.value = isPlaying

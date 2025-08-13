@@ -82,13 +82,15 @@ class PlayerFragment : Fragment() {
             Log.d(TAG, "*** PlayerFragment onViewCreated currentSong.observe: " +
                     " currentSong = ${songAndPlaylist.song} currentPlayList.size = ${songAndPlaylist.playlist.size}")
 
+            val currentSong = viewModel.getCurrentSong()
             //находим индекс трека в плейлисте
-            val indexOfTrack = if(songAndPlaylist.song.isLocal){
+            val indexOfTrack = if(currentSong?.isLocal == true){
                 songAndPlaylist.playlist.indexOfFirst {song->
-                    song.mediaUri == songAndPlaylist.song.mediaUri }
+                    song.mediaUri == currentSong.mediaUri }
             }else{
                 songAndPlaylist.playlist.indexOfFirst {song->
-                    song.resourceId == songAndPlaylist.song.resourceId  }
+                    song.resourceId == currentSong?.resourceId
+                }
             }
 
             Log.d(TAG, "*** PlayerFragment onViewCreated indexOfTrack = $indexOfTrack " +
@@ -98,8 +100,7 @@ class PlayerFragment : Fragment() {
         }
 
         viewModel.currentSong.observe(viewLifecycleOwner) { currentSong ->
-            Log.d(TAG, "*** PlayerFragment onViewCreated currentSong.observe: " +
-                    " currentSong = $currentSong ")
+
             currentSong?. let{
                 binding.tvTitle.text = it.title
                 binding.tvArtist.text = it.artist

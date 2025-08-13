@@ -161,7 +161,7 @@ class MainActivity : AppCompatActivity() {
                     .into(artWork)
             }
         }
-           //управление видимостью нижнего плеера из фрагмента PlayerFragment:
+           //управление видимостью нижнего плеера из фрагмента:
             viewModel.playerVisibility.observe(this) { isVisible ->
                 playerLayout.visibility = if (isVisible) View.VISIBLE else View.GONE
             }
