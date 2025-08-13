@@ -304,7 +304,7 @@ class MainActivity : AppCompatActivity() {
         //нажати в течении 2 секунд закрываем приложение
         Log.d(TAG,"MainActivity onBackPressed  Destination = ${navController.currentDestination?.label}")
         if( navController.currentDestination?.id  == R.id.tabLocalFragment){
-            Log.d(TAG, "MainActivity onBackPressed  это HomeFragment")
+            Log.d(TAG, "MainActivity onBackPressed  это TabLocalFragment")
             //если флаг = true - а это при двойном щелчке - закрываем программу
             if (doubleBackToExitPressedOnce) {
                 super.onBackPressed()
@@ -324,7 +324,7 @@ class MainActivity : AppCompatActivity() {
             Handler(Looper.getMainLooper())
                 .postDelayed({ doubleBackToExitPressedOnce = false }, 2000)
         }else{
-            Log.d(TAG, "MainActivity onBackPressed  это НЕ HomeFragment ")
+            Log.d(TAG, "MainActivity onBackPressed  это НЕ TabLocalFragment ")
             super.onBackPressed()
         }
     }

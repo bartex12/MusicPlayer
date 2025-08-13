@@ -79,13 +79,14 @@ class SongFragment : Fragment() {
 
         // Сброс выделения при возврате к фрагменту
         viewModel.selectedSongPosition.observe(viewLifecycleOwner) { position ->
-            if (position != RecyclerView.NO_POSITION) {
-                binding.localRecyclerView.post {
-                    adapter.notifyItemChanged(position)
-                }
-            }
+            Log.d( TAG,"@SongsFragment onViewCreated selectedSongPosition  = $position ")
+//            if (position != RecyclerView.NO_POSITION) {
+//                binding.localRecyclerView.post {
+//                    adapter.notifyItemChanged(position)
+//                }
+//            }
         }
-        //восстанавливаем позицию списка после поворота или возвращения на экран
+        //восстанавливаем позицию списка после поворота или возвращения на экран и при новой загрузке
         binding.localRecyclerView.layoutManager?.scrollToPosition(viewModel.getPositionSong())
 
         initMenu()
@@ -104,7 +105,7 @@ class SongFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
-        viewModel.resetSelection()
+        //viewModel.resetSelection()
     }
 
     companion object {
@@ -148,16 +149,6 @@ class SongFragment : Fragment() {
                     }
 
                 })
-
-                //не работает
-//                searchView.setOnCloseListener(object : SearchView.OnCloseListener{
-//                    override fun onClose(): Boolean {
-//                        val pos = viewModel.getPositionSong()
-//                        Log.d(TAG, "*SongFragment onCreateMenu firstPosition = $pos")
-//                        binding.localRecyclerView.scrollToPosition(pos)
-//                        return false
-//                    }
-//                })
             }
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
