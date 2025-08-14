@@ -96,6 +96,11 @@ class SharedViewModel(
     private val _playerVisibility = MutableLiveData<Boolean>(true)
     val playerVisibility: LiveData<Boolean> = _playerVisibility
 
+    //индекс выбранной песни в отсортированном(!) списке песен
+    private val _indexOfCurrentSong = MutableLiveData<Int>(-1)
+    val indexOfCurrentSong: LiveData<Int> = _indexOfCurrentSong
+
+
     init {
         Log.d(TAG, "SharedViewModel init ")
         viewModelScope.launch {
@@ -172,13 +177,13 @@ class SharedViewModel(
     }
 
     override fun onTrackChanged(track: Song) {
-        //Log.d(TAG, "SharedViewModel onTrackChanged track = $track")
         _currentSong.value = track
-//        _songAndPlaylist.value = SongAndPlaylist(
-//            song = track,
-//            playlist = getPlaylist()
-//        )
-        Log.d(TAG, "SharedViewModel onTrackChanged currentTrack = ${getCurrentSong()}")
+        //считаем индекс выбранной песни в отсортированном списке песен,
+        // чтобы при возврате на песни можно было перейти к этой песне по индексу
+        val indexOfSong = getSortedDataSong(getSongs()).indexOfFirst { it.mediaUri == track.mediaUri }
+        _indexOfCurrentSong.value = indexOfSong
+        Log.d(TAG, "SharedViewModel onTrackChanged currentTrack = ${getCurrentSong()?.title}" +
+                "   indexOfSong = $indexOfSong")
     }
 
     override fun onPlaybackStateChanged(isPlaying: Boolean) {
@@ -335,5 +340,9 @@ class SharedViewModel(
     }
     fun getSongAndPlaylist(): SongAndPlaylist{
         return songAndPlaylist.value
+    }
+
+    fun getIndexOfCurrentSong():Int{
+        return indexOfCurrentSong.value
     }
 }
