@@ -53,7 +53,7 @@ class SongsAdapter(
             .observe(holder.itemView.context as LifecycleOwner) { selectedPos ->
                 holder.itemView.isSelected = position == selectedPos
         }
-        //следим за текущей песней
+        //следим за текущей песней - чтобы при возврате с другой вкладки выделение оставалось
         viewModel.currentSong
             .observe(holder.itemView.context as LifecycleOwner) { currentSong ->
                 try{

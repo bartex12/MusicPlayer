@@ -17,6 +17,7 @@ import com.example.muzpleer.service.MusicServiceHandler
 import com.example.muzpleer.ui.local.helper.IPreferenceHelper
 import com.example.muzpleer.util.getSortedDataSong
 import kotlinx.coroutines.launch
+import org.koin.core.definition._createDefinition
 import java.util.Locale
 import kotlin.collections.find
 import kotlin.let
@@ -92,6 +93,14 @@ class SharedViewModel(
     private val _selectedFolderPosition = MutableLiveData<Int>(RecyclerView.NO_POSITION)
     val selectedFolderPosition: LiveData<Int> = _selectedFolderPosition
 
+    private val _playerVisibility = MutableLiveData<Boolean>(true)
+    val playerVisibility: LiveData<Boolean> = _playerVisibility
+
+    //индекс выбранной песни в отсортированном(!) списке песен
+    private val _indexOfCurrentSong = MutableLiveData<Int>(-1)
+    val indexOfCurrentSong: LiveData<Int> = _indexOfCurrentSong
+
+
     init {
         Log.d(TAG, "SharedViewModel init ")
         viewModelScope.launch {
@@ -107,6 +116,10 @@ class SharedViewModel(
             _folders.value = repository.getFolders()
             _filteredFolders.value = _folders.value
         }
+    }
+
+    fun setPlayerVisibility(visible: Boolean) {
+        _playerVisibility.value = visible
     }
 
     fun getSongsByAlbum(albumId: String): LiveData<List<Song>> {
@@ -164,8 +177,14 @@ class SharedViewModel(
     }
 
     override fun onTrackChanged(track: Song) {
-        Log.d(TAG, "SharedViewModel onTrackChanged track = $track")
-        _currentSong.value = track  }
+        _currentSong.value = track
+        //считаем индекс выбранной песни в отсортированном списке песен,
+        // чтобы при возврате на песни можно было перейти к этой песне по индексу
+        val indexOfSong = getSortedDataSong(getSongs()).indexOfFirst { it.mediaUri == track.mediaUri }
+        _indexOfCurrentSong.value = indexOfSong
+        Log.d(TAG, "SharedViewModel onTrackChanged currentTrack = ${getCurrentSong()?.title}" +
+                "   indexOfSong = $indexOfSong")
+    }
 
     override fun onPlaybackStateChanged(isPlaying: Boolean) {
         _isPlaying.value = isPlaying
@@ -301,6 +320,8 @@ class SharedViewModel(
     fun saveTabsLocalPosition(currentItem: Int) = helper.saveTabsLocalPosition(currentItem)
 
     fun setSelectedPosition(position: Int) { _selectedSongPosition.value = position }
+    fun  getSelectedPosition(): Int { return _selectedSongPosition.value }
+
     fun resetSelection() {_selectedSongPosition.value = RecyclerView.NO_POSITION}
     fun setSelectedAlbumPosition(position: Int) { _selectedAlbumPosition.value = position }
     fun setSelectedArtistPosition(position: Int) { _selectedArtistPosition.value = position }
@@ -316,5 +337,12 @@ class SharedViewModel(
         }?: run{
             //todo найти песню в моих треках, для чего перенести всё в SharedViewModel
         }
+    }
+    fun getSongAndPlaylist(): SongAndPlaylist{
+        return songAndPlaylist.value
+    }
+
+    fun getIndexOfCurrentSong():Int{
+        return indexOfCurrentSong.value
     }
 }

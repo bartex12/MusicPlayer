@@ -12,16 +12,24 @@ import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
 import android.util.Log
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.core.view.GravityCompat
+import androidx.core.view.MenuHost
+import androidx.core.view.MenuProvider
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
@@ -45,6 +53,8 @@ class MainActivity : AppCompatActivity() {
     private var doubleBackToExitPressedOnce = false
     private lateinit var navController:NavController
     private val viewModel: SharedViewModel by viewModel()
+
+    private lateinit var playerLayout: ConstraintLayout
     private lateinit var title: TextView
     private lateinit var artist: TextView
     private lateinit var artWork: ImageView
@@ -103,9 +113,9 @@ class MainActivity : AppCompatActivity() {
         // menu should be considered as top level destinations.
         appBarConfiguration = AppBarConfiguration(
             setOf(
-                R.id.homeFragment,  R.id.tracksFragment, R.id.playerFragment, R.id.songFragment
-            ), drawerLayout
+                R.id.tabLocalFragment,  R.id.settingsFragment), drawerLayout
         )
+
         //navController.navigate(R.id.localFragment)
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
@@ -151,19 +161,29 @@ class MainActivity : AppCompatActivity() {
                     .into(artWork)
             }
         }
+           //управление видимостью нижнего плеера из фрагмента:
+            viewModel.playerVisibility.observe(this) { isVisible ->
+                playerLayout.visibility = if (isVisible) View.VISIBLE else View.GONE
+            }
+
+       //initMenu() нельзя - иначе двоится меню тулбара
     }
 
     private fun initViews() {
-        title = binding.appBarMain.contentMain.title
-        artist = binding.appBarMain.contentMain.artist
-        artWork = binding.appBarMain.contentMain.artwork
-        previous = binding.appBarMain.contentMain.previous
-        playPause = binding.appBarMain.contentMain.playPause
-        next = binding.appBarMain.contentMain.next
+        playerLayout=binding.appBarMain.contentMain.playerBottom
+
+        title=binding.appBarMain.contentMain.title
+        artist=binding.appBarMain.contentMain.artist
+        artWork=binding.appBarMain.contentMain.artwork
+        previous=binding.appBarMain.contentMain.previous
+        playPause=binding.appBarMain.contentMain.playPause
+        next=binding.appBarMain.contentMain.next
 
         previous.setOnClickListener { viewModel.playPrevious() }
         playPause.setOnClickListener { viewModel.togglePlayPause() }
-        next.setOnClickListener { viewModel.playNext()  }
+        next.setOnClickListener { viewModel.playNext() }
+
+        artWork.setOnClickListener { navController.navigate(R.id.playerFragment) }
     }
 
     override fun onSupportNavigateUp(): Boolean {
@@ -283,8 +303,8 @@ class MainActivity : AppCompatActivity() {
         //если мы в homeFragment, то при нажатии Назад показываем Snackbar и при повторном
         //нажати в течении 2 секунд закрываем приложение
         Log.d(TAG,"MainActivity onBackPressed  Destination = ${navController.currentDestination?.label}")
-        if( navController.currentDestination?.id  == R.id.homeFragment){
-            Log.d(TAG, "MainActivity onBackPressed  это HomeFragment")
+        if( navController.currentDestination?.id  == R.id.tabLocalFragment){
+            Log.d(TAG, "MainActivity onBackPressed  это TabLocalFragment")
             //если флаг = true - а это при двойном щелчке - закрываем программу
             if (doubleBackToExitPressedOnce) {
                 super.onBackPressed()
@@ -304,7 +324,7 @@ class MainActivity : AppCompatActivity() {
             Handler(Looper.getMainLooper())
                 .postDelayed({ doubleBackToExitPressedOnce = false }, 2000)
         }else{
-            Log.d(TAG, "MainActivity onBackPressed  это НЕ HomeFragment ")
+            Log.d(TAG, "MainActivity onBackPressed  это НЕ TabLocalFragment ")
             super.onBackPressed()
         }
     }

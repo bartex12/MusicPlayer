@@ -6,16 +6,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:background="@color/white">
 
-<!--    &lt;!&ndash; Добавляем SearchView в верхнюю часть &ndash;&gt;-->
-<!--    <SearchView-->
-<!--        android:id="@+id/searchView"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:queryHint="Поиск песен..."-->
-<!--        app:layout_constraintTop_toTopOf="parent"-->
-<!--        app:layout_constraintStart_toStartOf="parent"-->
-<!--        app:layout_constraintEnd_toEndOf="parent"/>-->
-
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/localRecyclerView"
         android:layout_width="match_parent"

@@ -11,6 +11,7 @@ import androidx.core.net.toUri
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
+import com.example.muzpleer.MainActivity
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentPlayerBinding
 import com.example.muzpleer.model.Song
@@ -34,8 +35,11 @@ class PlayerFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
         setupControls()
         observeViewModel()
+        // Скрыть плеер при открытии фрагмента
+        hideActivityPlayer()
     }
 
     private fun setupControls() {
@@ -78,13 +82,15 @@ class PlayerFragment : Fragment() {
             Log.d(TAG, "*** PlayerFragment onViewCreated currentSong.observe: " +
                     " currentSong = ${songAndPlaylist.song} currentPlayList.size = ${songAndPlaylist.playlist.size}")
 
+            val currentSong = viewModel.getCurrentSong()
             //находим индекс трека в плейлисте
-            val indexOfTrack = if(songAndPlaylist.song.isLocal){
+            val indexOfTrack = if(currentSong?.isLocal == true){
                 songAndPlaylist.playlist.indexOfFirst {song->
-                    song.mediaUri == songAndPlaylist.song.mediaUri }
+                    song.mediaUri == currentSong.mediaUri }
             }else{
                 songAndPlaylist.playlist.indexOfFirst {song->
-                    song.resourceId == songAndPlaylist.song.resourceId  }
+                    song.resourceId == currentSong?.resourceId
+                }
             }
 
             Log.d(TAG, "*** PlayerFragment onViewCreated indexOfTrack = $indexOfTrack " +
@@ -94,8 +100,7 @@ class PlayerFragment : Fragment() {
         }
 
         viewModel.currentSong.observe(viewLifecycleOwner) { currentSong ->
-            Log.d(TAG, "*** PlayerFragment onViewCreated currentSong.observe: " +
-                    " currentSong = $currentSong ")
+
             currentSong?. let{
                 binding.tvTitle.text = it.title
                 binding.tvArtist.text = it.artist
@@ -144,8 +149,10 @@ class PlayerFragment : Fragment() {
     }
 
     override fun onDestroyView() {
-        super.onDestroyView()
+        // Показать плеер при закрытии фрагмента
+        showActivityPlayer()
         _binding = null
+        super.onDestroyView()
     }
 
     companion object {
@@ -160,6 +167,14 @@ class PlayerFragment : Fragment() {
                     ARG_PLAYLIST to ArrayList(playlist))
             }
         }
+    }
+
+    private fun hideActivityPlayer() {
+        viewModel.setPlayerVisibility(false)
+    }
+
+    private fun showActivityPlayer() {
+        viewModel.setPlayerVisibility(true)
     }
 }
 

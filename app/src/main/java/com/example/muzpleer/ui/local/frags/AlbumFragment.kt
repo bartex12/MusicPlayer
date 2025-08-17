@@ -123,7 +123,11 @@ class AlbumFragment: Fragment() {
                     }
                 })
             }
+            override fun onPrepareMenu(menu: Menu) {
+                menu.findItem(R.id.action_to).isVisible =false
+            }
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+
                 return false
             }
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)

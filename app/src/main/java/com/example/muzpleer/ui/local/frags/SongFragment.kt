@@ -15,7 +15,6 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager.widget.ViewPager
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentSongsBinding
@@ -77,15 +76,14 @@ class SongFragment : Fragment() {
             Log.d( TAG,"32 SongsFragment onViewCreated sortedData = ${sortedData.map{it.title}} ")
         }
 
-        // Сброс выделения при возврате к фрагменту
-        viewModel.selectedSongPosition.observe(viewLifecycleOwner) { position ->
-            if (position != RecyclerView.NO_POSITION) {
-                binding.localRecyclerView.post {
-                    adapter.notifyItemChanged(position)
-                }
-            }
-        }
-        //восстанавливаем позицию списка после поворота или возвращения на экран
+        //виснет
+//        viewModel.indexOfCurrentSong.observe(viewLifecycleOwner) { index ->
+//            (binding.localRecyclerView.layoutManager as LinearLayoutManager).let{
+//                if(index >=0 ) it.scrollToPositionWithOffset(index, 0) else it.scrollToPosition(0)
+//            }
+//        }
+
+        //восстанавливаем позицию списка после поворота или возвращения на экран и при новой загрузке
         binding.localRecyclerView.layoutManager?.scrollToPosition(viewModel.getPositionSong())
 
         initMenu()
@@ -104,7 +102,7 @@ class SongFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
-        viewModel.resetSelection()
+        //viewModel.resetSelection()
     }
 
     companion object {
@@ -131,10 +129,10 @@ class SongFragment : Fragment() {
                 //пишем подсказку в строке поиска
                 searchView.queryHint = getString(R.string.search_song)
                 //устанавливаем в панели действий кнопку ( > )для отправки поискового запроса
-                searchView.isSubmitButtonEnabled = true
+               // searchView.isSubmitButtonEnabled = true
 
                 //Сохраняем состояние поиска при смене ориентации:
-                if (       currentSearchQuery.isNotEmpty()) {
+                if ( currentSearchQuery.isNotEmpty()) {
                     searchItem.expandActionView()
                     searchView.setQuery(currentSearchQuery, false)
                 }
@@ -146,12 +144,46 @@ class SongFragment : Fragment() {
                         viewModel.filterSongs(newText.orEmpty())
                         return true
                     }
+
                 })
+//                searchView.setOnCloseListener(object : SearchView.OnCloseListener{
+//                    override fun onClose(): Boolean {
+//                        // Прокручиваем к текущей песне с небольшой задержкой
+//                        binding.localRecyclerView.postDelayed({
+//                            scrollToCurrentSong()
+//                        }, 50)
+//                        return false
+//                    }
+//                })
             }
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                when(menuItem.itemId){
+                    R.id.action_to->{
+                        Log.d(TAG, "$ SongFragment onMenuItemSelected текущая вкладка = ${viewPager.currentItem}")
+                        viewPager.setCurrentItem(0)
+                        Log.d(TAG, "$$ SongFragment onMenuItemSelected текущая вкладка = ${viewPager.currentItem}")
+                        val pos = viewModel.getIndexOfCurrentSong()
+                        Log.d(TAG, "$$$ SongFragment onMenuItemSelected pos = $pos")
+                        (binding.localRecyclerView.layoutManager as LinearLayoutManager).let{
+                            if(pos >=0 ) it.scrollToPositionWithOffset(pos, 0) else it.scrollToPosition(0)
+                        }
+                        return true
+                    }
+                }
                 return false
             }
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
     }
+
+//    private fun scrollToCurrentSong() {
+//        viewModel.currentSong.value?.let { currentSong ->
+//            val position = viewModel.songs.value?.indexOfFirst { it.id == currentSong.id } ?: -1
+//            Log.d(TAG, "$ SongFragment scrollToCurrentSong position = $position ")
+//            if (position != -1) {
+//                (binding.localRecyclerView.layoutManager as LinearLayoutManager)
+//                    .scrollToPositionWithOffset(position, 0)
+//            }
+//        }
+//    }
 }
