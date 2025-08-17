@@ -77,6 +77,13 @@ class SongFragment : Fragment() {
             Log.d( TAG,"32 SongsFragment onViewCreated sortedData = ${sortedData.map{it.title}} ")
         }
 
+        //виснет
+//        viewModel.indexOfCurrentSong.observe(viewLifecycleOwner) { index ->
+//            (binding.localRecyclerView.layoutManager as LinearLayoutManager).let{
+//                if(index >=0 ) it.scrollToPositionWithOffset(index, 0) else it.scrollToPosition(0)
+//            }
+//        }
+
         //восстанавливаем позицию списка после поворота или возвращения на экран и при новой загрузке
         binding.localRecyclerView.layoutManager?.scrollToPosition(viewModel.getPositionSong())
 
