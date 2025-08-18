@@ -17,11 +17,7 @@ import com.example.muzpleer.service.MusicServiceHandler
 import com.example.muzpleer.ui.local.helper.IPreferenceHelper
 import com.example.muzpleer.util.getSortedDataSong
 import kotlinx.coroutines.launch
-import org.koin.core.definition._createDefinition
 import java.util.Locale
-import kotlin.collections.find
-import kotlin.let
-import kotlin.ranges.coerceAtLeast
 
 class SharedViewModel(
     var helper : IPreferenceHelper,
