@@ -10,7 +10,7 @@ android {
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.muzpleer"
+        applicationId = "com.example.muzpleer_my"
         minSdk = 24
         targetSdk = 35
         versionCode = 1
