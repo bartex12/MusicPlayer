@@ -11,7 +11,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.muzpleer.R
 import com.example.muzpleer.model.Song
-import com.example.muzpleer.ui.local.adapters.SongsAdapter.Companion.TAG
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 
 class MyTracksAdapter(
@@ -84,5 +83,7 @@ class MyTracksAdapter(
             }
         }
     }
-
+companion object{
+    const val TAG="33333"
+}
 }

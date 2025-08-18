@@ -89,7 +89,8 @@ class PreferenceHelperImpl(private  val app: Application): IPreferenceHelper {
     }
 
     override fun getTabsLocalPosition(): Int {
-        return  prefs.getInt(PAGER_LOCAL_POSITION, 0)
+        val position = prefs.getInt(PAGER_LOCAL_POSITION, 0)
+        return if (position>1) 1 else position
     }
 
     override fun saveCurrentSongId(id: Long) {

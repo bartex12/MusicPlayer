@@ -7,10 +7,6 @@ import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentPagerAdapter
 import androidx.viewpager.widget.ViewPager
 import com.example.muzpleer.R
-import com.example.muzpleer.ui.local.frags.AlbumFragment
-import com.example.muzpleer.ui.local.frags.SongFragment
-import com.example.muzpleer.ui.local.frags.ArtistsFragment
-import com.example.muzpleer.ui.local.frags.FolderFragment
 import com.example.muzpleer.ui.my.frags.MyKingsFragment
 import com.example.muzpleer.ui.my.frags.MyTracksFragment
 
@@ -24,19 +20,11 @@ class ViewPageAdapterLocal(private val context: Context, fragmentManager : Fragm
     }
 
     private val fragments = arrayOf(
-        SongFragment.newInstance(viewPager) ,
-        AlbumFragment.newInstance(viewPager),
-        ArtistsFragment.newInstance(viewPager),
-        FolderFragment.newInstance(viewPager),
         MyTracksFragment.newInstance(viewPager),
         MyKingsFragment.newInstance(viewPager)
     )
 
     private val titles = arrayOf(
-        context.getString(R.string.local),
-        context.getString(R.string.albums),
-        context.getString(R.string.singers),
-        context.getString(R.string.folders),
         context.getString(R.string.my_tracks),
         context.getString(R.string.little_king),
     )

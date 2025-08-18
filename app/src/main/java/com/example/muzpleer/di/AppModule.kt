@@ -4,7 +4,6 @@ import android.content.Context
 import androidx.media3.exoplayer.ExoPlayer
 import com.example.muzpleer.model.Song
 import com.example.muzpleer.repository.MyRepository
-import com.example.muzpleer.repository.MusicRepository
 import com.example.muzpleer.service.MusicServiceHandler
 import com.example.muzpleer.ui.local.helper.IPreferenceHelper
 import com.example.muzpleer.ui.local.helper.PreferenceHelperImpl
@@ -19,7 +18,6 @@ import org.koin.dsl.module
 val appModule = module {
     single<IPreferenceHelper> { PreferenceHelperImpl(get()) }
     single <MyStorage>{ MyStorageImpl(get())}
-    single { MusicRepository(get()) }
     single { MyRepository()}
 
     single { provideExoPlayer(get()) }
@@ -29,8 +27,8 @@ val appModule = module {
             callback = get() // Получаем реализацию колбэка из контейнера
         )
     }
-    viewModel { SharedViewModel(get(),get(),get())}
     viewModel { MyViewModel(get())}
+    viewModel { SharedViewModel(get(), get()) }
     // Регистрируем заглушку для колбэка (реальная реализация будет в ViewModel)
     factory<MusicServiceHandler.PlayerCallback> {
         object : MusicServiceHandler.PlayerCallback {

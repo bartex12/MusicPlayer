@@ -4,28 +4,19 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.liveData
-import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.RecyclerView
 import com.example.muzpleer.model.Album
 import com.example.muzpleer.model.Artist
 import com.example.muzpleer.model.Folder
 import com.example.muzpleer.model.Song
 import com.example.muzpleer.model.SongAndPlaylist
-import com.example.muzpleer.repository.MusicRepository
 import com.example.muzpleer.service.MusicServiceHandler
 import com.example.muzpleer.ui.local.helper.IPreferenceHelper
 import com.example.muzpleer.util.getSortedDataSong
-import kotlinx.coroutines.launch
-import org.koin.core.definition._createDefinition
 import java.util.Locale
-import kotlin.collections.find
-import kotlin.let
-import kotlin.ranges.coerceAtLeast
 
 class SharedViewModel(
     var helper : IPreferenceHelper,
-    private val repository: MusicRepository,
     private val playerHandler: MusicServiceHandler
 ) : ViewModel(), MusicServiceHandler.PlayerCallback{
 
@@ -100,44 +91,8 @@ class SharedViewModel(
     private val _indexOfCurrentSong = MutableLiveData<Int>(-1)
     val indexOfCurrentSong: LiveData<Int> = _indexOfCurrentSong
 
-
-    init {
-        Log.d(TAG, "SharedViewModel init ")
-        viewModelScope.launch {
-            _songs.value = repository.loadMusic()
-            _filteredSongs.value  = _songs.value
-
-            _albums.value = repository.getAlbums()
-            _filteredAlbums.value = _albums.value
-
-            _artists.value = repository.getArtists()
-            _filteredArtists.value = _artists.value
-
-            _folders.value = repository.getFolders()
-            _filteredFolders.value = _folders.value
-        }
-    }
-
     fun setPlayerVisibility(visible: Boolean) {
         _playerVisibility.value = visible
-    }
-
-    fun getSongsByAlbum(albumId: String): LiveData<List<Song>> {
-        return liveData {
-            emit(repository.getAlbums().find { it.id == albumId }?.songs ?: emptyList())
-        }
-    }
-
-    fun getSongsByArtist(artistId: String): LiveData<List<Song>> {
-        return liveData {
-            emit(repository.getArtists().find { it.id == artistId }?.songs ?: emptyList())
-        }
-    }
-
-    fun getSongsByFolder(folderPath: String): LiveData<List<Song>> {
-        return liveData {
-            emit(repository.getFolders().find { it.path == folderPath }?.songs ?: emptyList())
-        }
     }
 
     fun setSongAndPlaylist(songAndPlaylist: SongAndPlaylist){
@@ -178,12 +133,12 @@ class SharedViewModel(
 
     override fun onTrackChanged(track: Song) {
         _currentSong.value = track
-        //считаем индекс выбранной песни в отсортированном списке песен,
-        // чтобы при возврате на песни можно было перейти к этой песне по индексу
-        val indexOfSong = getSortedDataSong(getSongs()).indexOfFirst { it.mediaUri == track.mediaUri }
-        _indexOfCurrentSong.value = indexOfSong
-        Log.d(TAG, "SharedViewModel onTrackChanged currentTrack = ${getCurrentSong()?.title}" +
-                "   indexOfSong = $indexOfSong")
+//        //считаем индекс выбранной песни в отсортированном списке песен,
+//        // чтобы при возврате на песни можно было перейти к этой песне по индексу
+//        val indexOfSong = getSortedDataSong(getSongs()).indexOfFirst { it.mediaUri == track.mediaUri }
+//        _indexOfCurrentSong.value = indexOfSong
+//        Log.d(TAG, "SharedViewModel onTrackChanged currentTrack = ${getCurrentSong()?.title}" +
+//                "   indexOfSong = $indexOfSong")
     }
 
     override fun onPlaybackStateChanged(isPlaying: Boolean) {
