@@ -298,11 +298,6 @@ class SharedViewModel(
     fun getPlaylist():List<Song> {
         return playlist.value
     }
-    fun getPositionMyTracks(): Int{  return helper.getPositionMyTracks() }
-    fun savePositionMyTracks(position: Int){helper.savePositionMyTracks(position)}
-
-    fun getPositionMyKing(): Int{  return helper.getPositionMyKing() }
-    fun savePositionMyKing(position: Int){helper.savePositionMyKing(position)}
 
     fun getPositionSong(): Int{  return helper.getPositionSong() }
     fun savePositionSong(position: Int){helper.savePositionSong(position)}

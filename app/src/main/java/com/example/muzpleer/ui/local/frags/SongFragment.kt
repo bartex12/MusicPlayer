@@ -75,14 +75,6 @@ class SongFragment : Fragment() {
             adapter.data = sortedData  //передаём данные в адаптер
             Log.d( TAG,"32 SongsFragment onViewCreated sortedData = ${sortedData.map{it.title}} ")
         }
-
-        //виснет
-//        viewModel.indexOfCurrentSong.observe(viewLifecycleOwner) { index ->
-//            (binding.localRecyclerView.layoutManager as LinearLayoutManager).let{
-//                if(index >=0 ) it.scrollToPositionWithOffset(index, 0) else it.scrollToPosition(0)
-//            }
-//        }
-
         //восстанавливаем позицию списка после поворота или возвращения на экран и при новой загрузке
         binding.localRecyclerView.layoutManager?.scrollToPosition(viewModel.getPositionSong())
 
@@ -102,7 +94,6 @@ class SongFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
-        //viewModel.resetSelection()
     }
 
     companion object {
@@ -146,15 +137,6 @@ class SongFragment : Fragment() {
                     }
 
                 })
-//                searchView.setOnCloseListener(object : SearchView.OnCloseListener{
-//                    override fun onClose(): Boolean {
-//                        // Прокручиваем к текущей песне с небольшой задержкой
-//                        binding.localRecyclerView.postDelayed({
-//                            scrollToCurrentSong()
-//                        }, 50)
-//                        return false
-//                    }
-//                })
             }
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
@@ -175,15 +157,4 @@ class SongFragment : Fragment() {
             }
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
     }
-
-//    private fun scrollToCurrentSong() {
-//        viewModel.currentSong.value?.let { currentSong ->
-//            val position = viewModel.songs.value?.indexOfFirst { it.id == currentSong.id } ?: -1
-//            Log.d(TAG, "$ SongFragment scrollToCurrentSong position = $position ")
-//            if (position != -1) {
-//                (binding.localRecyclerView.layoutManager as LinearLayoutManager)
-//                    .scrollToPositionWithOffset(position, 0)
-//            }
-//        }
-//    }
 }

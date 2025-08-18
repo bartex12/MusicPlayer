@@ -80,12 +80,7 @@ class MusicServiceHandler(
         Log.d(TAG, "@@@MusicServiceHandler playTrack: index = $index  track = ${track.title}")
 
         player?.let { p ->
-            val mediaItem = if(track.isLocal) {
-                MediaItem.fromUri(track.getContentUri())
-            }else{
-                val uri = "android.resource://${context.packageName}/${track.resourceId}"
-                MediaItem.fromUri(uri.toUri())
-                }
+            val mediaItem =MediaItem.fromUri(track.getContentUri())
             p.setMediaItem(mediaItem)
             p.prepare()
             p.play()

@@ -28,9 +28,9 @@ data class Song(
     val albumId: Long = -1, // id альбома из local
     val folderPath: String = "",  //путь к папке
 
-    val typeFromIfMy: String = "",  //откуда трек, если он сгенерирован нейросетью
-    val cover: Int? = null, //обложка из ресурсов
-    val resourceId: Int? = null // мп3 для треков из ресурсов приложения
+//    val typeFromIfMy: String = "",  //откуда трек, если он сгенерирован нейросетью
+//    val cover: Int? = null, //обложка из ресурсов
+//    val resourceId: Int? = null // мп3 для треков из ресурсов приложения
 ): Parcelable{
 
     fun getContentUri(): Uri {

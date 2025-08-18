@@ -84,15 +84,10 @@ class PlayerFragment : Fragment() {
 
             val currentSong = viewModel.getCurrentSong()
             //находим индекс трека в плейлисте
-            val indexOfTrack = if(currentSong?.isLocal == true){
+            val indexOfTrack =
                 songAndPlaylist.playlist.indexOfFirst {song->
-                    song.mediaUri == currentSong.mediaUri }
-            }else{
-                songAndPlaylist.playlist.indexOfFirst {song->
-                    song.resourceId == currentSong?.resourceId
+                    song.mediaUri == currentSong?.mediaUri
                 }
-            }
-
             Log.d(TAG, "*** PlayerFragment onViewCreated indexOfTrack = $indexOfTrack " +
                     "songAndPlaylist.playlist.size = ${songAndPlaylist.playlist.size}")
 
@@ -111,7 +106,7 @@ class PlayerFragment : Fragment() {
 
 
                 Glide.with(requireContext())
-                    .load(if (currentSong.isLocal) albumArtUri else it.cover)
+                    .load( albumArtUri)
                     .placeholder(R.drawable.muz_player3)
                     .error(R.drawable.muz_player3)
                     .into(binding.artworkImageView)

@@ -12,9 +12,6 @@ import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
 import android.util.Log
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
@@ -26,10 +23,7 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.core.view.GravityCompat
-import androidx.core.view.MenuHost
-import androidx.core.view.MenuProvider
 import androidx.drawerlayout.widget.DrawerLayout
-import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
@@ -128,11 +122,9 @@ class MainActivity : AppCompatActivity() {
 
         viewModel.songAndPlaylist.observe(this) { songAndPlaylist ->
             //находим индекс трека в плейлисте
-            val indexOfTrack = if(songAndPlaylist.song.isLocal){
+            val indexOfTrack =
                 songAndPlaylist.playlist.indexOfFirst { it.mediaUri == songAndPlaylist.song.mediaUri }
-            }else{
-                songAndPlaylist.playlist.indexOfFirst { it.resourceId == songAndPlaylist.song.resourceId  }
-            }
+
             Log.d(TAG, "###MainActivity scanForMusic " +
                     "indexOfTrack = $indexOfTrack " +
                     "songAndPlaylist.playlist.size = ${songAndPlaylist.playlist.size}" +
@@ -155,7 +147,7 @@ class MainActivity : AppCompatActivity() {
                     songCurrent.albumId
                 )
                 Glide.with(this)
-                    .load(if (songCurrent.isLocal) albumArtUri else it.cover)
+                    .load(albumArtUri)
                     .placeholder(R.drawable.muz_player3)
                     .error(R.drawable.muz_player3)
                     .into(artWork)
