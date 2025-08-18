@@ -133,12 +133,6 @@ class SharedViewModel(
 
     override fun onTrackChanged(track: Song) {
         _currentSong.value = track
-//        //считаем индекс выбранной песни в отсортированном списке песен,
-//        // чтобы при возврате на песни можно было перейти к этой песне по индексу
-//        val indexOfSong = getSortedDataSong(getSongs()).indexOfFirst { it.mediaUri == track.mediaUri }
-//        _indexOfCurrentSong.value = indexOfSong
-//        Log.d(TAG, "SharedViewModel onTrackChanged currentTrack = ${getCurrentSong()?.title}" +
-//                "   indexOfSong = $indexOfSong")
     }
 
     override fun onPlaybackStateChanged(isPlaying: Boolean) {

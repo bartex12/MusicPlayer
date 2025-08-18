@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">MuzPlayer</string>
+    <string name="app_name">MuzPlayer2</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="nav_header_title">Android Studio</string>
@@ -24,7 +24,7 @@
     <string name="search_artist">поиск исполнителя</string>
     <string name="search_folder">поиск папки</string>
     <string name="my_tracks">Избранное</string>
-    <string name="little_king">МП</string>
+    <string name="little_king">Маленький Принц</string>
 
     <string-array name="sound_level_entry_number">
         <item>Без звука</item>
