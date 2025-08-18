@@ -11,24 +11,17 @@ import android.provider.MediaStore
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.content.FileProvider
-import com.example.muzpleer.model.Song
 import androidx.core.net.toUri
-import com.example.muzpleer.data.TrackDao
-import com.example.muzpleer.data.toDomain
-import com.example.muzpleer.data.toEntity
 import com.example.muzpleer.model.Album
 import com.example.muzpleer.model.Artist
 import com.example.muzpleer.model.Folder
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import com.example.muzpleer.model.Song
 import java.io.File
 import java.io.FileOutputStream
-import kotlin.collections.set
 
 
 class MusicRepository(
-    private val context: Context,
-    private val trackDao: TrackDao ){
+    private val context: Context){
 
     companion object{
         const val TAG = "33333"
@@ -39,24 +32,7 @@ class MusicRepository(
     private val artists = mutableMapOf<String, Artist>()
     private val folders = mutableMapOf<String, Folder>()
 
-    suspend fun loadMusic(): List<Song>  =   withContext(Dispatchers.IO){
-        // 1. Пытаемся получить треки из базы данных
-        val tracksFromDb = trackDao.getAllTracks()
-
-        // 2. Если база данных не пуста, возвращаем результат
-        if (tracksFromDb.isNotEmpty()) {
-            return@withContext tracksFromDb.map { it.toDomain() }
-        }
-
-        // 3. Если база данных пуста, сканируем хранилище
-        val tracksFromStorage = scanStorageForTracks()
-        // 4. Сохраняем отсканированные треки в базу данных
-        trackDao.insertTracks(tracksFromStorage.map { it.toEntity() })
-        // 5. Возвращаем треки
-        return@withContext tracksFromStorage
-    }
-
-    private fun scanStorageForTracks(): List<Song>{
+     fun loadMusic(): List<Song> {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             scanMusicApi29Plus(context)
         } else {

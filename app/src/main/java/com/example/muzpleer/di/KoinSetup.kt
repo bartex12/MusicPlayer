@@ -9,7 +9,7 @@ class MusicApplication : Application() {
         super.onCreate()
         startKoin {
             androidContext(this@MusicApplication)
-            modules(listOf(appModule, databaseModule)) // Добавляем databaseModule
+            modules(listOf(appModule)) // Добавляем databaseModule
         }
     }
 }

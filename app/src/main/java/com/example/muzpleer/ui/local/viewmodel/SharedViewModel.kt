@@ -311,9 +311,7 @@ class SharedViewModel(
     fun saveTabsLocalPosition(currentItem: Int) = helper.saveTabsLocalPosition(currentItem)
 
     fun setSelectedPosition(position: Int) { _selectedSongPosition.value = position }
-    fun  getSelectedPosition(): Int { return _selectedSongPosition.value }
 
-    fun resetSelection() {_selectedSongPosition.value = RecyclerView.NO_POSITION}
     fun setSelectedAlbumPosition(position: Int) { _selectedAlbumPosition.value = position }
     fun setSelectedArtistPosition(position: Int) { _selectedArtistPosition.value = position }
     fun setSelectedFolderPosition(position: Int) { _selectedFolderPosition.value = position }
@@ -325,8 +323,6 @@ class SharedViewModel(
                 song = song,  //текущая песня
                 playlist =getSortedDataSong(getSongs()) //текущий плейлист
             ))
-        }?: run{
-            //todo найти песню в моих треках, для чего перенести всё в SharedViewModel
         }
     }
     fun getSongAndPlaylist(): SongAndPlaylist{
