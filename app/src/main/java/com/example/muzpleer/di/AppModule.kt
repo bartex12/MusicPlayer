@@ -14,9 +14,7 @@ import org.koin.dsl.module
 
 val appModule = module {
     single<IPreferenceHelper> { PreferenceHelperImpl(get()) }
-
-    single { MusicRepository(get()) }
-
+    single { MusicRepository(get(), get()) }
     single { provideExoPlayer(get()) }
     factory {
         MusicServiceHandler(

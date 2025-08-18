@@ -13,15 +13,23 @@ import androidx.annotation.RequiresApi
 import androidx.core.content.FileProvider
 import com.example.muzpleer.model.Song
 import androidx.core.net.toUri
+import com.example.muzpleer.data.TrackDao
+import com.example.muzpleer.data.toDomain
+import com.example.muzpleer.data.toEntity
 import com.example.muzpleer.model.Album
 import com.example.muzpleer.model.Artist
 import com.example.muzpleer.model.Folder
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
 import kotlin.collections.set
 
 
-class MusicRepository(private val context: Context) {
+class MusicRepository(
+    private val context: Context,
+    private val trackDao: TrackDao ){
+
     companion object{
         const val TAG = "33333"
     }
@@ -31,7 +39,24 @@ class MusicRepository(private val context: Context) {
     private val artists = mutableMapOf<String, Artist>()
     private val folders = mutableMapOf<String, Folder>()
 
-    fun loadMusic(): List<Song> {
+    suspend fun loadMusic(): List<Song>  =   withContext(Dispatchers.IO){
+        // 1. Пытаемся получить треки из базы данных
+        val tracksFromDb = trackDao.getAllTracks()
+
+        // 2. Если база данных не пуста, возвращаем результат
+        if (tracksFromDb.isNotEmpty()) {
+            return@withContext tracksFromDb.map { it.toDomain() }
+        }
+
+        // 3. Если база данных пуста, сканируем хранилище
+        val tracksFromStorage = scanStorageForTracks()
+        // 4. Сохраняем отсканированные треки в базу данных
+        trackDao.insertTracks(tracksFromStorage.map { it.toEntity() })
+        // 5. Возвращаем треки
+        return@withContext tracksFromStorage
+    }
+
+    private fun scanStorageForTracks(): List<Song>{
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             scanMusicApi29Plus(context)
         } else {
@@ -95,7 +120,7 @@ class MusicRepository(private val context: Context) {
                         duration = duration,
                         mediaUri = path,
                         isLocal = true,
-                        artworkUri = getArtworkUri(context, albumId, path ),
+                        //artworkUri = getArtworkUri(context, albumId, path ),
                         folderPath = folderPath
 
                     )
@@ -118,30 +143,6 @@ class MusicRepository(private val context: Context) {
         artists.clear()
         folders.clear()
 
-//   //      Группировка по альбомам (без учета исполнителя)
-//      //   albumName-ключ, albumSongs-значение мапы после группировки
-//        songs.groupBy { it.album }.forEach { (albumName, albumSongs) ->
-//            // Собираем всех исполнителей в альбоме
-//            val artistsInAlbum = albumSongs.map { it.artist }.distinct()
-//
-////            // Создаем строку с перечислением исполнителей-пока не используется
-////            val artistsString = if (artistsInAlbum.size > 3) {
-////                "${artistsInAlbum.take(3).joinToString()} и ещё ${artistsInAlbum.size - 3}"
-////            } else {
-////                artistsInAlbum.joinToString()
-////            }
-//
-//            albums[albumName.toString()] = Album(
-//                id = albumName.toString(),
-//                title = albumName.toString(),
-//                // Для отображения можно использовать "Разные исполнители" или список исполнителей
-//                artist = if (artistsInAlbum.size > 1) "Разные исполнители" else artistsInAlbum.first(),
-//                artists = artistsInAlbum, // Сохраняем всех исполнителей
-//                artworkUri = albumSongs.maxByOrNull { it.duration }?.artworkUri, // Берём обложку из самой длинной песни
-//                songs = albumSongs
-//            )
-//        }
-
         //Группировка по albumId и названию - избегаем дублирования альбомов
         songs.groupBy { it.albumId to it.album } // Группируем по albumId и названию
             .forEach { (albumKey, albumSongs) ->
@@ -149,21 +150,14 @@ class MusicRepository(private val context: Context) {
                 // Собираем всех исполнителей в альбоме
                 val artistsInAlbum = albumSongs.map { it.artist }.distinct()
                 // Находим песню с обложкой (если есть) или первую песню
-                val artworkSong = albumSongs.firstOrNull { it.artworkUri != null } ?: albumSongs.firstOrNull()
-
-//               //Создаем строку с перечислением исполнителей-пока не используется
-//            val artistsString = if (artistsInAlbum.size > 3) {
-//                "${artistsInAlbum.take(3).joinToString()} и ещё ${artistsInAlbum.size - 3}"
-//            } else {
-//                artistsInAlbum.joinToString()
-//            }
+                //val artworkSong = albumSongs.firstOrNull { it.artworkUri != null } ?: albumSongs.firstOrNull()
 
                 albums[albumId.toString()] = Album(
                     id = albumId.toString(),
                     title = albumName.toString(),
                     artist = if (artistsInAlbum.size > 1) "Разные исполнители" else artistsInAlbum.first(),
                     artists = artistsInAlbum,
-                    artworkUri = artworkSong?.artworkUri,
+                    //artworkUri = artworkSong?.artworkUri,
                     albumId = albumId, // Сохраняем albumId для последующей загрузки обложки
                     songs = albumSongs
                 )
@@ -186,7 +180,7 @@ class MusicRepository(private val context: Context) {
                               songs = albumSongs,
                               artists = artists,
                               albumId = albumId,
-                              artworkUri = albumSongs.firstOrNull { it.artworkUri != null }?.artworkUri
+                             // artworkUri = albumSongs.firstOrNull { it.artworkUri != null }?.artworkUri
                           )
                  }.map {it.value}
 
@@ -194,7 +188,7 @@ class MusicRepository(private val context: Context) {
                 id = artistName,
                 name = artistName,
                 songs = artistSongs,
-                artworkUri = artistSongs.firstOrNull()?.artworkUri,
+                //artworkUri = artistSongs.firstOrNull()?.artworkUri,
                 albums = artistAlbums // Добавляем список альбомов
             )
         }
@@ -205,7 +199,7 @@ class MusicRepository(private val context: Context) {
                 path = folderPath,
                 name = folderName,
                 songs = folderSongs,
-                artworkUri = folderSongs.firstOrNull()?.artworkUri
+               // artworkUri = folderSongs.firstOrNull()?.artworkUri
             )
         }
     }
@@ -264,7 +258,7 @@ class MusicRepository(private val context: Context) {
                         duration = duration,
                         mediaUri = path,
                         isLocal = true,
-                        artworkUri = getArtworkUri(context, albumId, path ),
+                        //artworkUri = getArtworkUri(context, albumId, path ),
                         album = album,
                         albumId = albumId,
                         folderPath = folderPath

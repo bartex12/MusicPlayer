@@ -110,7 +110,6 @@ class MainActivity : AppCompatActivity() {
                 R.id.tabLocalFragment,  R.id.settingsFragment), drawerLayout
         )
 
-        //navController.navigate(R.id.localFragment)
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
 
