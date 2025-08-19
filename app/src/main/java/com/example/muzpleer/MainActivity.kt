@@ -92,6 +92,7 @@ class MainActivity : AppCompatActivity() {
         if (savedSongId != -1L) {
             viewModel.setCurrentSongById(savedSongId)
         }
+        Log.d(TAG, "###MainActivity onCreate savedSongId =  $savedSongId")
        //получаем разрешения
         checkPermissions()
     }
@@ -184,6 +185,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
+        Log.d(TAG, "###MainActivity onDestroy currentSong =  ${currentSong?.id}")
         // Сохраняем текущую песню при закрытии
         currentSong?.let { appPreferences.saveCurrentSongId(it.id)  }
     }

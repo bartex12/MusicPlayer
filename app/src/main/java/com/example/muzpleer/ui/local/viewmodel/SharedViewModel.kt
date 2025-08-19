@@ -37,6 +37,9 @@ class SharedViewModel(
     private val _filteredSongs = MutableLiveData<List<Song>>()
     val filteredSongs: LiveData<List<Song>> = _filteredSongs
 
+    private val _favoriteSongs = MutableLiveData<List<Song>>(mutableListOf())
+    val favoriteSongs: LiveData<List<Song>> = _favoriteSongs
+
     private val _playlist = MutableLiveData<List<Song>>()
     val playlist: LiveData<List<Song>> = _playlist
 
@@ -209,6 +212,24 @@ class SharedViewModel(
          return currentSong.value
     }
 
+    fun addToFavorites(song: Song) {
+        val currentList = _favoriteSongs.value?.toMutableList() ?: mutableListOf()
+
+        // Проверяем, нет ли уже этой песни в избранном
+        if (!currentList.any { it.id == song.id }) {
+            currentList.add(song)
+            _favoriteSongs.value = currentList
+        }
+    }
+
+    fun removeFromFavorites(songId: Long) {
+        _favoriteSongs.value = _favoriteSongs.value?.filter { it.id != songId }?.toMutableList()
+    }
+
+    fun getFavoriteSongs():List<Song> {
+        return favoriteSongs.value
+    }
+
     companion object{
         const val TAG= "33333"
     }
@@ -332,4 +353,7 @@ class SharedViewModel(
     fun getIndexOfCurrentSong():Int{
         return indexOfCurrentSong.value
     }
+
+    fun getPositionFavoriteSong(): Int{  return helper.getPositionFavoriteSong() }
+    fun savePositionFavoriteSong(position: Int){helper.savePositionFavoriteSong(position)}
 }

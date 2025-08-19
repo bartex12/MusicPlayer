@@ -1,19 +1,10 @@
 package com.example.muzpleer.model
 
 import android.content.ContentUris
-import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.Parcelable
 import android.provider.MediaStore
-import androidx.core.content.FileProvider
-import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
-import androidx.core.net.toUri
-import java.io.File
-import java.io.FileOutputStream
 
 @Parcelize
 data class Song(

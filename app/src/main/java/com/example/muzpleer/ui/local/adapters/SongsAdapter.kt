@@ -25,6 +25,12 @@ class SongsAdapter(
         const val TAG = "33333"
     }
 
+    private var onFavoriteClick: ((Song) -> Unit)? = null
+
+    fun setOnFavoriteClickListener(listener: (Song) -> Unit) {
+        onFavoriteClick = listener
+    }
+
     var data:List<Song> = listOf()
         @SuppressLint("NotifyDataSetChanged")
         set(value){

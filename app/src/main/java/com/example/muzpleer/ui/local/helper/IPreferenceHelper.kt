@@ -24,4 +24,7 @@ interface IPreferenceHelper {
 
     fun getPositionMyKing(): Int
     fun savePositionMyKing(position: Int)
+
+    fun getPositionFavoriteSong(): Int
+    fun savePositionFavoriteSong(position: Int)
 }
