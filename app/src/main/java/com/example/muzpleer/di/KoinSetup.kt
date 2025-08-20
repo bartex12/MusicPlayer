@@ -4,11 +4,18 @@ import android.app.Application
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.GlobalContext.startKoin
 
-class MusicApplication : Application() {
+class App : Application() {
+    companion object{
+        lateinit var instance:App
+    }
+
     override fun onCreate() {
         super.onCreate()
+
+       instance = this
+
         startKoin {
-            androidContext(this@MusicApplication)
+            androidContext(this@App)
             modules(listOf(appModule)) // Добавляем databaseModule
         }
     }

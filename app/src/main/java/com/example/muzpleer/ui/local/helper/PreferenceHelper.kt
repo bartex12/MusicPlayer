@@ -1,10 +1,13 @@
 package com.example.muzpleer.ui.local.helper
 
 import android.app.Application
+import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
 import androidx.preference.PreferenceManager
 import androidx.core.content.edit
+import com.example.muzpleer.model.Song
+import com.google.gson.Gson
 
 class PreferenceHelperImpl(private  val app: Application): IPreferenceHelper {
     companion object{
@@ -132,6 +135,19 @@ class PreferenceHelperImpl(private  val app: Application): IPreferenceHelper {
     override fun savePositionFavoriteSong(position: Int) {
         putValue(FIRST_POSITION_FAVORITE_SONG to position )
         Log.d(TAG,"PreferenceHelper savePositionFavoriteSong position = $position" )
+    }
+
+    override fun saveFavorites(json:String) {
+        app.getSharedPreferences("PlayerPrefs", Context.MODE_PRIVATE)
+            .edit {
+                putString("favorites", json)
+            }
+    }
+
+    override fun loadFavorites():String {
+        val json = app.getSharedPreferences("PlayerPrefs", Context.MODE_PRIVATE)
+            .getString("favorites", null)
+        return json.toString()
     }
 
     fun getSoundLevel(): Int {

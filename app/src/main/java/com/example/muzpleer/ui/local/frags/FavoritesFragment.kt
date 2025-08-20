@@ -20,6 +20,7 @@ import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentAlbumBinding
 import com.example.muzpleer.databinding.FragmentFavoriteBinding
 import com.example.muzpleer.databinding.FragmentSongsBinding
+import com.example.muzpleer.model.Song
 import com.example.muzpleer.model.SongAndPlaylist
 import com.example.muzpleer.ui.local.adapters.AlbumsAdapter
 import com.example.muzpleer.ui.local.adapters.SongsAdapter
@@ -36,7 +37,9 @@ class FavoritesFragment: Fragment() {
     private val binding get() = _binding!!
     private val viewModel: SharedViewModel by activityViewModel()
     private lateinit var adapter: SongsAdapter
-    private var currentSearchQuery = ""
+//    var favoritesList:MutableList<Song> = mutableListOf()
+//    var filteredFavoritesList:MutableList<Song> = mutableListOf()
+//    var newQueryText: String = ""
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -67,30 +70,36 @@ class FavoritesFragment: Fragment() {
                 playlist = playlist //текущий плейлист
             ))
             findNavController().navigate(R.id.action_tabsLocalFragment_to_playerFragment)
-        }).apply {
-            setOnFavoriteClickListener { song ->
-                viewModel.removeFromFavorites(song.id)
-            }
-        }
+        })
 
         binding.favoriteRecyclerView.apply {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = this@FavoritesFragment.adapter
         }
 
-        viewModel.favoriteSongs.observe(viewLifecycleOwner) { favoriteSongs ->
-            Log.d( TAG,"32 SongsFragment onViewCreated favoriteSongs.observe: favoriteSongs.size= ${favoriteSongs.size} ")
-            if (favoriteSongs.isEmpty()) binding.favoriteEmpty.visibility = View.VISIBLE else
-                binding.favoriteEmpty.visibility = View.GONE
-
-            //val sortedData = getSortedDataSong(favoriteSongs)
-            adapter.data = favoriteSongs  //передаём данные в адаптер
-            Log.d( TAG,"32 SongsFragment onViewCreated favoriteSongs = ${favoriteSongs.map{it.title}} ")
+        viewModel.favoriteSongs.observe(viewLifecycleOwner) { favorites ->
+            //favoritesList = favorites as MutableList<Song>
+            val sortedData = getSortedDataSong(favorites)
+            adapter.data = sortedData  //передаём данные в адаптер
+            binding.favoriteEmpty.visibility = if (favorites.isEmpty()) View.VISIBLE else View.GONE
         }
+
+//        viewModel.filteredFavoriteSongs.observe(viewLifecycleOwner) { filteredSongs ->
+//           filteredFavoritesList =filteredSongs as MutableList<Song>
+//            //adapter.data = filteredSongs  //передаём данные в адаптер
+//           // binding.favoriteEmpty.visibility = if (filteredSongs.isEmpty()) View.VISIBLE else View.GONE
+//            Log.d(TAG,"32 FavoritesFragment onViewCreated filteredSongs = ${filteredSongs.map{it.title}} ")
+//        }
+
+//        if (newQueryText.isEmpty()){
+//            adapter.data = favoritesList
+//        }else{
+//            adapter.data = filteredFavoritesList
+//        }
         //восстанавливаем позицию списка после поворота или возвращения на экран и при новой загрузке
         binding.favoriteRecyclerView.layoutManager?.scrollToPosition(viewModel.getPositionFavoriteSong())
 
-        initMenu()
+        //initMenu()
     }
 
     //запоминаем  позицию списка, на которой сделан клик - на случай поворота экрана
@@ -112,28 +121,44 @@ class FavoritesFragment: Fragment() {
         const val TAG = "33333"
         private lateinit var viewPager: ViewPager
 
-        fun newInstance(viewPager: ViewPager): SongFragment {
+        fun newInstance(viewPager: ViewPager): FavoritesFragment {
             this.viewPager = viewPager
-            return SongFragment()
+            return FavoritesFragment()
         }
     }
 
-    fun initMenu() {
-        val menuHost: MenuHost = requireActivity()
-        menuHost.addMenuProvider(object : MenuProvider {
-
-            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-                menuInflater.inflate(R.menu.favorite, menu)
-            }
-
-            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-                when(menuItem.itemId){
-                    R.id.delete_favorite->{
-
-                    }
-                }
-                return false
-            }
-        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
-    }
+//    fun initMenu() {
+//        val menuHost: MenuHost = requireActivity()
+//        menuHost.addMenuProvider(object : MenuProvider {
+//
+//            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+//                menuInflater.inflate(R.menu.main, menu)
+//
+//                val searchItem: MenuItem = menu.findItem(R.id.search_toolbar)
+//                val searchView =searchItem.actionView as SearchView
+//                //значок лупы слева в развёрнутом сост и сворачиваем строку поиска (true)
+//                searchView.setIconifiedByDefault(true)
+//                //пишем подсказку в строке поиска
+//                searchView.queryHint = getString(R.string.search_album)
+//                //устанавливаем в панели действий кнопку ( > )для отправки поискового запроса
+//                //searchView.isSubmitButtonEnabled = true
+//                //устанавливаем слушатель
+//                searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+//                    override fun onQueryTextSubmit(query: String?) = false
+//
+//                    override fun onQueryTextChange(newText: String?): Boolean {
+//                        newQueryText =newText.toString()
+//                        viewModel.filterFavoriteSongs(newText.orEmpty())
+//                        return true
+//                    }
+//                })
+//            }
+//            override fun onPrepareMenu(menu: Menu) {
+//                menu.findItem(R.id.action_to).isVisible = false
+//            }
+//            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+//                return false
+//            }
+//        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
+//    }
 }

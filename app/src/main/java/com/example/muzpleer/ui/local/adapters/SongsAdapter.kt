@@ -4,7 +4,9 @@ import android.annotation.SuppressLint
 import android.content.ContentUris
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.widget.PopupMenu
 import androidx.core.net.toUri
 import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.RecyclerView
@@ -77,7 +79,11 @@ class SongsAdapter(
     inner class MusicViewHolder(private val binding: ItemMusicBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
+        private lateinit var currentSong: Song
+
         fun bind(track: Song) {
+            currentSong = track
+
             binding.trackTitle.text = track.title
             binding.trackArtist.text = track.artist
             binding.trackDuration.text = track.duration.formatAsTime()
@@ -99,6 +105,10 @@ class SongsAdapter(
                 viewModel.setSelectedPosition(absoluteAdapterPosition)
                 onItemClick(track)
             }
+
+            binding.menuButton.setOnClickListener { view ->
+                showPopupMenu(view, track)
+            }
             // устанавливаем слушатель долгих нажатий на списке
             binding.root.setOnLongClickListener {
                 viewModel.setSelectedPosition(absoluteAdapterPosition)
@@ -114,6 +124,30 @@ class SongsAdapter(
             val remainingSeconds = seconds % 60
             return String.format("%02d:%02d", minutes, remainingSeconds)
         }
+    }
+
+    private fun showPopupMenu(view: View, song: Song) {
+        val popup = PopupMenu(view.context, view)
+        popup.menuInflater.inflate(R.menu.song_item_menu, popup.menu)
+
+        // Динамически показываем нужный пункт
+        popup.menu.findItem(R.id.action_add_to_favorites).isVisible = !viewModel.isFavorite(song.id)
+        popup.menu.findItem(R.id.action_remove_from_favorites).isVisible = viewModel.isFavorite(song.id)
+
+        popup.setOnMenuItemClickListener { menuItem ->
+            when (menuItem.itemId) {
+                R.id.action_add_to_favorites -> {
+                    viewModel.toggleFavorite(song)
+                    true
+                }
+                R.id.action_remove_from_favorites -> {
+                    viewModel.toggleFavorite(song)
+                    true
+                }
+                else -> false
+            }
+        }
+        popup.show()
     }
 }
 

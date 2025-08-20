@@ -1,12 +1,14 @@
 package com.example.muzpleer.ui.local.viewmodel
 
 import android.util.Log
+import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.liveData
 import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.RecyclerView
+import com.example.muzpleer.di.App
 import com.example.muzpleer.model.Album
 import com.example.muzpleer.model.Artist
 import com.example.muzpleer.model.Folder
@@ -16,6 +18,8 @@ import com.example.muzpleer.repository.MusicRepository
 import com.example.muzpleer.service.MusicServiceHandler
 import com.example.muzpleer.ui.local.helper.IPreferenceHelper
 import com.example.muzpleer.util.getSortedDataSong
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.launch
 import java.util.Locale
 
@@ -37,8 +41,11 @@ class SharedViewModel(
     private val _filteredSongs = MutableLiveData<List<Song>>()
     val filteredSongs: LiveData<List<Song>> = _filteredSongs
 
-    private val _favoriteSongs = MutableLiveData<List<Song>>(mutableListOf())
+    private val _favoriteSongs = MutableLiveData<List<Song>>(listOf())
     val favoriteSongs: LiveData<List<Song>> = _favoriteSongs
+
+    private var _filteredFavoriteSongs = MutableLiveData<List<Song>>()
+    val filteredFavoriteSongs: LiveData<List<Song>> = _filteredFavoriteSongs
 
     private val _playlist = MutableLiveData<List<Song>>()
     val playlist: LiveData<List<Song>> = _playlist
@@ -114,6 +121,9 @@ class SharedViewModel(
 
             _folders.value = repository.getFolders()
             _filteredFolders.value = _folders.value
+
+            _favoriteSongs.value = loadFavorites()
+            _filteredFavoriteSongs.value  = _favoriteSongs.value
         }
     }
 
@@ -237,6 +247,7 @@ class SharedViewModel(
     override fun onCleared() {
         super.onCleared()
         playerHandler.release()
+        saveFavorites()
     }
 
     internal fun filterSongs(query: String) {
@@ -308,6 +319,24 @@ class SharedViewModel(
         _filteredFolders.value = filteredFolderList
     }
 
+    internal fun filterFavoriteSongs(query: String) {
+        val originalSongsList: MutableList<Song> =  (favoriteSongs.value ?: listOf()).toMutableList()
+        val filteredSongsList: MutableList<Song> = (filteredFavoriteSongs.value ?: listOf()).toMutableList()
+        filteredSongsList.clear()
+        if (query.isEmpty()) {
+            filteredSongsList.addAll(originalSongsList)
+        } else {
+            val searchQuery = query.lowercase(Locale.getDefault())
+            for (song in originalSongsList) {
+                if (song.title.lowercase(Locale.getDefault()).contains(searchQuery) ||
+                    song.artist.lowercase(Locale.getDefault()).contains(searchQuery)) {
+                    filteredSongsList.add(song)
+                }
+            }
+        }
+        _filteredFavoriteSongs.value = filteredSongsList
+    }
+
     fun getSongs():List<Song> {
        return songs.value
     }
@@ -356,4 +385,32 @@ class SharedViewModel(
 
     fun getPositionFavoriteSong(): Int{  return helper.getPositionFavoriteSong() }
     fun savePositionFavoriteSong(position: Int){helper.savePositionFavoriteSong(position)}
+
+    fun isFavorite(songId: Long): Boolean {
+        return _favoriteSongs.value?.any { it.id == songId } ?: false
+    }
+
+    fun toggleFavorite(song: Song) {
+        val currentList = _favoriteSongs.value?.toMutableList() ?: mutableListOf()
+        if (isFavorite(song.id)) {
+            currentList.removeAll { it.id == song.id }
+            Toast.makeText(App.instance, "Удалено из ибранного", Toast.LENGTH_SHORT).show()
+        } else {
+            currentList.add(song)
+            Toast.makeText(App.instance, "Добавлено в избранное", Toast.LENGTH_SHORT).show()
+        }
+        _favoriteSongs.value = currentList
+    }
+
+    fun saveFavorites() {
+        val json = Gson().toJson(_favoriteSongs.value)
+        helper.saveFavorites(json)
+    }
+
+    fun loadFavorites():List<Song>{
+      val json =  helper.loadFavorites()
+        val newList:List<Song> = Gson().fromJson(json, object : TypeToken<List<Song>>() {}.type)
+        return newList
+    }
+
 }

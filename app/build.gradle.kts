@@ -85,6 +85,8 @@ dependencies {
     //CircleImageView http://developer.alexanderklimov.ru/android/library/circleimageview.php
     implementation ("de.hdodenhof:circleimageview:3.1.0")
 
+    implementation ("com.google.code.gson:gson:2.11.0")
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

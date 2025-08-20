@@ -27,7 +27,7 @@
         android:textSize="16sp"
         android:text="Название песни"
         android:textColor="@color/song_text_color"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/menu_button"
         app:layout_constraintStart_toEndOf="@id/trackArtwork"
         app:layout_constraintTop_toTopOf="@id/trackArtwork"/>
 
@@ -42,7 +42,7 @@
         android:maxLines="1"
         android:text="Исполнитель песни"
         android:textAppearance="@style/TextAppearance.AppCompat.Caption"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/menu_button"
         app:layout_constraintStart_toEndOf="@id/trackDuration"
         app:layout_constraintTop_toBottomOf="@id/trackTitle"/>
 
@@ -65,5 +65,17 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
+
+    <ImageView
+        android:id="@+id/menu_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:scaleType="centerCrop"
+        android:layout_marginEnd="8dp"
+        android:src="@drawable/overflow_vertical_menu_icon_24"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/trackTitle"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

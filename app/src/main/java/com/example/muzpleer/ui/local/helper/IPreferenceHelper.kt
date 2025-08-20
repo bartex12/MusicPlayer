@@ -27,4 +27,7 @@ interface IPreferenceHelper {
 
     fun getPositionFavoriteSong(): Int
     fun savePositionFavoriteSong(position: Int)
+
+    fun saveFavorites(json:String)
+    fun loadFavorites():String
 }
