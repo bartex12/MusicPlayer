@@ -234,20 +234,6 @@ class SharedViewModel(
          return currentSong.value
     }
 
-    fun addToFavorites(song: Song) {
-        val currentList = _favoriteSongs.value?.toMutableList() ?: mutableListOf()
-
-        // Проверяем, нет ли уже этой песни в избранном
-        if (!currentList.any { it.id == song.id }) {
-            currentList.add(song)
-            _favoriteSongs.value = currentList
-        }
-    }
-
-    fun removeFromFavorites(songId: Long) {
-        _favoriteSongs.value = _favoriteSongs.value?.filter { it.id != songId }?.toMutableList()
-    }
-
     fun getFavoriteSongs():List<Song> {
         return favoriteSongs.value
     }
