@@ -1,24 +1,21 @@
 package com.example.muzpleer.ui.local.frags
 
-import android.content.ContentUris
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
-import com.example.muzpleer.databinding.FragmentCoverChangeBinding
-import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
-import androidx.core.net.toUri
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.example.muzpleer.R
-import com.example.muzpleer.model.Song
+import com.example.muzpleer.databinding.FragmentCoverChangeBinding
+import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 
 class CoverChangeFragment : Fragment() {
     private var _binding: FragmentCoverChangeBinding? = null

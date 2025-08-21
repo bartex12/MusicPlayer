@@ -2,14 +2,16 @@ package com.example.muzpleer.ui.local.adapters
 
 import android.annotation.SuppressLint
 import android.content.ContentUris
+import android.content.Context
+import android.net.Uri
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import androidx.appcompat.widget.PopupMenu
 import androidx.core.net.toUri
 import androidx.lifecycle.LifecycleOwner
-import androidx.navigation.Navigation.findNavController
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -85,25 +87,17 @@ class SongsAdapter(
             binding.trackDuration.text = track.duration.formatAsTime()
 
             if (track.artUri == null){
-                // Загружаем обложку, когда не изменяли её
+                // Загружаем обложку, когда не меняли её
                 val albumArtUri = ContentUris.withAppendedId(
-                    "content://media/external/audio/albumart".toUri(),
-                    track.albumId)
+                    "content://media/external/audio/albumart".toUri(), track.albumId)
                 // Загрузка обложки
-                Glide.with(binding.root.context)
-                    .load(albumArtUri)
-                    .placeholder(R.drawable.muz_player3)
-                    .error(R.drawable.muz_player3)
-                    .diskCacheStrategy(DiskCacheStrategy.ALL)
-                    .into(binding.trackArtwork)
+                showImageWithGlide(binding.root.context, albumArtUri, binding.trackArtwork)
             }else {
-                // Загрузка обложки
-                Glide.with(binding.root.context)
-                    .load(track.artUri)
-                    .placeholder(R.drawable.muz_player3)
-                    .error(R.drawable.muz_player3)
-                    .diskCacheStrategy(DiskCacheStrategy.ALL)
-                    .into(binding.trackArtwork)
+                // Загрузка обложки, если заменили её на другую
+                track.artUri?. let{
+                    val uri =  it.toUri()
+                    showImageWithGlide(binding.root.context, uri, binding.trackArtwork)
+                }
             }
 
             binding.root.setOnClickListener {
@@ -129,6 +123,16 @@ class SongsAdapter(
             val remainingSeconds = seconds % 60
             return String.format("%02d:%02d", minutes, remainingSeconds)
         }
+    }
+
+    fun showImageWithGlide(context:Context, artUri:Uri, imageView: ImageView){
+        // Загрузка обложки
+        Glide.with(context)
+            .load(artUri)
+            .placeholder(R.drawable.muz_player3)
+            .error(R.drawable.muz_player3)
+            .diskCacheStrategy(DiskCacheStrategy.ALL)
+            .into(imageView)
     }
 
     private fun showPopupMenu(view: View, song: Song) {

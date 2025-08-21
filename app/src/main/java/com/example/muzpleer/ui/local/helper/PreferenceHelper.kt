@@ -4,10 +4,8 @@ import android.app.Application
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
-import androidx.preference.PreferenceManager
 import androidx.core.content.edit
-import com.example.muzpleer.model.Song
-import com.google.gson.Gson
+import androidx.preference.PreferenceManager
 
 class PreferenceHelperImpl(private  val app: Application): IPreferenceHelper {
     companion object{
