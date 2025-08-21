@@ -38,7 +38,6 @@ class SongsAdapter(
             notifyDataSetChanged()
         }
 
-
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MusicViewHolder {
         val binding = ItemMusicBinding.inflate(
             LayoutInflater.from(parent.context),
