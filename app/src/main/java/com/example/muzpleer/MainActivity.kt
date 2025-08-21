@@ -31,6 +31,7 @@ import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.example.muzpleer.databinding.ActivityMainBinding
 import com.example.muzpleer.model.Song
 import com.example.muzpleer.ui.local.helper.IPreferenceHelper
@@ -141,22 +142,50 @@ class MainActivity : AppCompatActivity() {
             songCurrent?. let {
                 title.text=songCurrent.title
                 artist.text=songCurrent.artist
-                // Загружаем обложку, если есть
-                val albumArtUri=ContentUris.withAppendedId(
-                    "content://media/external/audio/albumart".toUri(),
-                    songCurrent.albumId
-                )
-                Glide.with(this)
-                    .load(albumArtUri)
-                    .placeholder(R.drawable.muz_player3)
-                    .error(R.drawable.muz_player3)
-                    .into(artWork)
+
+                if (songCurrent.artUri == null){
+                    // Загружаем обложку, когда не изменяли её
+                    val artUri = ContentUris.withAppendedId(
+                        ("content://media/external/audio/albumart").toUri(),
+                        songCurrent.albumId)
+                    // Загрузка обложки
+                    Glide.with(binding.root.context)
+                        .load(artUri)
+                        .placeholder(R.drawable.muz_player3)
+                        .error(R.drawable.muz_player3)
+                        .diskCacheStrategy(DiskCacheStrategy.ALL)
+                        .into(artWork)
+                }else {
+                    // Загрузка обложки
+                    Glide.with(binding.root.context)
+                        .load(songCurrent.artUri)
+                        .placeholder(R.drawable.muz_player3)
+                        .error(R.drawable.muz_player3)
+                        .diskCacheStrategy(DiskCacheStrategy.ALL)
+                        .into(artWork)
+                }
             }
         }
            //управление видимостью нижнего плеера из фрагмента:
             viewModel.playerVisibility.observe(this) { isVisible ->
                 playerLayout.visibility = if (isVisible) View.VISIBLE else View.GONE
             }
+
+        viewModel.coverImageUri.observe(this) { uri ->
+            val selectedSong = viewModel.getSelectedSong()
+            val currentSong = viewModel.getCurrentSong()
+            if (currentSong?.mediaUri == selectedSong?.mediaUri){
+                // Загрузка обложки
+                currentSong?.artUri?. let{
+                    Glide.with(binding.root.context)
+                        .load(it)
+                        .placeholder(R.drawable.muz_player3)
+                        .error(R.drawable.muz_player3)
+                        .diskCacheStrategy(DiskCacheStrategy.ALL)
+                        .into(artWork)
+                }
+            }
+        }
 
        //initMenu() нельзя - иначе двоится меню тулбара
     }

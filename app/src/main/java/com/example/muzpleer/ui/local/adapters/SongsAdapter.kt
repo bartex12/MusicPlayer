@@ -9,6 +9,8 @@ import android.view.ViewGroup
 import androidx.appcompat.widget.PopupMenu
 import androidx.core.net.toUri
 import androidx.lifecycle.LifecycleOwner
+import androidx.navigation.Navigation.findNavController
+import androidx.navigation.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
@@ -25,12 +27,6 @@ class SongsAdapter(
 
     companion object{
         const val TAG = "33333"
-    }
-
-    private var onFavoriteClick: ((Song) -> Unit)? = null
-
-    fun setOnFavoriteClickListener(listener: (Song) -> Unit) {
-        onFavoriteClick = listener
     }
 
     var data:List<Song> = listOf()
@@ -88,18 +84,27 @@ class SongsAdapter(
             binding.trackArtist.text = track.artist
             binding.trackDuration.text = track.duration.formatAsTime()
 
-            // Загружаем обложку, если есть
-            val albumArtUri = ContentUris.withAppendedId(
-                "content://media/external/audio/albumart".toUri(),
-                track.albumId)
-
-            // Загрузка обложки
+            if (track.artUri == null){
+                // Загружаем обложку, когда не изменяли её
+                val albumArtUri = ContentUris.withAppendedId(
+                    "content://media/external/audio/albumart".toUri(),
+                    track.albumId)
+                // Загрузка обложки
                 Glide.with(binding.root.context)
                     .load(albumArtUri)
                     .placeholder(R.drawable.muz_player3)
                     .error(R.drawable.muz_player3)
                     .diskCacheStrategy(DiskCacheStrategy.ALL)
                     .into(binding.trackArtwork)
+            }else {
+                // Загрузка обложки
+                Glide.with(binding.root.context)
+                    .load(track.artUri)
+                    .placeholder(R.drawable.muz_player3)
+                    .error(R.drawable.muz_player3)
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .into(binding.trackArtwork)
+            }
 
             binding.root.setOnClickListener {
                 viewModel.setSelectedPosition(absoluteAdapterPosition)
@@ -142,6 +147,13 @@ class SongsAdapter(
                 }
                 R.id.action_remove_from_favorites -> {
                     viewModel.toggleFavorite(song)
+                    true
+                }
+                R.id.action_change_cover -> {
+                    Log.d(TAG, "!!!SongsAdapter action_change_cover:" +
+                            "song title = ${song.title} song artUri =  ${song.artUri}")
+                    viewModel.setSelectedSong(song)
+                    view.findNavController().navigate(R.id.coverChangeFragment)
                     true
                 }
                 else -> false

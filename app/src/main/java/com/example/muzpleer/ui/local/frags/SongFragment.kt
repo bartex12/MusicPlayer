@@ -16,6 +16,8 @@ import androidx.lifecycle.Lifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.viewpager.widget.ViewPager
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentSongsBinding
 import com.example.muzpleer.model.SongAndPlaylist
@@ -75,6 +77,13 @@ class SongFragment : Fragment() {
             adapter.data = sortedData  //передаём данные в адаптер
             Log.d( TAG,"32 SongsFragment onViewCreated sortedData = ${sortedData.map{it.title}} ")
         }
+
+        viewModel.coverImageUri.observe(viewLifecycleOwner) { uri ->
+            val selectedSong = viewModel.getSelectedSong()
+            selectedSong?.artUri=uri.toString()
+            adapter.notifyDataSetChanged()
+        }
+
         //восстанавливаем позицию списка после поворота или возвращения на экран и при новой загрузке
         binding.localRecyclerView.layoutManager?.scrollToPosition(viewModel.getPositionSong())
 

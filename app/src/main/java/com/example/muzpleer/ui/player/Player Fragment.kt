@@ -11,6 +11,7 @@ import androidx.core.net.toUri
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentPlayerBinding
 import com.example.muzpleer.model.Song
@@ -94,21 +95,30 @@ class PlayerFragment : Fragment() {
         }
 
         viewModel.currentSong.observe(viewLifecycleOwner) { currentSong ->
+            currentSong?. let{track->
+                binding.tvTitle.text = track.title
+                binding.tvArtist.text = track.artist
 
-            currentSong?. let{
-                binding.tvTitle.text = it.title
-                binding.tvArtist.text = it.artist
-                // Загружаем обложку, если есть
-                val albumArtUri = ContentUris.withAppendedId(
-                    "content://media/external/audio/albumart".toUri(),
-                    currentSong.albumId)
-
-
-                Glide.with(requireContext())
-                    .load( albumArtUri)
-                    .placeholder(R.drawable.muz_player3)
-                    .error(R.drawable.muz_player3)
-                    .into(binding.artworkImageView)
+                if (track.artUri == null){
+                    // Загружаем обложку, когда не изменяли её
+                    val albumArtUri = ContentUris.withAppendedId(
+                        ("content://media/external/audio/albumart").toUri(), track.albumId)
+                    // Загрузка обложки
+                    Glide.with(binding.root.context)
+                        .load(albumArtUri)
+                        .placeholder(R.drawable.muz_player3)
+                        .error(R.drawable.muz_player3)
+                        .diskCacheStrategy(DiskCacheStrategy.ALL)
+                        .into(binding.artworkImageView)
+                }else {
+                    // Загрузка обложки
+                    Glide.with(binding.root.context)
+                        .load(track.artUri)
+                        .placeholder(R.drawable.muz_player3)
+                        .error(R.drawable.muz_player3)
+                        .diskCacheStrategy(DiskCacheStrategy.ALL)
+                        .into(binding.artworkImageView)
+                }
             }
         }
 

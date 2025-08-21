@@ -1,7 +1,10 @@
 package com.example.muzpleer.ui.local.viewmodel
 
+import android.content.ContentUris
+import android.net.Uri
 import android.util.Log
 import android.widget.Toast
+import androidx.core.net.toUri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -21,6 +24,9 @@ import com.example.muzpleer.util.getSortedDataSong
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.launch
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
 import java.util.Locale
 
 class SharedViewModel(
@@ -105,6 +111,12 @@ class SharedViewModel(
     //индекс выбранной песни в отсортированном(!) списке песен
     private val _indexOfCurrentSong = MutableLiveData<Int>(-1)
     val indexOfCurrentSong: LiveData<Int> = _indexOfCurrentSong
+
+    private val _selectedSong = MutableLiveData<Song?>()
+    val selectedSong: LiveData<Song?> = _selectedSong
+
+    private val _coverImageUri = MutableLiveData<Uri?>()
+    val coverImageUri: LiveData<Uri?> = _coverImageUri
 
 
     init {
@@ -369,6 +381,7 @@ class SharedViewModel(
     fun setCurrentSongById(songId: Long) {
         songs.value?.find { it.id == songId }?.let { song ->
             _currentSong.value = song //передаём сохранённую песню из преференсис
+
             setSongAndPlaylist( SongAndPlaylist( //передаём плейлист и текущую песню
                 song = song,  //текущая песня
                 playlist =getSortedDataSong(getSongs()) //текущий плейлист
@@ -413,4 +426,95 @@ class SharedViewModel(
         return newList
     }
 
+    fun setSelectedSong(song: Song) {
+        _selectedSong.value = song
+        if(song.artUri == null){
+           val uri = getDefaultCoverUri(song)
+            updateCoverImage(uri)
+            Log.d(TAG, "***SharedViewModel setSelectedSong song.artUri == null DefaultCoverUri = $uri")
+        }else{
+            val uri = (song.artUri!!).toUri()
+            //val uri = "content://com.android.providers.media.documents/document/image%3A135257".toUri()
+            updateCoverImage(uri)
+            Log.d(TAG, "***SharedViewModel setSelectedSong song.artUri = $uri song = ${song.title}")
+        }
+    }
+
+    fun getSelectedSong():Song? {
+        return selectedSong.value
+    }
+
+    fun updateCoverImage(uri: Uri) {
+        _coverImageUri.value = uri
+    }
+
+    fun getCoverImageUri():Uri? {
+        return coverImageUri.value
+    }
+
+    fun updateCoverImageAndSave(uri: Uri) {
+        _coverImageUri.value = uri
+        "***SharedViewModel updateCoverImageAndSave uri = ${coverImageUri.value}"
+        saveCoverToDatabase(uri)
+    }
+
+    fun getDefaultCoverUri(song: Song): Uri{
+        return ContentUris.withAppendedId(
+            "content://media/external/audio/albumart".toUri(),
+            song.albumId)
+    }
+
+    fun restoreDefaultCover() {
+        _selectedSong.value?.let { song ->
+            // Восстанавливаем обложку по умолчанию
+            val defaultUri = getDefaultCoverUri(song)
+            _coverImageUri.value = defaultUri
+            song.artUri = defaultUri.toString()
+            //removeCustomCover(song.id)   //todo удаляем из базы
+        }
+    }
+
+    fun saveCoverToDatabase(uri: Uri) {
+        viewModelScope.launch {
+            _selectedSong.value?.let { song ->
+                // Сохраняем в Room или SharedPreferences
+                val coverPath =saveCoverToInternalStorage(uri, song)
+                song.artUri = coverPath
+                "### SharedViewModel saveCoverToDatabase coverPath = $coverPath"
+                //todo записываем путь к файлу обложки в базу
+                //database.songDao().updateCoverPath(song.id, coverPath)
+            }
+        }
+    }
+
+    private fun saveCoverToInternalStorage(uri: Uri, song: Song): String {
+        val context=App.instance
+        // Создаем директорию
+        val coversDir=File(context.filesDir, "covers")
+        if (!coversDir.exists() && !coversDir.mkdirs()) {
+            throw IOException("Failed to create covers directory")
+        }
+
+        val file=File(coversDir, "cover_${song.id}.jpg")
+
+        return try {
+            context.contentResolver.openInputStream(uri)?.use { inputStream ->
+                // Убеждаемся что файл создан
+                if (!file.exists() && !file.createNewFile()) {
+                    throw IOException("Failed to create cover file")
+                }
+
+                FileOutputStream(file).use { outputStream ->
+                    inputStream.copyTo(outputStream)
+                    outputStream.flush()
+                }
+            } ?: throw IOException("Failed to open input stream from URI")
+
+            file.absolutePath
+        } catch (e: Exception) {
+            Log.d(TAG, "Error saving cover for song ${song.title} error = ${e.message}")
+            // Возвращаем путь к дефолтной обложке
+            getDefaultCoverUri(song)
+        }.toString()
+    }
 }

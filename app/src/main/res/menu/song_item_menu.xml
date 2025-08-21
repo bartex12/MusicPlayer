@@ -12,5 +12,10 @@
         android:title="Удалить из избранного"
         app:showAsAction="never" />
 
+    <item
+        android:id="@+id/action_change_cover"
+        android:title="Изменить обложку"
+        app:showAsAction="never" />
+
     <!-- Другие пункты меню -->
 </menu>
