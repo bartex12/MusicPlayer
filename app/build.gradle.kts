@@ -77,6 +77,7 @@ dependencies {
     kapt ("androidx.room:room-compiler:2.6.1" ) // Используйте kapt без скобок
     implementation ("androidx.room:room-ktx:2.6.1")  // Корректный синтаксис
 
+
     //glide
     implementation("com.github.bumptech.glide:compose:1.0.0-beta01")
     implementation ("com.github.bumptech.glide:glide:4.16.0")

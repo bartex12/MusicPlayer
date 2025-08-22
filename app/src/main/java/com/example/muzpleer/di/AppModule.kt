@@ -14,7 +14,7 @@ import org.koin.dsl.module
 
 val appModule = module {
     single<IPreferenceHelper> { PreferenceHelperImpl(get()) }
-    single { MusicRepository(get()) }
+    single { MusicRepository(get(), get()) }
     single { provideExoPlayer(get()) }
     factory {
         MusicServiceHandler(
@@ -22,7 +22,9 @@ val appModule = module {
             callback = get() // Получаем реализацию колбэка из контейнера
         )
     }
+
     viewModel { SharedViewModel(get(),get(),get())}
+
     // Регистрируем заглушку для колбэка (реальная реализация будет в ViewModel)
     factory<MusicServiceHandler.PlayerCallback> {
         object : MusicServiceHandler.PlayerCallback {

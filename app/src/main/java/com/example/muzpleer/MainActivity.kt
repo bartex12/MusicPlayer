@@ -83,6 +83,9 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        //получаем разрешения
+        checkPermissions()
+
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         navController = findNavController(R.id.nav_host_fragment_content_main)
@@ -94,8 +97,6 @@ class MainActivity : AppCompatActivity() {
             viewModel.setCurrentSongById(savedSongId)
         }
         Log.d(TAG, "###MainActivity onCreate savedSongId =  $savedSongId")
-       //получаем разрешения
-        checkPermissions()
     }
 
     private fun scanForMusic() {

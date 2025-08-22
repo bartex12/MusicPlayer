@@ -122,7 +122,8 @@ class SharedViewModel(
     init {
         Log.d(TAG, "SharedViewModel init ")
         viewModelScope.launch {
-            _songs.value = repository.loadMusic()
+            //_songs.value = repository.loadMusic()
+            _songs.value = repository.getSongs()
             _filteredSongs.value  = _songs.value
 
             _albums.value = repository.getAlbums()
