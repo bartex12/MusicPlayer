@@ -16,7 +16,7 @@ class App : Application() {
 
         startKoin {
             androidContext(this@App)
-            modules(listOf(appModule)) // Добавляем databaseModule
+            modules(listOf(appModule, databaseModule)) // Добавляем databaseModule
         }
     }
 }

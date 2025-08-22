@@ -83,25 +83,27 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        //получаем разрешения
-        checkPermissions()
-
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         navController = findNavController(R.id.nav_host_fragment_content_main)
 
         appPreferences =PreferenceHelperImpl(this.application)
+
+        //получаем разрешения
+        checkPermissions()
+    }
+
+    private fun scanForMusic() {
+
+        initViews()
+        startMediaScan()
+
         // Восстанавливаем последнюю песню
         val savedSongId = appPreferences.getCurrentSongId()
         if (savedSongId != -1L) {
             viewModel.setCurrentSongById(savedSongId)
         }
         Log.d(TAG, "###MainActivity onCreate savedSongId =  $savedSongId")
-    }
-
-    private fun scanForMusic() {
-
-        initViews()
 
         setSupportActionBar(binding.appBarMain.toolbar)
         val drawerLayout: DrawerLayout = binding.drawerLayout
@@ -192,7 +194,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initViews() {
-        playerLayout=binding.appBarMain.contentMain.playerBottom
+        playerLayout = binding.appBarMain.contentMain.playerBottom
 
         title=binding.appBarMain.contentMain.title
         artist=binding.appBarMain.contentMain.artist
@@ -206,6 +208,30 @@ class MainActivity : AppCompatActivity() {
         next.setOnClickListener { viewModel.playNext() }
 
         artWork.setOnClickListener { navController.navigate(R.id.playerFragment) }
+    }
+
+    private fun startMediaScan() {
+        viewModel.getRepositorySong {listSong->
+            if (listSong.isEmpty()){
+                Log.d(TAG, "###MainActivity startMediaScan viewModel.scanMedia()")
+                viewModel.scanMedia()
+            }else{
+                Log.d(TAG, "###MainActivity startMediaScan viewModel.getAllMediaFiles()")
+                viewModel.getAllMediaFiles(listSong)
+            }
+        }
+
+
+
+//        val prefs = getSharedPreferences("app_prefs", MODE_PRIVATE)
+//        if (prefs.getBoolean("first_run", true)) {
+//            viewModel.scanMedia()
+//            Log.d(TAG, "###MainActivity startMediaScan viewModel.scanMedia()")
+//            prefs.edit { putBoolean("first_run", false) }
+//        } else {
+//            viewModel.getAllMediaFiles()
+//            Log.d(TAG, "###MainActivity startMediaScan viewModel.getAllMediaFiles()")
+//        }
     }
 
     override fun onSupportNavigateUp(): Boolean {

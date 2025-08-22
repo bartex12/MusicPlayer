@@ -18,6 +18,7 @@ import com.example.muzpleer.model.Folder
 import com.example.muzpleer.model.Song
 import com.example.muzpleer.room.dao.SongDao
 import com.example.muzpleer.room.entity.SongFile
+import com.example.muzpleer.room.utils.FromSongFileToSong
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -37,23 +38,22 @@ class MusicRepository(
     private val artists = mutableMapOf<String, Artist>()
     private val folders = mutableMapOf<String, Folder>()
 
-     suspend fun loadMusic() {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+     suspend fun loadMusic():List<Song> {
+        return (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             scanMusicApi29Plus(context)
         } else {
-            //scanMusicLegacy(context)
-        }
+            scanMusicLegacy(context)
+        })
     }
 
     @RequiresApi(Build.VERSION_CODES.Q)
-    private suspend fun scanMusicApi29Plus(context: Context) {
+    private suspend fun scanMusicApi29Plus(context: Context):List<Song> {
 
-        val dbIds = songDao.getAllIds().toMutableSet()
-        val filesToAdd = mutableListOf<SongFile>()
-        val filesToUpdate = mutableListOf<SongFile>()
-        val filesToDelete = mutableListOf<SongFile>()
-
-        //val musicList = mutableListOf<Song>()
+        val dbIds = songDao.getAllIds().toMutableSet() //список id в базе
+        Log.d(TAG, "#%# MusicRepository scanMusicApi29Plus dbIds size = ${dbIds.size}")
+        val filesToAdd = mutableListOf<SongFile>()  //список для добавления
+        val filesToUpdate = mutableListOf<SongFile>() //список для обновления
+        val filesToDelete = mutableListOf<SongFile>()   //список для удаления
 
         val collection = MediaStore.Audio.Media.getContentUri(
             MediaStore.VOLUME_EXTERNAL
@@ -108,7 +108,7 @@ class MusicRepository(
 
                 songDao.getById(id)?.let { existingFile ->
                     // Файл существует в базе
-                    dbIds.remove(id)
+                    dbIds.remove(id)  //удаляем запись с этой id из списка всех id
                     if (existingFile.lastModified != lastModified) {
                         filesToUpdate.add(
                             SongFile(
@@ -148,60 +148,53 @@ class MusicRepository(
                         )
                     )
                 }
-//                Log.d(TAG, "#%# MediaScanner scanMusicApi29Plus MusicTrack:" +
-//                        " title = $title  artist = $artist  path = $path  " +
-//                        "artworkUri = ${getArtworkUri(context, albumId, path ).toString()} " +
-//                        " album = $album albumId = $albumId ")
-
-
-                // Удаляем файлы, которые есть в базе, но нет в MediaStore
-                dbIds.forEach { id ->
-                    songDao.getById(id)?.let { filesToDelete.add(it) }
-                }
-
-                // Применяем изменения
-                withContext(Dispatchers.IO) {
-                    // Вставляем новые файлы списком
-                    if (filesToAdd.isNotEmpty()) {
-                        songDao.insertAll(filesToAdd)
-                    }
-
-                    // Обновляем существующие файлы списком
-                    if (filesToUpdate.isNotEmpty()) {
-                        songDao.updateAll(filesToUpdate)
-                    }
-
-                }
             }
         }
-        // Build albums, artists and folders
-        buildCollections()
-        //Log.d(TAG, "#%# MediaScanner scanMusicApi29Plus musicList.size = ${musicList.size}")
 
+        // файлы, которые есть в базе, но нет в MediaStore
+        //берем список всех id и для каждого id пробуем получить запись в базе
+        //если запись есть, помещаем ее в список для удаления, так как до этого
+        //все записи просмотрели?
+        dbIds.forEach { id ->
+            songDao.getById(id)?.let {
+                filesToDelete.add(it)
+                Log.d(TAG, "#%# MusicRepository scanMusicApi29Plus filesToDelete size= ${filesToDelete.size}")
+            }
+        }
+
+        Log.d(TAG, "#%# MusicRepository scanMusicApi29Plus " +
+                "filesToAdd.size = ${filesToAdd.size}" +
+                "filesToUpdate.size = ${filesToUpdate.size}" +
+                "filesToDelete.size = ${filesToDelete.size}")
+        // Применяем изменения
+        withContext(Dispatchers.IO) {
+            // Вставляем новые файлы списком
+            if (filesToAdd.isNotEmpty()) {
+                songDao.insertAll(filesToAdd)
+            }
+            // Обновляем существующие файлы списком
+            if (filesToUpdate.isNotEmpty()) {
+                songDao.updateAll(filesToUpdate)
+            }
+            // Удаляем файлы
+            filesToDelete.forEach { songDao.delete(it) }
+        }
+
+        val songList = FromSongFileToSong(songDao.getAllFiles())
+        Log.d(TAG, "#%# MediaScanner scanMusicApi29Plus songList.size = ${songList.size}")
+
+        songs = songList.toMutableList()
+        // Build albums, artists and folders
+        buildCollections(songs)
+        return songList
     }
 
-    private suspend fun buildCollections() {
+    fun buildCollections(songList: List<Song>) {
         albums.clear()
         artists.clear()
         folders.clear()
 
-        val songList = songDao.getAllFiles().map{songFile->
-            Song(
-                id = songFile.mediaStoreId ,
-                title =songFile.title.toString(),
-                artist =songFile.artist.toString(),
-                duration = songFile.duration ,
-                mediaUri = songFile.path ,
-                artUri = songFile.artUri ,
-                isLocal = songFile.isLocal ,
-                album = songFile.album ,
-                albumId = songFile.albumId ,
-                folderPath = songFile.folderPath
-            )
-        }
-
-        songs = songList.toMutableList()
-        Log.d(TAG, "#%# MediaScanner buildCollections songList.size = ${songList.size}")
+        //Log.d(TAG, "#%# MediaScanner buildCollections songList.size = ${songList.size}")
 
         //Группировка по albumId и названию - избегаем дублирования альбомов
         songList.groupBy { it.albumId to it.album } // Группируем по albumId и названию
@@ -268,6 +261,13 @@ class MusicRepository(
     fun getAlbums(): List<Album> = albums.values.toList()
     fun getArtists(): List<Artist> = artists.values.toList()
     fun getFolders(): List<Folder> = folders.values.toList()
+    suspend fun getSongsFromDatabase(): List<Song> { //для проверки в MainActivity
+        return FromSongFileToSong(songDao.getAllFiles())
+    }
+
+    private fun scanMusicLegacy(context: Context):List<Song>{
+        return listOf()
+    }
 
 //    private fun scanMusicLegacy(context: Context){
 //        val musicList = mutableListOf<Song>()

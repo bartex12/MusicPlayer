@@ -118,26 +118,48 @@ class SharedViewModel(
     private val _coverImageUri = MutableLiveData<Uri?>()
     val coverImageUri: LiveData<Uri?> = _coverImageUri
 
-
-    init {
-        Log.d(TAG, "SharedViewModel init ")
+     fun scanMedia() {
         viewModelScope.launch {
-            //_songs.value = repository.loadMusic()
-            _songs.value = repository.getSongs()
-            _filteredSongs.value  = _songs.value
-
-            _albums.value = repository.getAlbums()
-            _filteredAlbums.value = _albums.value
-
-            _artists.value = repository.getArtists()
-            _filteredArtists.value = _artists.value
-
-            _folders.value = repository.getFolders()
-            _filteredFolders.value = _folders.value
-
-            _favoriteSongs.value = loadFavorites()
-            _filteredFavoriteSongs.value  = _favoriteSongs.value
+            initParams(repository.loadMusic())
         }
+    }
+
+    fun getRepositorySong(listSong:(List<Song>)->Unit ) {
+        viewModelScope.launch {
+        val list =  repository.getSongsFromDatabase()
+            listSong.invoke(list)
+        }
+    }
+
+    fun getAllMediaFiles(songs:List<Song>){  //берём список песен из базы
+        viewModelScope.launch {
+            repository.buildCollections(songs)
+            initParams(songs)
+        }
+    }
+
+    private fun initParams(songs:List<Song>){
+        _songs.value = songs
+        _filteredSongs.value  = _songs.value
+
+        _albums.value = repository.getAlbums()
+        _filteredAlbums.value = _albums.value
+
+        _artists.value = repository.getArtists()
+        _filteredArtists.value = _artists.value
+
+        _folders.value = repository.getFolders()
+        _filteredFolders.value = _folders.value
+
+        _favoriteSongs.value = loadFavorites()
+        _filteredFavoriteSongs.value  = _favoriteSongs.value
+
+        Log.d(TAG, "SharedViewModel initParams " +
+                "songs.size = ${songs.size}" +
+                " album.size = ${repository.getAlbums().size}" +
+                " artists.size = ${repository.getArtists().size}" +
+                " folders.size = ${repository.getFolders().size}" +
+                " favoriteSongs.size = ${loadFavorites().size}")
     }
 
     fun setPlayerVisibility(visible: Boolean) {
@@ -409,8 +431,13 @@ class SharedViewModel(
 
     fun loadFavorites():List<Song>{
       val json =  helper.loadFavorites()
-        val newList:List<Song> = Gson().fromJson(json, object : TypeToken<List<Song>>() {}.type)
-        return newList
+        if (json == null){
+            Log.d(TAG, "***SharedViewModel loadFavorites json == null")
+            return emptyList()
+        }else{
+            val newList:List<Song> = Gson().fromJson(json, object : TypeToken<List<Song>>() {}.type)
+            return newList
+        }
     }
 
     fun setSelectedSong(song: Song) {
@@ -504,4 +531,6 @@ class SharedViewModel(
             getDefaultCoverUri(song)
         }.toString()
     }
+
+
 }

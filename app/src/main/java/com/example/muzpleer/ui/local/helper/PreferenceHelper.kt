@@ -142,10 +142,10 @@ class PreferenceHelperImpl(private  val app: Application): IPreferenceHelper {
             }
     }
 
-    override fun loadFavorites():String {
+    override fun loadFavorites():String? {
         val json = app.getSharedPreferences("PlayerPrefs", Context.MODE_PRIVATE)
             .getString("favorites", null)
-        return json.toString()
+        return json
     }
 
     fun getSoundLevel(): Int {
