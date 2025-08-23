@@ -50,6 +50,7 @@ class AlbumFragment: Fragment() {
             // Навигация через Bundle
             val bundle = Bundle().apply {
                 putLong("albumId", album.id)
+                Log.d(TAG,"33 AlbumFragment onViewCreated bundle: albumId = ${album.id} ")
             }
             findNavController().navigate( R.id.alltracksFragment, bundle)
                 //AlltracksFragment.newInstance( albumTracks).arguments)
@@ -79,8 +80,8 @@ class AlbumFragment: Fragment() {
         //определяем первую видимую позицию
         val manager = binding.albumRecyclerView.layoutManager as LinearLayoutManager
         val firstPosition = manager.findFirstVisibleItemPosition()
-        viewModel.savePositionAlbum(firstPosition)
         Log.d(TAG, "AlbumFragment onPause firstPosition = $firstPosition")
+        viewModel.savePositionAlbum(firstPosition)
     }
 
     override fun onDestroyView() {

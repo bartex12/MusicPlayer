@@ -212,13 +212,14 @@ class MainActivity : AppCompatActivity() {
 
     private fun startMediaScan() {
         viewModel.getRepositorySong {listSong->
-            if (listSong.isEmpty()){
-                Log.d(TAG, "###MainActivity startMediaScan viewModel.scanMedia()")
-                viewModel.scanMedia()
-            }else{
-                Log.d(TAG, "###MainActivity startMediaScan viewModel.getAllMediaFiles()")
-                viewModel.getAllMediaFiles(listSong)
-            }
+            viewModel.scanMedia()
+//            if (listSong.isEmpty()){
+//                Log.d(TAG, "###MainActivity startMediaScan viewModel.scanMedia()")
+//                viewModel.scanMedia()
+//            }else{
+//                Log.d(TAG, "###MainActivity startMediaScan viewModel.getAllMediaFiles()")
+//                viewModel.getAllMediaFiles(listSong)
+//            }
         }
 
 

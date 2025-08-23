@@ -67,6 +67,9 @@ class SharedViewModel(
     private val _filteredAlbums = MutableLiveData<List<Album>>()
     val filteredAlbums: LiveData<List<Album>> = _filteredAlbums
 
+    private val _listAlbumSong = MutableLiveData<List<Song>>()
+    val listAlbumSong: LiveData<List<Song>> = _listAlbumSong
+
     private val _artists = MutableLiveData<List<Artist>>()
     val artists: LiveData<List<Artist>> = _artists
 
@@ -148,7 +151,7 @@ class SharedViewModel(
     private fun initParamsSong(songs:List<Song>){
         _songs.value = songs
         _filteredSongs.value  = _songs.value
-        Log.d(TAG, "SharedViewModel initParams songs.size = ${songs.size}")
+        Log.d(TAG, "SharedViewModel initParamsSong songs.size = ${songs.size}")
     }
 
     private fun initParamsAlbum(albums:List<Album>){
@@ -184,12 +187,6 @@ class SharedViewModel(
     fun setPlayerVisibility(visible: Boolean) {
         _playerVisibility.value = visible
     }
-
-//    fun getSongsByAlbum(albumId: String): LiveData<List<Song>> {
-//        return liveData {
-//            emit(repository.getAlbums().find { it.id == albumId }?.songs ?: emptyList())
-//        }
-//    }
 
     fun getSongsByArtist(artistId: String): LiveData<List<Song>> {
         return liveData {
@@ -551,31 +548,44 @@ class SharedViewModel(
         }.toString()
     }
 
+    //загрузка альбомов 
     fun loadAlbums() {
         viewModelScope.launch {
             _loading.value = true
             try {
                 val albumsWithSongs = albumRepository.getAllAlbumsWithSongs()
+                Log.d(TAG, " * SharedViewModel loadAlbums albumsWithSongs size = ${albumsWithSongs.size}")
                 _albums.value = albumsWithSongs
+                _filteredAlbums.value = albumsWithSongs  //todo убрать?
             } catch (e: Exception) {
-                Log.e("AlbumViewModel", "Error loading albums", e)
+                Log.d(TAG, " SharedViewModel loadAlbums Error loading albums ${e.message}")
             } finally {
                 _loading.value = false
             }
         }
     }
 
+    //получение альбомов из песен и загрузка альбомов
     fun syncAlbums() {
         viewModelScope.launch {
             _loading.value = true
             try {
+                Log.d(TAG, " * SharedViewModel syncAlbums albumRepository.syncAlbumsFromMediaFiles()")
                 albumRepository.syncAlbumsFromMediaFiles()
                 loadAlbums() // Перезагружаем после синхронизации
             } catch (e: Exception) {
-                Log.e("AlbumViewModel", "Error syncing albums", e)
+                Log.d(TAG, " SharedViewModel syncAlbums Error loading albums error = ${e.message}")
             } finally {
                 _loading.value = false
             }
+        }
+    }
+
+    fun getSongsByAlbum(albumId: Long){
+        viewModelScope.launch {
+            var listAlbumSong:List<Song> = albumRepository.getAlbumSongList(albumId)
+            Log.d(TAG, " * SharedViewModel getSongsByAlbum listAlbumSong size = ${listAlbumSong.size}")
+            _listAlbumSong.value = listAlbumSong
         }
     }
 

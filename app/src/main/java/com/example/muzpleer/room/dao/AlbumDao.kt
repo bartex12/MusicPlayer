@@ -22,13 +22,14 @@ interface AlbumDao {
     @Query("SELECT * FROM albums ORDER BY title COLLATE NOCASE")
     suspend fun getAllAlbums(): List<AlbumFile>
 
-    @Query("SELECT * FROM albums WHERE mediaStoreId = :mediaStoreId LIMIT 1")
-    suspend fun getAlbumByMediaStoreId(mediaStoreId: Long): AlbumFile?
 
-    @Query("SELECT * FROM albums WHERE id = :id LIMIT 1")
+    @Query("SELECT * FROM albums WHERE albumId = :id LIMIT 1")
     suspend fun getAlbumById(id: Long): AlbumFile?
 
-    @Query("DELETE FROM albums WHERE mediaStoreId = :mediaStoreId")
+    @Query("SELECT albumId FROM albums")
+    suspend fun getAllIds(): List<Long>
+
+    @Query("DELETE FROM albums WHERE id = :mediaStoreId")
     suspend fun deleteByMediaStoreId(mediaStoreId: Long)
 
     @Query("DELETE FROM albums")
@@ -42,4 +43,6 @@ interface AlbumDao {
 
     @Query("SELECT DISTINCT albumId FROM media_files WHERE albumId IS NOT NULL")
     suspend fun getAllAlbumIds(): List<Long>
+
+
 }

@@ -200,7 +200,7 @@ class MusicRepository(
         songList.groupBy { it.albumId to it.albumName } // Группируем по albumId и названию
             .forEach { (albumKey, albumSongs) ->
                 val (albumId, albumName) = albumKey
-                Log.d(TAG, "#%# MusicRepository buildCollections albumKey = $albumKey")
+                //Log.d(TAG, "#%# MusicRepository buildCollections albumKey = $albumKey")
                 // Собираем всех исполнителей в альбоме
                 val artistsInAlbum = albumSongs.map { it.artist }.distinct()
                 // Находим песню с обложкой (если есть) или первую песню

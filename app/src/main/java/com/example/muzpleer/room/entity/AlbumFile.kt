@@ -7,20 +7,11 @@ import androidx.room.PrimaryKey
 
 @Entity(
     tableName = "albums",
-    foreignKeys = [
-        ForeignKey(
-            entity = SongFile::class,
-            parentColumns = ["mediaStoreId"],
-            childColumns = ["mediaStoreId"],
-            onDelete = ForeignKey.CASCADE,
-            onUpdate = ForeignKey.CASCADE
-        )
-    ],
-    indices = [Index(value = ["mediaStoreId"], unique = true)]
+    indices = [Index(value = ["albumId"], unique = true)] // Уникальность только в таблице albums
 )
 data class AlbumFile(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
-    val mediaStoreId: Long, // Связь с MediaFile
+    val albumId: Long, //  val albumId: Long, // Уникальный только в рамках таблицы albums
     val title: String,
     val artist: String,
     val allArtists: String, // JSON или разделенный список

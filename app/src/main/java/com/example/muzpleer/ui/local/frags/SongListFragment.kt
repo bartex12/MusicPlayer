@@ -61,12 +61,16 @@ class SongListFragment:Fragment() {
         }
 
         when {
-            arguments?.getString("albumId") != null -> {
+            arguments?.getLong("albumId") != null -> {
                 val albumId = arguments?.getLong("albumId")!!
-                //todo
-//                viewModel.getSongsByAlbum(albumId).observe(viewLifecycleOwner) { songs ->
-//                    adapter.data = getSortedDataSong(songs)
-//                }
+                Log.d(TAG, " !@# SongListFragment arguments albumId  $albumId")
+
+                viewModel.getSongsByAlbum(albumId)
+
+                viewModel.listAlbumSong.observe(viewLifecycleOwner) { albumSongs ->
+                    Log.d(TAG, " !@# SongListFragment arguments songs size ${albumSongs.size}")
+                    adapter.data = getSortedDataSong(albumSongs)
+                }
             }
 
             arguments?.getString("artistId") != null -> {
