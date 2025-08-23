@@ -17,6 +17,7 @@ import com.example.muzpleer.model.Artist
 import com.example.muzpleer.model.Folder
 import com.example.muzpleer.model.Song
 import com.example.muzpleer.model.SongAndPlaylist
+import com.example.muzpleer.repository.AlbumRepository
 import com.example.muzpleer.repository.MusicRepository
 import com.example.muzpleer.service.MusicServiceHandler
 import com.example.muzpleer.ui.local.helper.IPreferenceHelper
@@ -32,6 +33,7 @@ import java.util.Locale
 class SharedViewModel(
     var helper : IPreferenceHelper,
     private val repository: MusicRepository,
+    private val albumRepository: AlbumRepository,
     private val playerHandler: MusicServiceHandler
 ) : ViewModel(), MusicServiceHandler.PlayerCallback{
 
@@ -118,9 +120,14 @@ class SharedViewModel(
     private val _coverImageUri = MutableLiveData<Uri?>()
     val coverImageUri: LiveData<Uri?> = _coverImageUri
 
+    private val _loading = MutableLiveData<Boolean>()
+    val loading: LiveData<Boolean> = _loading
+
      fun scanMedia() {
         viewModelScope.launch {
-            initParams(repository.loadMusic())
+            initParamsSong(repository.loadMusic())
+            syncAlbums()
+            //initParamsAlbum(albumRepository.syncAlbumsFromMediaFiles())
         }
     }
 
@@ -136,6 +143,18 @@ class SharedViewModel(
             repository.buildCollections(songs)
             initParams(songs)
         }
+    }
+
+    private fun initParamsSong(songs:List<Song>){
+        _songs.value = songs
+        _filteredSongs.value  = _songs.value
+        Log.d(TAG, "SharedViewModel initParams songs.size = ${songs.size}")
+    }
+
+    private fun initParamsAlbum(albums:List<Album>){
+        _albums.value = albums
+        _filteredAlbums.value = _albums.value
+        Log.d(TAG, "SharedViewModel initParams album.size = ${albums.size}")
     }
 
     private fun initParams(songs:List<Song>){
@@ -166,11 +185,11 @@ class SharedViewModel(
         _playerVisibility.value = visible
     }
 
-    fun getSongsByAlbum(albumId: String): LiveData<List<Song>> {
-        return liveData {
-            emit(repository.getAlbums().find { it.id == albumId }?.songs ?: emptyList())
-        }
-    }
+//    fun getSongsByAlbum(albumId: String): LiveData<List<Song>> {
+//        return liveData {
+//            emit(repository.getAlbums().find { it.id == albumId }?.songs ?: emptyList())
+//        }
+//    }
 
     fun getSongsByArtist(artistId: String): LiveData<List<Song>> {
         return liveData {
@@ -430,7 +449,7 @@ class SharedViewModel(
     }
 
     fun loadFavorites():List<Song>{
-      val json =  helper.loadFavorites()
+        val json =  helper.loadFavorites()
         if (json == null){
             Log.d(TAG, "***SharedViewModel loadFavorites json == null")
             return emptyList()
@@ -532,5 +551,32 @@ class SharedViewModel(
         }.toString()
     }
 
+    fun loadAlbums() {
+        viewModelScope.launch {
+            _loading.value = true
+            try {
+                val albumsWithSongs = albumRepository.getAllAlbumsWithSongs()
+                _albums.value = albumsWithSongs
+            } catch (e: Exception) {
+                Log.e("AlbumViewModel", "Error loading albums", e)
+            } finally {
+                _loading.value = false
+            }
+        }
+    }
+
+    fun syncAlbums() {
+        viewModelScope.launch {
+            _loading.value = true
+            try {
+                albumRepository.syncAlbumsFromMediaFiles()
+                loadAlbums() // Перезагружаем после синхронизации
+            } catch (e: Exception) {
+                Log.e("AlbumViewModel", "Error syncing albums", e)
+            } finally {
+                _loading.value = false
+            }
+        }
+    }
 
 }

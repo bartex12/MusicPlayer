@@ -1,5 +1,7 @@
 package com.example.muzpleer.di
 
+import com.example.muzpleer.repository.AlbumRepository
+import com.example.muzpleer.repository.MusicRepository
 import com.example.muzpleer.room.AppDatabase
 import com.example.muzpleer.room.dao.AlbumDao
 import com.example.muzpleer.room.dao.ArtistDao
@@ -20,9 +22,9 @@ val databaseModule = module {
     single<ArtistDao> { get<AppDatabase>().artistDao() }
 
     // Репозитории
-//    single<SongRepository> { SongRepository(get(), get()) }
-//    single<FolderRepository> { FolderRepository(get()) }
-//    single<AlbumRepository> { AlbumRepository(get()) }
-//    single<ArtistRepository> { ArtistRepository(get()) }
+    single { MusicRepository(get(), get()) }
+    single<AlbumRepository> { AlbumRepository(get(), get()) }
+//  single<ArtistRepository> { ArtistRepository(get()) }
+//  single<FolderRepository> { FolderRepository(get()) }
 
 }

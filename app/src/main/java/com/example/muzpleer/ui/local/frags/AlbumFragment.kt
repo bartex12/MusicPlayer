@@ -49,7 +49,7 @@ class AlbumFragment: Fragment() {
 
             // Навигация через Bundle
             val bundle = Bundle().apply {
-                putString("albumId", album.id)
+                putLong("albumId", album.id)
             }
             findNavController().navigate( R.id.alltracksFragment, bundle)
                 //AlltracksFragment.newInstance( albumTracks).arguments)

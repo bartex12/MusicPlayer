@@ -15,7 +15,7 @@ data class Song(
     val mediaUri: String,  // мп3 для треков из local
     var artUri: String? = null,  // путь к обложке для треков из local
     val isLocal: Boolean = true,  //из ресурсов или local
-    val album: String? = null, //название альбома из local
+    val albumName: String? = null, //название альбома из local
     val albumId: Long = -1, // id альбома из local
     val folderPath: String = "",  //путь к папке
 ): Parcelable{

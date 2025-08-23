@@ -18,7 +18,7 @@ import com.example.muzpleer.model.Folder
 import com.example.muzpleer.model.Song
 import com.example.muzpleer.room.dao.SongDao
 import com.example.muzpleer.room.entity.SongFile
-import com.example.muzpleer.room.utils.FromSongFileToSong
+import com.example.muzpleer.room.utils.fromSongFileToSong
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -180,8 +180,8 @@ class MusicRepository(
             filesToDelete.forEach { songDao.delete(it) }
         }
 
-        val songList = FromSongFileToSong(songDao.getAllFiles())
-        Log.d(TAG, "#%# MediaScanner scanMusicApi29Plus songList.size = ${songList.size}")
+        val songList = fromSongFileToSong(songDao.getAllFiles())
+        Log.d(TAG, "#%# MusicRepository scanMusicApi29Plus songList.size = ${songList.size}")
 
         songs = songList.toMutableList()
         // Build albums, artists and folders
@@ -194,19 +194,20 @@ class MusicRepository(
         artists.clear()
         folders.clear()
 
-        //Log.d(TAG, "#%# MediaScanner buildCollections songList.size = ${songList.size}")
+        //Log.d(TAG, "#%# MusicRepository buildCollections songList.size = ${songList.size}")
 
         //Группировка по albumId и названию - избегаем дублирования альбомов
-        songList.groupBy { it.albumId to it.album } // Группируем по albumId и названию
+        songList.groupBy { it.albumId to it.albumName } // Группируем по albumId и названию
             .forEach { (albumKey, albumSongs) ->
                 val (albumId, albumName) = albumKey
+                Log.d(TAG, "#%# MusicRepository buildCollections albumKey = $albumKey")
                 // Собираем всех исполнителей в альбоме
                 val artistsInAlbum = albumSongs.map { it.artist }.distinct()
                 // Находим песню с обложкой (если есть) или первую песню
                 //val artworkSong = albumSongs.firstOrNull { it.artworkUri != null } ?: albumSongs.firstOrNull()
 
                 albums[albumId.toString()] = Album(
-                    id = albumId.toString(),
+                    id = albumId,
                     title = albumName.toString(),
                     artist = if (artistsInAlbum.size > 1) "Разные исполнители" else artistsInAlbum.first(),
                     artists = artistsInAlbum,
@@ -222,12 +223,12 @@ class MusicRepository(
             //val artistArtUri = getArtworkUriFromMediaStore(artistSongs)
             // Получаем уникальные альбомы исполнителя
             val artistAlbums =
-                artistSongs.groupBy {  it.albumId to it.album} // Группируем песни по альбомам
+                artistSongs.groupBy {  it.albumId to it.albumName} // Группируем песни по альбомам
                             .mapValues { (albumKey, albumSongs) ->
                                 val (albumId, albumName) = albumKey
                                 val artists = albumSongs.map { it.artist }.distinct()
                           Album(
-                              id = albumId.toString(),
+                              id = albumId,
                               title =albumName.toString(),
                               artist = if (artists.size > 1) "Разные исполнители" else artists.first(),
                               songs = albumSongs,
@@ -262,7 +263,7 @@ class MusicRepository(
     fun getArtists(): List<Artist> = artists.values.toList()
     fun getFolders(): List<Folder> = folders.values.toList()
     suspend fun getSongsFromDatabase(): List<Song> { //для проверки в MainActivity
-        return FromSongFileToSong(songDao.getAllFiles())
+        return fromSongFileToSong(songDao.getAllFiles())
     }
 
     private fun scanMusicLegacy(context: Context):List<Song>{

@@ -37,4 +37,10 @@ interface SongDao {
 
     @Query("DELETE FROM media_files WHERE mediaStoreId = :id")
     suspend fun deleteById(id: Long)
+
+    @Query("SELECT * FROM media_files WHERE albumId = :albumId ORDER BY title")
+    suspend fun getFilesByAlbumId(albumId: Long): List<SongFile>
+
+    @Query("SELECT DISTINCT albumId FROM media_files WHERE albumId IS NOT NULL")
+    suspend fun getAllAlbumIds(): List<Long>
 }
