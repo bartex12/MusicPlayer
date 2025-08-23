@@ -6,7 +6,6 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import com.example.muzpleer.room.entity.AlbumFile
-import com.example.muzpleer.room.entity.SongFile
 
 @Dao
 interface AlbumDao {
