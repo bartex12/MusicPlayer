@@ -43,4 +43,13 @@ interface SongDao {
 
     @Query("SELECT DISTINCT albumId FROM media_files WHERE albumId IS NOT NULL")
     suspend fun getAllAlbumIds(): List<Long>
+
+    @Query("SELECT * FROM media_files WHERE artist = :artistName ORDER BY title")
+    suspend fun getFilesByArtistName(artistName: String): List<SongFile>
+
+    @Query("SELECT * FROM media_files WHERE artistId = :artistId ORDER BY title")
+    suspend fun getFilesByArtistId(artistId: Long): List<SongFile>
+
+    @Query("SELECT DISTINCT artist FROM media_files WHERE artist IS NOT NULL")
+    suspend fun getAllArtistNames(): List<String>
 }

@@ -42,6 +42,4 @@ interface AlbumDao {
 
     @Query("SELECT DISTINCT albumId FROM media_files WHERE albumId IS NOT NULL")
     suspend fun getAllAlbumIds(): List<Long>
-
-
 }

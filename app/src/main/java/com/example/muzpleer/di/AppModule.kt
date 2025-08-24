@@ -21,8 +21,7 @@ val appModule = module {
         )
     }
 
-    viewModel { SharedViewModel(get(),get(),get(),get())}
-    //viewModel { AlbumViewModel(get()) }  // Новая ViewModel для альбомов
+    viewModel { SharedViewModel(get(),get(),get(),get(),get())}
 
     // Регистрируем заглушку для колбэка (реальная реализация будет в ViewModel)
     factory<MusicServiceHandler.PlayerCallback> {

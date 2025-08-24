@@ -18,6 +18,7 @@ import com.example.muzpleer.model.Folder
 import com.example.muzpleer.model.Song
 import com.example.muzpleer.model.SongAndPlaylist
 import com.example.muzpleer.repository.AlbumRepository
+import com.example.muzpleer.repository.ArtistRepository
 import com.example.muzpleer.repository.MusicRepository
 import com.example.muzpleer.service.MusicServiceHandler
 import com.example.muzpleer.ui.local.helper.IPreferenceHelper
@@ -34,6 +35,7 @@ class SharedViewModel(
     var helper : IPreferenceHelper,
     private val repository: MusicRepository,
     private val albumRepository: AlbumRepository,
+    private val artistsRepository: ArtistRepository,
     private val playerHandler: MusicServiceHandler
 ) : ViewModel(), MusicServiceHandler.PlayerCallback{
 
@@ -75,6 +77,9 @@ class SharedViewModel(
 
     private val _filteredArtists = MutableLiveData<List<Artist>>()
     val filteredArtists: LiveData<List<Artist>> = _filteredArtists
+
+    private val _listArtistSong = MutableLiveData<List<Song>>()
+    val listArtistSong: LiveData<List<Song>> = _listArtistSong
 
     private val _folders = MutableLiveData<List<Folder>>()
     val folders: LiveData<List<Folder>> = _folders
@@ -130,6 +135,7 @@ class SharedViewModel(
         viewModelScope.launch {
             initParamsSong(repository.loadMusic())
             syncAlbums()
+            syncArtist ()
             //initParamsAlbum(albumRepository.syncAlbumsFromMediaFiles())
         }
     }
@@ -141,12 +147,12 @@ class SharedViewModel(
         }
     }
 
-    fun getAllMediaFiles(songs:List<Song>){  //берём список песен из базы
-        viewModelScope.launch {
-            repository.buildCollections(songs)
-            initParams(songs)
-        }
-    }
+//    fun getAllMediaFiles(songs:List<Song>){  //берём список песен из базы
+//        viewModelScope.launch {
+//            repository.buildCollections(songs)
+//            initParams(songs)
+//        }
+//    }
 
     private fun initParamsSong(songs:List<Song>){
         _songs.value = songs
@@ -154,45 +160,45 @@ class SharedViewModel(
         Log.d(TAG, "SharedViewModel initParamsSong songs.size = ${songs.size}")
     }
 
-    private fun initParamsAlbum(albums:List<Album>){
-        _albums.value = albums
-        _filteredAlbums.value = _albums.value
-        Log.d(TAG, "SharedViewModel initParams album.size = ${albums.size}")
-    }
-
-    private fun initParams(songs:List<Song>){
-        _songs.value = songs
-        _filteredSongs.value  = _songs.value
-
-        _albums.value = repository.getAlbums()
-        _filteredAlbums.value = _albums.value
-
-        _artists.value = repository.getArtists()
-        _filteredArtists.value = _artists.value
-
-        _folders.value = repository.getFolders()
-        _filteredFolders.value = _folders.value
-
-        _favoriteSongs.value = loadFavorites()
-        _filteredFavoriteSongs.value  = _favoriteSongs.value
-
-        Log.d(TAG, "SharedViewModel initParams " +
-                "songs.size = ${songs.size}" +
-                " album.size = ${repository.getAlbums().size}" +
-                " artists.size = ${repository.getArtists().size}" +
-                " folders.size = ${repository.getFolders().size}" +
-                " favoriteSongs.size = ${loadFavorites().size}")
-    }
+//    private fun initParamsAlbum(albums:List<Album>){
+//        _albums.value = albums
+//        _filteredAlbums.value = _albums.value
+//        Log.d(TAG, "SharedViewModel initParams album.size = ${albums.size}")
+//    }
+//
+//    private fun initParams(songs:List<Song>){
+//        _songs.value = songs
+//        _filteredSongs.value  = _songs.value
+//
+//        _albums.value = repository.getAlbums()
+//        _filteredAlbums.value = _albums.value
+//
+//        _artists.value = repository.getArtists()
+//        _filteredArtists.value = _artists.value
+//
+//        _folders.value = repository.getFolders()
+//        _filteredFolders.value = _folders.value
+//
+//        _favoriteSongs.value = loadFavorites()
+//        _filteredFavoriteSongs.value  = _favoriteSongs.value
+//
+//        Log.d(TAG, "SharedViewModel initParams " +
+//                "songs.size = ${songs.size}" +
+//                " album.size = ${repository.getAlbums().size}" +
+//                " artists.size = ${repository.getArtists().size}" +
+//                " folders.size = ${repository.getFolders().size}" +
+//                " favoriteSongs.size = ${loadFavorites().size}")
+//    }
 
     fun setPlayerVisibility(visible: Boolean) {
         _playerVisibility.value = visible
     }
 
-    fun getSongsByArtist(artistId: String): LiveData<List<Song>> {
-        return liveData {
-            emit(repository.getArtists().find { it.id == artistId }?.songs ?: emptyList())
-        }
-    }
+//    fun getSongsByArtist(artistId: String): LiveData<List<Song>> {
+//        return liveData {
+//            emit(repository.getArtists().find { it.id == artistId }?.songs ?: emptyList())
+//        }
+//    }
 
     fun getSongsByFolder(folderPath: String): LiveData<List<Song>> {
         return liveData {
@@ -548,7 +554,7 @@ class SharedViewModel(
         }.toString()
     }
 
-    //загрузка альбомов 
+    //загрузка альбомов
     fun loadAlbums() {
         viewModelScope.launch {
             _loading.value = true
@@ -559,6 +565,23 @@ class SharedViewModel(
                 _filteredAlbums.value = albumsWithSongs  //todo убрать?
             } catch (e: Exception) {
                 Log.d(TAG, " SharedViewModel loadAlbums Error loading albums ${e.message}")
+            } finally {
+                _loading.value = false
+            }
+        }
+    }
+
+    //загрузка артистов
+    fun loadArtists() {
+        viewModelScope.launch {
+            _loading.value = true
+            try {
+                val artistsWithSongsAndAlbums = artistsRepository.getAllArtistsWithSongsAndAlbums()
+                Log.d(TAG, " * SharedViewModel loadArtists artistsWithSongsAndAlbums size = ${artistsWithSongsAndAlbums.size}")
+                _artists.value = artistsWithSongsAndAlbums
+                _filteredArtists.value = artistsWithSongsAndAlbums  //todo убрать?
+            } catch (e: Exception) {
+                Log.d(TAG, " SharedViewModel loadArtists Error loading Artists ${e.message}")
             } finally {
                 _loading.value = false
             }
@@ -581,11 +604,34 @@ class SharedViewModel(
         }
     }
 
+    fun syncArtist (){
+        viewModelScope.launch {
+            _loading.value = true
+            try {
+                Log.d(TAG, " * SharedViewModel syncArtist artistsRepository.syncArtistsFromMediaFiles()")
+                artistsRepository.syncArtistsFromMediaFiles()
+                loadArtists() // Перезагружаем после синхронизации
+            } catch (e: Exception) {
+                Log.d(TAG, " SharedViewModel syncArtist Error loading Artist error = ${e.message}")
+            } finally {
+                _loading.value = false
+            }
+        }
+    }
+
     fun getSongsByAlbum(albumId: Long){
         viewModelScope.launch {
             var listAlbumSong:List<Song> = albumRepository.getAlbumSongList(albumId)
             Log.d(TAG, " * SharedViewModel getSongsByAlbum listAlbumSong size = ${listAlbumSong.size}")
             _listAlbumSong.value = listAlbumSong
+        }
+    }
+
+    fun getSongsByArtist(artistId: Long){
+        viewModelScope.launch {
+            var listArtistSong:List<Song> = artistsRepository.getArtistSongList(artistId)
+            Log.d(TAG, " * SharedViewModel getSongsByArtist listArtistSong size = ${listArtistSong.size}")
+            _listArtistSong.value = listArtistSong
         }
     }
 

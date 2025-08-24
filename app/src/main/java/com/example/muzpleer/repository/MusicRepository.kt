@@ -117,6 +117,7 @@ class MusicRepository(
                                 lastModified = lastModified,
                                 title = title,
                                 artist = artist,
+                                artistId = artist.hashCode().toLong(),
                                 album = album,
                                 albumId = albumId,
                                 duration = duration,
@@ -137,6 +138,7 @@ class MusicRepository(
                             lastModified = lastModified,
                             title = title,
                             artist = artist,
+                            artistId = artist.hashCode().toLong(),
                             album = album,
                             albumId = albumId,
                             duration = duration,
@@ -185,7 +187,7 @@ class MusicRepository(
 
         songs = songList.toMutableList()
         // Build albums, artists and folders
-        buildCollections(songs)
+        //buildCollections(songs)
         return songList
     }
 
@@ -239,7 +241,7 @@ class MusicRepository(
                  }.map {it.value}
 
             artists[artistName] = Artist(
-                id = artistName,
+                id = artistName.hashCode().toLong(),
                 name = artistName,
                 songs = artistSongs,
                 //artworkUri = artistSongs.firstOrNull()?.artworkUri,

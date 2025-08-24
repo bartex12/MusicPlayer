@@ -1,6 +1,10 @@
 package com.example.muzpleer.room.utils
 
+import android.net.Uri
+import androidx.core.net.toUri
+import com.example.muzpleer.model.Album
 import com.example.muzpleer.model.Song
+import com.example.muzpleer.room.entity.AlbumFile
 import com.example.muzpleer.room.entity.SongFile
 
 fun fromSongFileToSong(songFiles:List<SongFile>):List<Song>{
@@ -9,6 +13,7 @@ fun fromSongFileToSong(songFiles:List<SongFile>):List<Song>{
             id = songFile.mediaStoreId ,
             title =songFile.title.toString(),
             artist =songFile.artist.toString(),
+            artistId = songFile.artistId,
             duration = songFile.duration ,
             mediaUri = songFile.path ,
             artUri = songFile.artUri ,
@@ -20,20 +25,6 @@ fun fromSongFileToSong(songFiles:List<SongFile>):List<Song>{
     }
 }
 
-//fun fromAlbumFileToAlbum(albumFiles:List<AlbumFile>):List<Album>{
-//    return albumFiles.map{albumFile->
-//        Album(
-//            id =albumFile.mediaStoreId,
-//            title = albumFile.title,
-//            artist =albumFile.artist ,
-//            artists = albumFile.allArtists.toArtistList(),
-//            artworkUri =(albumFile.coverPath)?.toUri(),
-//            albumId = albumFile.mediaStoreId,
-//            songs = fromSongFileToSong (mediaDao.getFilesByAlbumId(albumFile.mediaStoreId))
-//        )
-//    }
-//}
-
 fun String.toArtistList(): List<String> {
     return if (this.isBlank()) {
         emptyList()
@@ -42,4 +33,13 @@ fun String.toArtistList(): List<String> {
             .map { it.trim() }
             .filter { it.isNotBlank() && it != "Unknown" }
     }
+}
+
+// Extension для преобразования пути в Uri
+private fun String?.toUri(): Uri? {
+    return this?.let { it.toUri() }
+}
+
+private fun generateArtistId(artistName: String): Long {
+    return artistName.hashCode().toLong()
 }

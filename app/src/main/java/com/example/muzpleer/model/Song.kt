@@ -11,6 +11,7 @@ data class Song(
     val id: Long,  //id
     val title: String, //название
     val artist: String, //исполнитель
+    val artistId:Long = artist.hashCode().toLong(), //id исполнителя
     val duration: Long,  //длительность трека
     val mediaUri: String,  // мп3 для треков из local
     var artUri: String? = null,  // путь к обложке для треков из local

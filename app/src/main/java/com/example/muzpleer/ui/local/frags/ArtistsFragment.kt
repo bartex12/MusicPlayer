@@ -48,10 +48,10 @@ class ArtistsFragment:Fragment() {
 
             // Навигация через Bundle
             val bundle = Bundle().apply {
-                putString("artistId", artist.id)
+                putLong("artistId", artist.id)
+                Log.d(TAG,"33 ArtistsFragment onViewCreated bundle: artistId = ${artist.id} ")
             }
             findNavController().navigate( R.id.alltracksFragment,bundle)
-               // AlltracksFragment.newInstance( artistTracks).arguments)
         }
 
         binding.singersRecyclerView.apply {

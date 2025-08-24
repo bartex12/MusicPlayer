@@ -9,12 +9,13 @@ import com.example.muzpleer.room.dao.ArtistDao
 import com.example.muzpleer.room.dao.FolderDao
 import com.example.muzpleer.room.dao.SongDao
 import com.example.muzpleer.room.entity.AlbumFile
+import com.example.muzpleer.room.entity.ArtistFile
 import com.example.muzpleer.room.entity.SongFile
 
 @Database(
-    entities = [SongFile::class, AlbumFile::class],
+    entities = [SongFile::class, AlbumFile::class, ArtistFile::class],
     //entities = [SongFile::class, FolderFile::class, AlbumFile::class, ArtistFile::class],
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {

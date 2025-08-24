@@ -45,16 +45,10 @@ class AlbumRepository(
         }catch (e: Exception){
             Log.d(TAG, "*AlbumRepository syncAlbumsFromMediaFiles Exception = ${e.message}")
         }
-        val albumSize = albumDao.getAllAlbums().size
-        Log.d(TAG, "*AlbumRepository syncAlbumsFromMediaFiles albumsMap size = ${albumsMap.size}" +
-                "albumSize = $albumSize")
+//        val albumSize = albumDao.getAllAlbums().size
+//        Log.d(TAG, "*AlbumRepository syncAlbumsFromMediaFiles albumsMap size = ${albumsMap.size}" +
+//                "albumSize = $albumSize")
     }
-
-//    suspend fun getAlbumWithSongs(albumId: Long): AlbumWithSongs {
-//        val album = albumDao.getAlbumById(albumId) ?: throw Exception("Album not found")
-//        val songs = mediaDao.getFilesByAlbumId(album.mediaStoreId)
-//        return AlbumWithSongs(album, songs)
-//    }
 
     suspend fun getAllAlbumsWithSongs(): List<Album> {
         val albums = albumDao.getAllAlbums() //получаем список альбомов из базы

@@ -9,6 +9,7 @@ data class SongFile(
     val mediaStoreId: Long, // ID из MediaStore
     val title: String?,
     val artist: String?,
+    val artistId: Long,
     val duration: Long,
     val path: String,
     val artUri: String?,
