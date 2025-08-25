@@ -20,6 +20,10 @@ class AlbumRepository(
     }
 
     suspend fun syncAlbumsFromMediaFiles() {
+
+        // Очищаем перед синхронизацией!
+        albumDao.deleteAll()
+
         // Получаем все медиафайлы
         val mediaFiles = mediaDao.getAllFiles()
 

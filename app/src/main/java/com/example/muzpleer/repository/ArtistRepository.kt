@@ -22,6 +22,9 @@ class ArtistRepository (private val artistDao: ArtistDao,
     suspend fun syncArtistsFromMediaFiles() {
         Log.d(TAG, "# ArtistsRepository Начало синхронизации артистов...")
 
+        // ОЧИСТКА ПЕРЕД ДОБАВЛЕНИЕМ!
+        artistDao.deleteAll()
+
         val mediaFiles = songDao.getAllFiles()
         Log.d(TAG, "# ArtistsRepository syncArtistsFromMediaFiles Получено ${mediaFiles.size} медиафайлов")
 
