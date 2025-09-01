@@ -19,6 +19,7 @@ import com.example.muzpleer.model.Song
 import com.example.muzpleer.model.SongAndPlaylist
 import com.example.muzpleer.repository.AlbumRepository
 import com.example.muzpleer.repository.ArtistRepository
+import com.example.muzpleer.repository.FolderRepository
 import com.example.muzpleer.repository.MusicRepository
 import com.example.muzpleer.service.MusicServiceHandler
 import com.example.muzpleer.ui.local.helper.IPreferenceHelper
@@ -36,7 +37,8 @@ class SharedViewModel(
     private val repository: MusicRepository,
     private val albumRepository: AlbumRepository,
     private val artistsRepository: ArtistRepository,
-    private val playerHandler: MusicServiceHandler
+    private val playerHandler: MusicServiceHandler,
+    private val folderRepository: FolderRepository
 ) : ViewModel(), MusicServiceHandler.PlayerCallback{
 
     init {
@@ -87,6 +89,9 @@ class SharedViewModel(
     private val _filteredFolders = MutableLiveData<List<Folder>>()
     val filteredFolders: LiveData<List<Folder>> = _filteredFolders
 
+    private val _listFolderSong = MutableLiveData<List<Song>>()
+    val listFolderSong: LiveData<List<Song>> = _listFolderSong
+
     private val _currentSong = MutableLiveData<Song?>()
     val currentSong: LiveData<Song?> = _currentSong
 
@@ -136,6 +141,7 @@ class SharedViewModel(
             initParamsSong(repository.loadMusic())
             syncAlbums()
             syncArtist ()
+            syncFolders()
             //initParamsAlbum(albumRepository.syncAlbumsFromMediaFiles())
         }
     }
@@ -200,11 +206,11 @@ class SharedViewModel(
 //        }
 //    }
 
-    fun getSongsByFolder(folderPath: String): LiveData<List<Song>> {
-        return liveData {
-            emit(repository.getFolders().find { it.path == folderPath }?.songs ?: emptyList())
-        }
-    }
+//    fun getSongsByFolder(folderPath: String): LiveData<List<Song>> {
+//        return liveData {
+//            emit(repository.getFolders().find { it.path == folderPath }?.songs ?: emptyList())
+//        }
+//    }
 
     fun setSongAndPlaylist(songAndPlaylist: SongAndPlaylist){
         _songAndPlaylist.value = songAndPlaylist
@@ -588,6 +594,21 @@ class SharedViewModel(
         }
     }
 
+    fun loadFolders() {
+        viewModelScope.launch {
+            _loading.value = true
+            try {
+                val foldersWithSongs = folderRepository.getAllFoldersWithSongs()
+                _folders.value = foldersWithSongs
+                _filteredFolders.value = foldersWithSongs //todo убрать?
+            } catch (e: Exception) {
+                Log.d(TAG, " SharedViewModel loadFolders Error loading Folders ${e.message}")
+            } finally {
+                _loading.value = false
+            }
+        }
+    }
+
     //получение альбомов из песен и загрузка альбомов
     fun syncAlbums() {
         viewModelScope.launch {
@@ -619,6 +640,20 @@ class SharedViewModel(
         }
     }
 
+    fun syncFolders() {
+        viewModelScope.launch {
+            _loading.value = true
+            try {
+                folderRepository.syncFoldersFromMediaFiles()
+                loadFolders() // Перезагружаем после синхронизации
+            } catch (e: Exception) {
+                Log.e("FolderViewModel", "Error syncing folders", e)
+            } finally {
+                _loading.value = false
+            }
+        }
+    }
+
     fun getSongsByAlbum(albumId: Long){
         viewModelScope.launch {
             var listAlbumSong:List<Song> = albumRepository.getAlbumSongList(albumId)
@@ -635,4 +670,11 @@ class SharedViewModel(
         }
     }
 
+    fun getSongsByFolder(folderPath: String) {
+        viewModelScope.launch {
+            var listFolderSong: List<Song> = folderRepository.getFolderSongList(folderPath)
+            Log.d(TAG, " * SharedViewModel getSongsByFolder listFolderSong size = ${listFolderSong.size}")
+             _listFolderSong.value = listFolderSong
+        }
+    }
 }

@@ -60,34 +60,45 @@ class SongListFragment:Fragment() {
             adapter = this@SongListFragment.adapter
         }
 
-        when {
-            arguments?.getLong("albumId") != null -> {
-                val albumId = arguments?.getLong("albumId")!!
-                Log.d(TAG, " !@# SongListFragment arguments albumId  $albumId")
+        val from:Int? = arguments?.getInt("from")
+        Log.d(TAG, " !@# SongListFragment onViewCreated from =  $from")
+        if (from != null){
+            when (from){
+                2->{
+                    if (arguments?.getLong("albumId") != null)  {
+                        val albumId = arguments?.getLong("albumId")!!
+                        Log.d(TAG, " !@# SongListFragment arguments albumId  $albumId")
 
-                viewModel.getSongsByAlbum(albumId)
+                        viewModel.getSongsByAlbum(albumId)
 
-                viewModel.listAlbumSong.observe(viewLifecycleOwner) { albumSongs ->
-                    Log.d(TAG, " !@# SongListFragment arguments songs size ${albumSongs.size}")
-                    adapter.data = getSortedDataSong(albumSongs)
+                        viewModel.listAlbumSong.observe(viewLifecycleOwner) { albumSongs ->
+                            Log.d(TAG, " !@# SongListFragment arguments songs size ${albumSongs.size}")
+                            adapter.data = getSortedDataSong(albumSongs)
+                        }
+                    }
                 }
-            }
+                3->{
+                    if(arguments?.getLong("artistId") != null) {
+                        val artistId = arguments?.getLong("artistId")!!
+                        Log.d(TAG, " !@# SongListFragment arguments artistId  $artistId")
 
-            arguments?.getLong("artistId") != null -> {
-                val artistId = arguments?.getLong("artistId")!!
-                Log.d(TAG, " !@# SongListFragment arguments artistId  $artistId")
+                        viewModel.getSongsByArtist(artistId)
 
-                viewModel.getSongsByArtist(artistId)
-
-                viewModel.listArtistSong.observe(viewLifecycleOwner) { artistSongs ->
-                    adapter.data = getSortedDataSong(artistSongs)
+                        viewModel.listArtistSong.observe(viewLifecycleOwner) { artistSongs ->
+                            adapter.data = getSortedDataSong(artistSongs)
+                        }
+                    }
                 }
-            }
+                4->{
+                   if(arguments?.getString("folderPath") != null) {
+                        val folderPath = arguments?.getString("folderPath")!!
 
-            arguments?.getString("folderPath") != null -> {
-                val folderPath = arguments?.getString("folderPath")!!
-                viewModel.getSongsByFolder(folderPath).observe(viewLifecycleOwner) { songs ->
-                    adapter.data = getSortedDataSong(songs)
+                       viewModel.getSongsByFolder(folderPath)
+
+                        viewModel.listFolderSong.observe(viewLifecycleOwner) { folderSongs ->
+                            adapter.data = getSortedDataSong(folderSongs)
+                        }
+                    }
                 }
             }
         }

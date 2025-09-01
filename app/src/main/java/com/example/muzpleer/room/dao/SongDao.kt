@@ -52,4 +52,10 @@ interface SongDao {
 
     @Query("SELECT DISTINCT artist FROM media_files WHERE artist IS NOT NULL")
     suspend fun getAllArtistNames(): List<String>
+
+    @Query("SELECT * FROM media_files WHERE folderPath = :folderPath ORDER BY title")
+    suspend fun getFilesByFolderPath(folderPath: String): List<SongFile>
+
+    @Query("SELECT DISTINCT folderPath FROM media_files WHERE folderPath IS NOT NULL")
+    suspend fun getAllFolderPaths(): List<String>
 }
