@@ -58,9 +58,6 @@ class SharedViewModel(
     private val _favoriteSongs = MutableLiveData<List<Song>>(listOf())
     val favoriteSongs: LiveData<List<Song>> = _favoriteSongs
 
-    private val _isFavorite = MutableLiveData<Boolean>(false)
-    val isFavorite: LiveData<Boolean> = _isFavorite
-
     private var _filteredFavoriteSongs = MutableLiveData<List<Song>>()
     val filteredFavoriteSongs: LiveData<List<Song>> = _filteredFavoriteSongs
 
@@ -446,6 +443,7 @@ class SharedViewModel(
             try {
                 val songs = favoriteRepository.getFavoriteSongs()
                 _favoriteSongs.value = songs
+                _filteredFavoriteSongs.value = songs
             } catch (e: Exception) {
                 Log.d(TAG, "***SharedViewModel loadFavoriteSongs error = ${e.message}")
             } finally {
@@ -454,31 +452,17 @@ class SharedViewModel(
         }
     }
 
-//    suspend fun toggleFavorite(songId: Long): Boolean {
-//        return favoriteRepository.toggleFavorite(songId)
-//    }
 
     fun toggleFavorite(song: Song) {
         viewModelScope.launch {
             val isNowFavorite = favoriteRepository.toggleFavorite(song.id)
-            _isFavorite.value = isNowFavorite
-
-            // Обновляем список избранного если нужно
-            if (isNowFavorite) {
-                // Можно добавить уведомление об успешном добавлении
-            }
+            // Обновляем список избранного
+            val songs = favoriteRepository.getFavoriteSongs()
+            _favoriteSongs.value = songs
+            _filteredFavoriteSongs.value = songs
         }
     }
 
-    suspend fun isFavorite(songId: Long): Boolean {
-        return favoriteRepository.isFavorite(songId)
-    }
-
-    fun checkIsFavorite(songId: Long) {
-        viewModelScope.launch {
-            _isFavorite.value = favoriteRepository.isFavorite(songId)
-        }
-    }
     fun checkIsFavoriteWithCallback (songId: Long, callback:(Boolean)->Unit ) {
         viewModelScope.launch {
             val isFavorite = favoriteRepository.isFavorite(songId)
@@ -492,38 +476,6 @@ class SharedViewModel(
             loadFavoriteSongs() // Обновляем список
         }
     }
-
-//    fun isFavorite(songId: Long): Boolean {
-//        return _favoriteSongs.value?.any { it.id == songId } == true
-//    }
-//
-//    fun toggleFavorite(song: Song) {
-//        val currentList = _favoriteSongs.value?.toMutableList() ?: mutableListOf()
-//        if (isFavorite(song.id)) {
-//            currentList.removeAll { it.id == song.id }
-//            Toast.makeText(App.instance, "Удалено из ибранного", Toast.LENGTH_SHORT).show()
-//        } else {
-//            currentList.add(song)
-//            Toast.makeText(App.instance, "Добавлено в избранное", Toast.LENGTH_SHORT).show()
-//        }
-//        _favoriteSongs.value = currentList
-//    }
-//
-//    fun saveFavorites() {
-//        val json = Gson().toJson(_favoriteSongs.value)
-//        helper.saveFavorites(json)
-//    }
-//
-//    fun loadFavorites(){
-//        val json =  helper.loadFavorites()
-//        if (json == null){
-//            Log.d(TAG, "***SharedViewModel loadFavorites json == null")
-//           _favoriteSongs.value = emptyList()
-//        }else{
-//            val newList:List<Song> = Gson().fromJson(json, object : TypeToken<List<Song>>() {}.type)
-//            _favoriteSongs.value = newList
-//        }
-//    }
 
     fun setSelectedSong(song: Song) {
         _selectedSong.value = song

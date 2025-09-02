@@ -3,9 +3,16 @@ package com.example.muzpleer.ui.local.frags
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.widget.SearchView
+import androidx.core.view.MenuHost
+import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.viewpager.widget.ViewPager
@@ -61,14 +68,16 @@ class FavoritesFragment: Fragment() {
 
         viewModel.loadFavoriteSongs()
 
-        viewModel.favoriteSongs.observe(viewLifecycleOwner) { favorites ->
-            val sortedData = getSortedDataSong(favorites)
+        viewModel.filteredFavoriteSongs.observe(viewLifecycleOwner) { filteredFavorites ->
+            val sortedData = getSortedDataSong(filteredFavorites)
             adapter.data = sortedData  //передаём данные в адаптер
-            binding.favoriteEmpty.visibility = if (favorites.isEmpty()) View.VISIBLE else View.GONE
+            binding.favoriteEmpty.visibility = if (filteredFavorites.isEmpty()) View.VISIBLE else View.GONE
         }
 
         //восстанавливаем позицию списка после поворота или возвращения на экран и при новой загрузке
         binding.favoriteRecyclerView.layoutManager?.scrollToPosition(viewModel.getPositionFavoriteSong())
+
+        initMenu()
     }
 
     //запоминаем  позицию списка, на которой сделан клик - на случай поворота экрана
@@ -94,5 +103,39 @@ class FavoritesFragment: Fragment() {
             this.viewPager = viewPager
             return FavoritesFragment()
         }
+    }
+
+    fun initMenu() {
+        val menuHost: MenuHost = requireActivity()
+        menuHost.addMenuProvider(object : MenuProvider {
+
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                menuInflater.inflate(R.menu.main, menu)
+
+                val searchItem: MenuItem = menu.findItem(R.id.search_toolbar)
+                val searchView =searchItem.actionView as SearchView
+                //значок лупы слева в развёрнутом сост и сворачиваем строку поиска (true)
+                searchView.setIconifiedByDefault(true)
+                //пишем подсказку в строке поиска
+                searchView.queryHint = getString(R.string.search_folder)
+                //устанавливаем в панели действий кнопку ( > )для отправки поискового запроса
+                searchView.isSubmitButtonEnabled = true
+                //устанавливаем слушатель
+                searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+                    override fun onQueryTextSubmit(query: String?) = false
+
+                    override fun onQueryTextChange(newText: String?): Boolean {
+                        viewModel.filterFavoriteSongs(newText.orEmpty())
+                        return true
+                    }
+                })
+            }
+            override fun onPrepareMenu(menu: Menu) {
+                menu.findItem(R.id.action_to).isVisible =false
+            }
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                return false
+            }
+        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
     }
 }
