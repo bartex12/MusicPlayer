@@ -18,7 +18,7 @@ import com.example.muzpleer.model.Folder
 import com.example.muzpleer.model.Song
 import com.example.muzpleer.room.dao.SongDao
 import com.example.muzpleer.room.entity.SongFile
-import com.example.muzpleer.room.utils.fromSongFileToSong
+import com.example.muzpleer.room.utils.fromSongFileListToSongList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -182,7 +182,7 @@ class MusicRepository(
             filesToDelete.forEach { songDao.delete(it) }
         }
 
-        val songList = fromSongFileToSong(songDao.getAllFiles())
+        val songList = fromSongFileListToSongList(songDao.getAllFiles())
         Log.d(TAG, "#%# MusicRepository scanMusicApi29Plus songList.size = ${songList.size}")
 
         songs = songList.toMutableList()
@@ -265,7 +265,7 @@ class MusicRepository(
     fun getArtists(): List<Artist> = artists.values.toList()
     fun getFolders(): List<Folder> = folders.values.toList()
     suspend fun getSongsFromDatabase(): List<Song> { //для проверки в MainActivity
-        return fromSongFileToSong(songDao.getAllFiles())
+        return fromSongFileListToSongList(songDao.getAllFiles())
     }
 
     private fun scanMusicLegacy(context: Context):List<Song>{

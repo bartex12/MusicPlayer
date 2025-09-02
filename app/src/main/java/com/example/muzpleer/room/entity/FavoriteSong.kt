@@ -1,0 +1,25 @@
+package com.example.muzpleer.room.entity
+
+import androidx.room.Entity
+import androidx.room.ForeignKey
+import androidx.room.Index
+import androidx.room.PrimaryKey
+import com.example.muzpleer.model.Song
+
+@Entity(
+    tableName = "favorite_songs",
+    foreignKeys = [
+        ForeignKey(
+            entity=SongFile::class,
+            parentColumns=["mediaStoreId"],
+            childColumns=["songId"],
+            onDelete=ForeignKey.Companion.CASCADE
+        )
+    ],
+    indices = [Index(value=["songId"], unique=true)]
+)
+data class FavoriteSong(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val songId: Long, // ID песни из таблицы songs
+    val addedAt: Long = System.currentTimeMillis()
+)

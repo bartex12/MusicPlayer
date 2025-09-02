@@ -10,7 +10,7 @@ import com.example.muzpleer.room.dao.ArtistDao
 import com.example.muzpleer.room.dao.SongDao
 import com.example.muzpleer.room.entity.ArtistFile
 import com.example.muzpleer.room.entity.SongFile
-import com.example.muzpleer.room.utils.fromSongFileToSong
+import com.example.muzpleer.room.utils.fromSongFileListToSongList
 import com.example.muzpleer.room.utils.toArtistList
 
 class ArtistRepository (private val artistDao: ArtistDao,
@@ -63,7 +63,7 @@ class ArtistRepository (private val artistDao: ArtistDao,
         return artistFiles.map { artistFile ->
             // Получаем все песни этого артиста
             val artistSongs = songDao.getFilesByArtistId(artistFile.artistId)
-            val songList = fromSongFileToSong(artistSongs)
+            val songList = fromSongFileListToSongList(artistSongs)
 
             // Получаем ID альбомов этого артиста
             val albumIds = artistFile.allAlbumIds.split(";").mapNotNull { it.toLongOrNull() }
@@ -88,7 +88,7 @@ class ArtistRepository (private val artistDao: ArtistDao,
                     artists = albumFile.allArtists.toArtistList(),
                     artworkUri = albumFile.coverPath?.toUri(),
                     albumId = albumFile.albumId,
-                    songs = fromSongFileToSong(artistSongsInAlbum)
+                    songs = fromSongFileListToSongList(artistSongsInAlbum)
                 )
             }
 
@@ -114,7 +114,7 @@ class ArtistRepository (private val artistDao: ArtistDao,
             songFileList = songDao.getFilesByArtistId(artistFile.artistId)
             Log.d(TAG, "# ArtistsRepository getArtistSongList songFileList size = ${songFileList.size}")
         }
-        return fromSongFileToSong(songFileList)
+        return fromSongFileListToSongList(songFileList)
     }
 
     private fun generateArtistId(artistName: String): Long {

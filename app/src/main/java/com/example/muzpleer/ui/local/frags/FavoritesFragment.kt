@@ -59,6 +59,8 @@ class FavoritesFragment: Fragment() {
             adapter = this@FavoritesFragment.adapter
         }
 
+        viewModel.loadFavoriteSongs()
+
         viewModel.favoriteSongs.observe(viewLifecycleOwner) { favorites ->
             val sortedData = getSortedDataSong(favorites)
             adapter.data = sortedData  //передаём данные в адаптер

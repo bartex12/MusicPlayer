@@ -8,7 +8,7 @@ import com.example.muzpleer.room.dao.AlbumDao
 import com.example.muzpleer.room.dao.SongDao
 import com.example.muzpleer.room.entity.AlbumFile
 import com.example.muzpleer.room.entity.SongFile
-import com.example.muzpleer.room.utils.fromSongFileToSong
+import com.example.muzpleer.room.utils.fromSongFileListToSongList
 import com.example.muzpleer.room.utils.toArtistList
 
 class AlbumRepository(
@@ -66,7 +66,7 @@ class AlbumRepository(
                 artists = albumFile.allArtists.toArtistList(),
                 artworkUri =(albumFile.coverPath)?.toUri(),
                 albumId = albumFile.albumId,
-                songs = fromSongFileToSong (songFileList)
+                songs = fromSongFileListToSongList (songFileList)
             )
         }
     }
@@ -83,6 +83,6 @@ class AlbumRepository(
             songFileList = mediaDao.getFilesByAlbumId(albumFile.albumId)
             Log.d(TAG, "*AlbumRepository getAlbumSongList songFileList size = ${songFileList.size}")
         }
-        return fromSongFileToSong(songFileList)
+        return fromSongFileListToSongList(songFileList)
     }
 }

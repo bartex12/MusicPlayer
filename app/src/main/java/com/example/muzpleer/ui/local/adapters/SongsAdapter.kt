@@ -138,9 +138,10 @@ class SongsAdapter(
         val popup = PopupMenu(view.context, view)
         popup.menuInflater.inflate(R.menu.song_item_menu, popup.menu)
 
-        // Динамически показываем нужный пункт
-        popup.menu.findItem(R.id.action_add_to_favorites).isVisible = !viewModel.isFavorite(song.id)
-        popup.menu.findItem(R.id.action_remove_from_favorites).isVisible = viewModel.isFavorite(song.id)
+        viewModel.checkIsFavoriteWithCallback(song.id) {isFavorite->
+            popup.menu.findItem(R.id.action_add_to_favorites).isVisible = !isFavorite
+            popup.menu.findItem(R.id.action_remove_from_favorites).isVisible = isFavorite
+        }
 
         popup.setOnMenuItemClickListener { menuItem ->
             when (menuItem.itemId) {

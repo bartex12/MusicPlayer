@@ -2,20 +2,12 @@ package com.example.muzpleer.repository
 
 import android.util.Log
 import androidx.core.net.toUri
-import com.example.muzpleer.model.Album
-import com.example.muzpleer.model.Artist
 import com.example.muzpleer.model.Folder
 import com.example.muzpleer.model.Song
-import com.example.muzpleer.room.dao.AlbumDao
-import com.example.muzpleer.room.dao.ArtistDao
 import com.example.muzpleer.room.dao.FolderDao
 import com.example.muzpleer.room.dao.SongDao
-import com.example.muzpleer.room.entity.AlbumFile
-import com.example.muzpleer.room.entity.ArtistFile
 import com.example.muzpleer.room.entity.FolderFile
-import com.example.muzpleer.room.entity.SongFile
-import com.example.muzpleer.room.utils.fromSongFileToSong
-import com.example.muzpleer.room.utils.toArtistList
+import com.example.muzpleer.room.utils.fromSongFileListToSongList
 import java.io.File
 
 class FolderRepository (private val folderDao: FolderDao,
@@ -66,7 +58,7 @@ class FolderRepository (private val folderDao: FolderDao,
         return folders.map { folder ->
             // Получаем все песни в папке
             val songFiles  = songDao.getFilesByFolderPath(folder.folderPath)
-            val songs = fromSongFileToSong(songFiles)
+            val songs = fromSongFileListToSongList(songFiles)
             Folder(
                         path = folder.folderPath,
                         name = folder.folderName,
@@ -79,7 +71,7 @@ class FolderRepository (private val folderDao: FolderDao,
     suspend fun getFolderWithSongs(folderPath: String): Folder {
         val folder = folderDao.getFolderByPath(folderPath) ?: throw Exception("Папка не найдена")
         val songFiles = songDao.getFilesByFolderPath(folderPath)
-        val songs = fromSongFileToSong(songFiles)
+        val songs = fromSongFileListToSongList(songFiles)
 
         return Folder(
             path = folder.folderPath,
@@ -100,7 +92,7 @@ class FolderRepository (private val folderDao: FolderDao,
     suspend fun getFolderSongList(folderPath: String): List<Song> {
         //val folder = folderDao.getFolderByPath(folderPath) ?: throw Exception("Папка не найдена")
         val songFiles = songDao.getFilesByFolderPath(folderPath)
-       return fromSongFileToSong(songFiles)
+       return fromSongFileListToSongList(songFiles)
     }
 
     companion object{
