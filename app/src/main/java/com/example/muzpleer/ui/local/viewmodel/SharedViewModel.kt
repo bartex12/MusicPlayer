@@ -437,7 +437,7 @@ class SharedViewModel(
     fun savePositionFavoriteSong(position: Int){helper.savePositionFavoriteSong(position)}
 
     fun isFavorite(songId: Long): Boolean {
-        return _favoriteSongs.value?.any { it.id == songId } ?: false
+        return _favoriteSongs.value?.any { it.id == songId } == true
     }
 
     fun toggleFavorite(song: Song) {
@@ -457,14 +457,14 @@ class SharedViewModel(
         helper.saveFavorites(json)
     }
 
-    fun loadFavorites():List<Song>{
+    fun loadFavorites(){
         val json =  helper.loadFavorites()
         if (json == null){
             Log.d(TAG, "***SharedViewModel loadFavorites json == null")
-            return emptyList()
+           _favoriteSongs.value = emptyList()
         }else{
             val newList:List<Song> = Gson().fromJson(json, object : TypeToken<List<Song>>() {}.type)
-            return newList
+            _favoriteSongs.value = newList
         }
     }
 
