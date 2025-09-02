@@ -78,10 +78,12 @@ class SongFragment : Fragment() {
 
         viewModel.coverImageUri.observe(viewLifecycleOwner) { uri ->
             val selectedSong = viewModel.getSelectedSong()
-            selectedSong?.artUri=uri.toString()
+            selectedSong?. let{selectedSong->
+               selectedSong.artUri = uri.toString()
+               viewModel.updateCoverPath(selectedSong.id, uri.toString())
+           }
             adapter.notifyDataSetChanged()
         }
-
         //восстанавливаем позицию списка после поворота или возвращения на экран и при новой загрузке
         binding.localRecyclerView.layoutManager?.scrollToPosition(viewModel.getPositionSong())
 

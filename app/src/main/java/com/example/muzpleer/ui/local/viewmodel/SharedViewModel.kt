@@ -1,6 +1,8 @@
 package com.example.muzpleer.ui.local.viewmodel
 
 import android.content.ContentUris
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.util.Log
 import android.widget.Toast
@@ -27,7 +29,9 @@ import com.example.muzpleer.ui.local.helper.IPreferenceHelper
 import com.example.muzpleer.util.getSortedDataSong
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -97,6 +101,9 @@ class SharedViewModel(
     private val _currentSong = MutableLiveData<Song?>()
     val currentSong: LiveData<Song?> = _currentSong
 
+    private val _coverImage = MutableLiveData<Bitmap?>()
+    val coverImage: LiveData<Bitmap?> = _coverImage
+
     private val _isPlaying = MutableLiveData<Boolean>(false)
     val isPlaying: LiveData<Boolean> = _isPlaying
 
@@ -144,7 +151,6 @@ class SharedViewModel(
             syncAlbums()
             syncArtist ()
             syncFolders()
-            //initParamsAlbum(albumRepository.syncAlbumsFromMediaFiles())
         }
     }
 
@@ -168,51 +174,9 @@ class SharedViewModel(
         Log.d(TAG, "SharedViewModel initParamsSong songs.size = ${songs.size}")
     }
 
-//    private fun initParamsAlbum(albums:List<Album>){
-//        _albums.value = albums
-//        _filteredAlbums.value = _albums.value
-//        Log.d(TAG, "SharedViewModel initParams album.size = ${albums.size}")
-//    }
-//
-//    private fun initParams(songs:List<Song>){
-//        _songs.value = songs
-//        _filteredSongs.value  = _songs.value
-//
-//        _albums.value = repository.getAlbums()
-//        _filteredAlbums.value = _albums.value
-//
-//        _artists.value = repository.getArtists()
-//        _filteredArtists.value = _artists.value
-//
-//        _folders.value = repository.getFolders()
-//        _filteredFolders.value = _folders.value
-//
-//        _favoriteSongs.value = loadFavorites()
-//        _filteredFavoriteSongs.value  = _favoriteSongs.value
-//
-//        Log.d(TAG, "SharedViewModel initParams " +
-//                "songs.size = ${songs.size}" +
-//                " album.size = ${repository.getAlbums().size}" +
-//                " artists.size = ${repository.getArtists().size}" +
-//                " folders.size = ${repository.getFolders().size}" +
-//                " favoriteSongs.size = ${loadFavorites().size}")
-//    }
-
     fun setPlayerVisibility(visible: Boolean) {
         _playerVisibility.value = visible
     }
-
-//    fun getSongsByArtist(artistId: String): LiveData<List<Song>> {
-//        return liveData {
-//            emit(repository.getArtists().find { it.id == artistId }?.songs ?: emptyList())
-//        }
-//    }
-
-//    fun getSongsByFolder(folderPath: String): LiveData<List<Song>> {
-//        return liveData {
-//            emit(repository.getFolders().find { it.path == folderPath }?.songs ?: emptyList())
-//        }
-//    }
 
     fun setSongAndPlaylist(songAndPlaylist: SongAndPlaylist){
         _songAndPlaylist.value = songAndPlaylist
@@ -496,6 +460,7 @@ class SharedViewModel(
     }
 
     fun updateCoverImage(uri: Uri) {
+        Log.d(TAG, "***SharedViewModel updateCoverImage  uri= $uri ")
         _coverImageUri.value = uri
     }
 
@@ -504,8 +469,8 @@ class SharedViewModel(
     }
 
     fun updateCoverImageAndSave(uri: Uri) {
-        _coverImageUri.value = uri
         "***SharedViewModel updateCoverImageAndSave uri = ${coverImageUri.value}"
+        _coverImageUri.value = uri
         saveCoverToDatabase(uri)
     }
 
@@ -530,11 +495,41 @@ class SharedViewModel(
             _selectedSong.value?.let { song ->
                 // Сохраняем в Room или SharedPreferences
                 val coverPath =saveCoverToInternalStorage(uri, song)
-                song.artUri = coverPath
+               // song.artUri = coverPath  //todo ?
                 "### SharedViewModel saveCoverToDatabase coverPath = $coverPath"
-                //todo записываем путь к файлу обложки в базу
-                //database.songDao().updateCoverPath(song.id, coverPath)
+                //записываем путь к файлу обложки в базу
+                repository.updateCoverPath(song.id, coverPath)
+
+                // Обновляем выбранную  песню если нужно
+                _selectedSong.value?.let { selected ->
+                    if (selected.id == song.id) {
+                        _selectedSong.value = selected.copy(artUri = coverPath)
+                        loadCoverImage(coverPath) // Загружаем новую обложку
+                    }
+                }
             }
+        }
+    }
+
+    fun updateCoverPath(id:Long, coverPath:String){
+        viewModelScope.launch {
+            repository.updateCoverPath(id, coverPath)
+        }
+    }
+
+    // Загрузка обложки
+    suspend fun loadCoverImage(coverPath: String?) {
+        coverPath?.let { path ->
+            val bitmap = withContext(Dispatchers.IO) {
+                try {
+                    BitmapFactory.decodeFile(path)
+                } catch (e: Exception) {
+                    null
+                }
+            }
+            _coverImage.postValue(bitmap)
+        } ?: run {
+            _coverImage.postValue(null)
         }
     }
 
@@ -568,6 +563,32 @@ class SharedViewModel(
             getDefaultCoverUri(song)
         }.toString()
     }
+
+    // Загрузка обложки для текущей песни
+    fun loadCurrentSongCover() {
+        viewModelScope.launch {
+            _currentSong.value?.artUri?.let { coverPath ->
+                loadCoverImage(coverPath)
+            }
+        }
+    }
+
+    // Обновление песни (при смене обложки)
+    fun updateSongCover(songId: Long, newCoverPath: String?) {
+        viewModelScope.launch {
+            // Обновляем в базе
+            repository.updateCoverPath(songId, newCoverPath.toString())
+
+            // Если это текущая песня - обновляем LiveData
+            if (_currentSong.value?.id == songId) {
+                _currentSong.value = _currentSong.value?.copy(artUri = newCoverPath)
+                loadCoverImage(newCoverPath)
+            }
+
+            // Можно добавить broadcast для уведомления других частей приложения
+        }
+    }
+
 
     //загрузка альбомов
     fun loadAlbums() {

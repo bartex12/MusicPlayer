@@ -24,7 +24,10 @@ class CoverChangeFragment : Fragment() {
     private val viewModel: SharedViewModel by activityViewModels()
     private val pickImage =
         registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-        uri?.let { viewModel.updateCoverImage(it) }
+        uri?.let {
+            Log.d(TAG, "!!!CoverChangeFragment registerForActivityResult uri = $it ")
+            viewModel.updateCoverImage(it)
+        }
     }
 
     override fun onCreateView(
@@ -41,7 +44,6 @@ class CoverChangeFragment : Fragment() {
 
         //обеспечивает установку обложки при открытии CoverChangeFragment
         viewModel.coverImageUri.observe(viewLifecycleOwner) { uri ->
-            viewModel.getSelectedSong()?.artUri = uri.toString()
             Log.d(TAG, "!!!CoverChangeFragment coverImageUri.observe: uri = $uri ")
             uri?.let {
                 Glide.with(binding.root.context)
@@ -79,12 +81,8 @@ class CoverChangeFragment : Fragment() {
 
         binding.saveButton.setOnClickListener {
             viewModel.getCoverImageUri()?. let{curUri->
-                viewModel.getSelectedSong()?. let{curSelectedSong->
-                    curSelectedSong.artUri = curUri.toString()
-                    Log.d(TAG, "CoverChangeFragment saveButton:" +
-                            "  curSelectedSong.artUri = ${curSelectedSong.artUri}" +
-                            "  currentSelectedSong = ${curSelectedSong.title}")
-                }
+                Log.d(TAG, "CoverChangeFragment saveButton: curUri = $curUri")
+                //обновляем обложку и записываем в базу
                 viewModel.updateCoverImageAndSave(curUri)
             }
             findNavController().navigateUp()

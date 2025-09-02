@@ -402,4 +402,10 @@ class MusicRepository(
         return "android.resource://${context.packageName}/drawable/gimme.png".toUri()
     }
 
+    suspend fun updateCoverPath(id : Long, coverPath:String) {
+        Log.d(TAG, "#%# MusicRepository updateCoverPath id = $id coverPath = $coverPath")
+        songDao.updateCoverPath(id, coverPath)
+        Log.d(TAG, "#%# MusicRepository updateCoverPath  coverPath из базы = ${songDao.getById(id)?.artUri}")
+    }
+
 }

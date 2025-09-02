@@ -59,4 +59,10 @@ interface SongDao {
 
     @Query("SELECT DISTINCT folderPath FROM media_files WHERE folderPath IS NOT NULL")
     suspend fun getAllFolderPaths(): List<String>
+
+    @Query("UPDATE media_files SET artUri = :coverPath WHERE mediaStoreId = :songId")
+    suspend fun updateCoverPath(songId: Long, coverPath: String?)
+
+    @Query("SELECT artUri FROM media_files WHERE mediaStoreId = :songId")
+    suspend fun getCoverPath(songId: Long): String?
 }

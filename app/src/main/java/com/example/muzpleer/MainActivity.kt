@@ -177,9 +177,10 @@ class MainActivity : AppCompatActivity() {
         viewModel.coverImageUri.observe(this) { uri ->
             val selectedSong = viewModel.getSelectedSong()
             val currentSong = viewModel.getCurrentSong()
-            if (currentSong?.mediaUri == selectedSong?.mediaUri){
+            if (currentSong?.id == selectedSong?.id){
                 // Загрузка обложки
                 currentSong?.artUri?. let{
+                    currentSong.artUri= uri.toString()
                     Glide.with(binding.root.context)
                         .load(it)
                         .placeholder(R.drawable.muz_player3)
