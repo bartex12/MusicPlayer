@@ -76,11 +76,12 @@ class SongFragment : Fragment() {
             Log.d( TAG,"32 SongsFragment onViewCreated sortedData = ${sortedData.map{it.title}} ")
         }
 
+        //обновление обложки при её замене
         viewModel.coverImageUri.observe(viewLifecycleOwner) { uri ->
             val selectedSong = viewModel.getSelectedSong()
             selectedSong?. let{selectedSong->
                selectedSong.artUri = uri.toString()
-               viewModel.updateCoverPath(selectedSong.id, uri.toString())
+                Log.d( TAG,"6*** SongsFragment coverImageUri.observe uri = $uri ")
            }
             adapter.notifyDataSetChanged()
         }

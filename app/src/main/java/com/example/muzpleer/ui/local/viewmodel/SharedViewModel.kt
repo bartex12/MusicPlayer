@@ -493,16 +493,16 @@ class SharedViewModel(
     fun saveCoverToDatabase(uri: Uri) {
         viewModelScope.launch {
             _selectedSong.value?.let { song ->
-                // Сохраняем в Room или SharedPreferences
-                val coverPath =saveCoverToInternalStorage(uri, song)
-                Log.d(TAG, "3*** SharedViewModel saveCoverToDatabase coverPath = $coverPath")
+                // Сохраняем в InternalStorage
+                //val coverPath =saveCoverToInternalStorage(uri, song)
+                //Log.d(TAG, "3*** SharedViewModel saveCoverToDatabase coverPath = $coverPath")
                 //записываем путь к файлу обложки в базу
-                repository.updateCoverPath(song.id, coverPath)
+                repository.updateCoverPath(song.id, uri.toString())
                 // Обновляем выбранную  песню если нужно
                 _selectedSong.value?.let { selected ->
                     if (selected.id == song.id) {
-                        _selectedSong.value = selected.copy(artUri = coverPath)
-                        loadCoverImage(coverPath) // Загружаем новую обложку
+                        _selectedSong.value = selected.copy(artUri =uri.toString())
+                        loadCoverImage(uri.toString()) // Загружаем новую обложку
                     }
                 }
             }
@@ -571,21 +571,21 @@ class SharedViewModel(
         }
     }
 
-    // Обновление песни (при смене обложки)
-    fun updateSongCover(songId: Long, newCoverPath: String?) {
-        viewModelScope.launch {
-            // Обновляем в базе
-            repository.updateCoverPath(songId, newCoverPath.toString())
-
-            // Если это текущая песня - обновляем LiveData
-            if (_currentSong.value?.id == songId) {
-                _currentSong.value = _currentSong.value?.copy(artUri = newCoverPath)
-                loadCoverImage(newCoverPath)
-            }
-
-            // Можно добавить broadcast для уведомления других частей приложения
-        }
-    }
+//    // Обновление песни (при смене обложки)
+//    fun updateSongCover(songId: Long, newCoverPath: String?) {
+//        viewModelScope.launch {
+//            // Обновляем в базе
+//            repository.updateCoverPath(songId, newCoverPath.toString())
+//
+//            // Если это текущая песня - обновляем LiveData
+//            if (_currentSong.value?.id == songId) {
+//                _currentSong.value = _currentSong.value?.copy(artUri = newCoverPath)
+//                loadCoverImage(newCoverPath)
+//            }
+//
+//            // Можно добавить broadcast для уведомления других частей приложения
+//        }
+//    }
 
 
     //загрузка альбомов

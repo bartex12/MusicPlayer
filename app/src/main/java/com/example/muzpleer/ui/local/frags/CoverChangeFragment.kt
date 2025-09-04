@@ -44,7 +44,7 @@ class CoverChangeFragment : Fragment() {
 
         //обеспечивает установку обложки при открытии CoverChangeFragment
         viewModel.coverImageUri.observe(viewLifecycleOwner) { uri ->
-            Log.d(TAG, "6*** CoverChangeFragment coverImageUri.observe: uri = $uri ")
+            Log.d(TAG, "4*** CoverChangeFragment coverImageUri.observe: uri = $uri ")
             uri?.let {
                 Glide.with(binding.root.context)
                     .load(it)

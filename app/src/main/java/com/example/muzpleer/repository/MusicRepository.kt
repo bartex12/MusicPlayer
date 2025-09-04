@@ -187,84 +187,9 @@ class MusicRepository(
         Log.d(TAG, "#%# MusicRepository scanMusicApi29Plus songList.size = ${songList.size}")
 
         songs = songList.toMutableList()
-        // Build albums, artists and folders
-        //buildCollections(songs)
         return songList
     }
 
-    fun buildCollections(songList: List<Song>) {
-        albums.clear()
-        artists.clear()
-        folders.clear()
-
-        //Log.d(TAG, "#%# MusicRepository buildCollections songList.size = ${songList.size}")
-
-        //Группировка по albumId и названию - избегаем дублирования альбомов
-        songList.groupBy { it.albumId to it.albumName } // Группируем по albumId и названию
-            .forEach { (albumKey, albumSongs) ->
-                val (albumId, albumName) = albumKey
-                //Log.d(TAG, "#%# MusicRepository buildCollections albumKey = $albumKey")
-                // Собираем всех исполнителей в альбоме
-                val artistsInAlbum = albumSongs.map { it.artist }.distinct()
-                // Находим песню с обложкой (если есть) или первую песню
-                //val artworkSong = albumSongs.firstOrNull { it.artworkUri != null } ?: albumSongs.firstOrNull()
-
-                albums[albumId.toString()] = Album(
-                    id = albumId,
-                    title = albumName.toString(),
-                    artist = if (artistsInAlbum.size > 1) "Разные исполнители" else artistsInAlbum.first(),
-                    artists = artistsInAlbum,
-                    //artworkUri = artworkSong?.artworkUri,
-                    albumId = albumId, // Сохраняем albumId для последующей загрузки обложки
-                    songs = albumSongs
-                )
-            }
-
-        // группировка по исполнителям с добавлением списка альбомов
-        // в альбомы каждого исполнителя добавлено поле artists со списком исполнителей
-        songList.groupBy { it.artist }.forEach { (artistName, artistSongs) ->
-            //val artistArtUri = getArtworkUriFromMediaStore(artistSongs)
-            // Получаем уникальные альбомы исполнителя
-            val artistAlbums =
-                artistSongs.groupBy {  it.albumId to it.albumName} // Группируем песни по альбомам
-                            .mapValues { (albumKey, albumSongs) ->
-                                val (albumId, albumName) = albumKey
-                                val artists = albumSongs.map { it.artist }.distinct()
-                          Album(
-                              id = albumId,
-                              title =albumName.toString(),
-                              artist = if (artists.size > 1) "Разные исполнители" else artists.first(),
-                              songs = albumSongs,
-                              artists = artists,
-                              albumId = albumId,
-                             // artworkUri = albumSongs.firstOrNull { it.artworkUri != null }?.artworkUri
-                          )
-                 }.map {it.value}
-
-            artists[artistName] = Artist(
-                id = artistName.hashCode().toLong(),
-                name = artistName,
-                songs = artistSongs,
-                //artworkUri = artistSongs.firstOrNull()?.artworkUri,
-                albums = artistAlbums // Добавляем список альбомов
-            )
-        }
-
-        songList.groupBy { it.folderPath }.forEach { (folderPath, folderSongs) ->
-            val folderName = File(folderPath).name
-            folders[folderPath] = Folder(
-                path = folderPath,
-                name = folderName,
-                songs = folderSongs,
-               // artworkUri = folderSongs.firstOrNull()?.artworkUri
-            )
-        }
-    }
-
-    fun getSongs(): List<Song> = songs.toList()
-    fun getAlbums(): List<Album> = albums.values.toList()
-    fun getArtists(): List<Artist> = artists.values.toList()
-    fun getFolders(): List<Folder> = folders.values.toList()
     suspend fun getSongsFromDatabase(): List<Song> { //для проверки в MainActivity
         return fromSongFileListToSongList(songDao.getAllFiles())
     }
@@ -404,9 +329,9 @@ class MusicRepository(
     }
 
     suspend fun updateCoverPath(id : Long, coverPath:String) {
-        Log.d(TAG, "4*** MusicRepository updateCoverPath id = $id coverPath = $coverPath")
+        Log.d(TAG, "5*** MusicRepository updateCoverPath id = $id coverPath = $coverPath")
         songDao.updateCoverPath(id, coverPath)
-        Log.d(TAG, "5***MusicRepository updateCoverPath  coverPath из базы = ${songDao.getById(id)?.artUri}")
+        Log.d(TAG, "7***MusicRepository updateCoverPath  coverPath из базы = ${songDao.getById(id)?.artUri}")
     }
 
 }
