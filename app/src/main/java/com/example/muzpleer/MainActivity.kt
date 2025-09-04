@@ -191,7 +191,6 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
-
        //initMenu() нельзя - иначе двоится меню тулбара
     }
 

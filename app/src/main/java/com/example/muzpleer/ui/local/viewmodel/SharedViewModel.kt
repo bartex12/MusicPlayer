@@ -146,6 +146,9 @@ class SharedViewModel(
     private val _loading = MutableLiveData<Boolean>()
     val loading: LiveData<Boolean> = _loading
 
+    private val _coverPath = MutableLiveData<String>()
+    val coverPath: LiveData<String> = _coverPath
+
      fun scanMedia() {
         viewModelScope.launch {
             initParamsSong(repository.loadMusic())
@@ -493,9 +496,12 @@ class SharedViewModel(
     fun saveCoverToDatabase(uri: Uri) {
         viewModelScope.launch {
             _selectedSong.value?.let { song ->
-                // Сохраняем в InternalStorage
-                //val coverPath =saveCoverToInternalStorage(uri, song)
-                //Log.d(TAG, "3*** SharedViewModel saveCoverToDatabase coverPath = $coverPath")
+
+                // Сохраняем в InternalStorage //todo пока не используется
+                val coverPath =saveCoverToInternalStorage(uri, song)
+                _coverPath.value = coverPath
+
+                Log.d(TAG, "111*** SharedViewModel saveCoverToDatabase coverPath = $coverPath")
                 //записываем путь к файлу обложки в базу
                 repository.updateCoverPath(song.id, uri.toString())
                 // Обновляем выбранную  песню если нужно
