@@ -496,12 +496,11 @@ class SharedViewModel(
     fun saveCoverToDatabase(uri: Uri) {
         viewModelScope.launch {
             _selectedSong.value?.let { song ->
+//
+//                // Сохраняем в InternalStorage //todo пока не используется
+//                val coverPath =saveCoverToInternalStorage(uri, song)
+//                _coverPath.value = coverPath //               Log.d(TAG, "111*** SharedViewModel saveCoverToDatabase coverPath = $coverPath")
 
-                // Сохраняем в InternalStorage //todo пока не используется
-                val coverPath =saveCoverToInternalStorage(uri, song)
-                _coverPath.value = coverPath
-
-                Log.d(TAG, "111*** SharedViewModel saveCoverToDatabase coverPath = $coverPath")
                 //записываем путь к файлу обложки в базу
                 repository.updateCoverPath(song.id, uri.toString())
                 // Обновляем выбранную  песню если нужно
