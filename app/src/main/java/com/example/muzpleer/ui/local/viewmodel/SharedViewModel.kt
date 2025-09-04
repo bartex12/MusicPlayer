@@ -25,6 +25,7 @@ import com.example.muzpleer.repository.FavoriteRepository
 import com.example.muzpleer.repository.FolderRepository
 import com.example.muzpleer.repository.MusicRepository
 import com.example.muzpleer.service.MusicServiceHandler
+import com.example.muzpleer.ui.local.frags.CoverChangeFragment
 import com.example.muzpleer.ui.local.helper.IPreferenceHelper
 import com.example.muzpleer.util.getSortedDataSong
 import com.google.gson.Gson
@@ -469,7 +470,7 @@ class SharedViewModel(
     }
 
     fun updateCoverImageAndSave(uri: Uri) {
-        "***SharedViewModel updateCoverImageAndSave uri = ${coverImageUri.value}"
+        Log.d(TAG, "2*** SharedViewModel updateCoverImageAndSave uri = $uri")
         _coverImageUri.value = uri
         saveCoverToDatabase(uri)
     }
@@ -494,7 +495,7 @@ class SharedViewModel(
             _selectedSong.value?.let { song ->
                 // Сохраняем в Room или SharedPreferences
                 val coverPath =saveCoverToInternalStorage(uri, song)
-                "### SharedViewModel saveCoverToDatabase coverPath = $coverPath"
+                Log.d(TAG, "3*** SharedViewModel saveCoverToDatabase coverPath = $coverPath")
                 //записываем путь к файлу обложки в базу
                 repository.updateCoverPath(song.id, coverPath)
                 // Обновляем выбранную  песню если нужно

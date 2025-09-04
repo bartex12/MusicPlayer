@@ -44,7 +44,7 @@ class CoverChangeFragment : Fragment() {
 
         //обеспечивает установку обложки при открытии CoverChangeFragment
         viewModel.coverImageUri.observe(viewLifecycleOwner) { uri ->
-            Log.d(TAG, "!!!CoverChangeFragment coverImageUri.observe: uri = $uri ")
+            Log.d(TAG, "6*** CoverChangeFragment coverImageUri.observe: uri = $uri ")
             uri?.let {
                 Glide.with(binding.root.context)
                     .load(it)
@@ -54,18 +54,6 @@ class CoverChangeFragment : Fragment() {
                     .into(binding.coverImageView)
             }
         }
-
-//        viewModel.selectedSong.observe(viewLifecycleOwner) { selectedSong ->
-//            Log.d(TAG, "!!!CoverChangeFragment selectedSong.observe: selectedSong = $selectedSong ")
-//            selectedSong?. let{
-//                Glide.with(binding.root.context)
-//                    .load(it.artUri)
-//                    .placeholder(R.drawable.muz_player3)
-//                    .error(R.drawable.muz_player3)
-//                    .diskCacheStrategy(DiskCacheStrategy.ALL)
-//                    .into(binding.coverImageView)
-//            }
-//        }
 
         binding.usePhonePhotos.setOnClickListener {
             pickImage.launch("image/*")
@@ -81,7 +69,7 @@ class CoverChangeFragment : Fragment() {
 
         binding.saveButton.setOnClickListener {
             viewModel.getCoverImageUri()?. let{curUri->
-                Log.d(TAG, "CoverChangeFragment saveButton: curUri = $curUri")
+                Log.d(TAG, "1*** CoverChangeFragment saveButton: curUri = $curUri")
                 //обновляем обложку и записываем в базу
                 viewModel.updateCoverImageAndSave(curUri)
             }

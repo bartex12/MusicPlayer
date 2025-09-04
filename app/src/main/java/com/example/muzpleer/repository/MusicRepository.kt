@@ -19,6 +19,7 @@ import com.example.muzpleer.model.Song
 import com.example.muzpleer.room.dao.SongDao
 import com.example.muzpleer.room.entity.SongFile
 import com.example.muzpleer.room.utils.fromSongFileListToSongList
+import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -403,9 +404,9 @@ class MusicRepository(
     }
 
     suspend fun updateCoverPath(id : Long, coverPath:String) {
-        Log.d(TAG, "#%# MusicRepository updateCoverPath id = $id coverPath = $coverPath")
+        Log.d(TAG, "4*** MusicRepository updateCoverPath id = $id coverPath = $coverPath")
         songDao.updateCoverPath(id, coverPath)
-        Log.d(TAG, "#%# MusicRepository updateCoverPath  coverPath из базы = ${songDao.getById(id)?.artUri}")
+        Log.d(TAG, "5***MusicRepository updateCoverPath  coverPath из базы = ${songDao.getById(id)?.artUri}")
     }
 
 }
