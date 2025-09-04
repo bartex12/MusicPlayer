@@ -14,6 +14,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentPlayerBinding
+import com.example.muzpleer.di.App
 import com.example.muzpleer.model.Song
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 import com.google.android.material.snackbar.Snackbar
@@ -99,23 +100,14 @@ class PlayerFragment : Fragment() {
                 binding.tvTitle.text = track.title
                 binding.tvArtist.text = track.artist
 
-                if (track.artUri == null){
-                    // Загружаем обложку, когда не изменяли её
-                    val albumArtUri = ContentUris.withAppendedId(
-                        ("content://media/external/audio/albumart").toUri(), track.albumId)
+                track.artUri?. let{
+                    Log.d(TAG, "***** PlayerFragment currentSong.observe currentSong = ${currentSong.title} " +
+                            "currentSong artUri= ${ track.artUri}")
                     // Загрузка обложки
-                    Glide.with(binding.root.context)
-                        .load(albumArtUri)
-                        .placeholder(R.drawable.muz_player3)
-                        .error(R.drawable.muz_player3)
-                        .diskCacheStrategy(DiskCacheStrategy.ALL)
-                        .into(binding.artworkImageView)
-                }else {
-                    // Загрузка обложки
-                    Glide.with(binding.root.context)
+                    Glide.with(App.instance)
                         .load(track.artUri)
-                        .placeholder(R.drawable.muz_player3)
-                        .error(R.drawable.muz_player3)
+                        .placeholder(R.drawable.muz_player2)
+                        .error(R.drawable.mistakes)
                         .diskCacheStrategy(DiskCacheStrategy.ALL)
                         .into(binding.artworkImageView)
                 }

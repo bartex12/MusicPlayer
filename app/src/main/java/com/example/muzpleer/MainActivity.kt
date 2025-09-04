@@ -145,7 +145,7 @@ class MainActivity : AppCompatActivity() {
             songCurrent?. let {
                 title.text=songCurrent.title
                 artist.text=songCurrent.artist
-
+                Log.d(TAG, "###MainActivity currentSong.observe songCurrent.artUri =  ${songCurrent.artUri}")
                 if (songCurrent.artUri == null){
                     // Загружаем обложку, когда не изменяли её
                     val artUri = ContentUris.withAppendedId(
@@ -181,6 +181,7 @@ class MainActivity : AppCompatActivity() {
                 // Загрузка обложки
                 currentSong?.artUri?. let{
                     currentSong.artUri= uri.toString()
+                    Log.d(TAG, "###MainActivity coverImageUri.observe currentSong.artUri =  ${currentSong.artUri}")
                     Glide.with(binding.root.context)
                         .load(it)
                         .placeholder(R.drawable.muz_player3)

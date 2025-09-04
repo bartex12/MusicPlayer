@@ -486,7 +486,6 @@ class SharedViewModel(
             val defaultUri = getDefaultCoverUri(song)
             _coverImageUri.value = defaultUri
             song.artUri = defaultUri.toString()
-            //removeCustomCover(song.id)   //todo удаляем из базы
         }
     }
 
@@ -495,11 +494,9 @@ class SharedViewModel(
             _selectedSong.value?.let { song ->
                 // Сохраняем в Room или SharedPreferences
                 val coverPath =saveCoverToInternalStorage(uri, song)
-               // song.artUri = coverPath  //todo ?
                 "### SharedViewModel saveCoverToDatabase coverPath = $coverPath"
                 //записываем путь к файлу обложки в базу
                 repository.updateCoverPath(song.id, coverPath)
-
                 // Обновляем выбранную  песню если нужно
                 _selectedSong.value?.let { selected ->
                     if (selected.id == song.id) {
