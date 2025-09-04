@@ -1,11 +1,14 @@
 package com.example.muzpleer.ui.player
 
 import android.content.ContentUris
+import android.content.Context
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.SeekBar
 import androidx.core.net.toUri
 import androidx.core.os.bundleOf
@@ -101,16 +104,20 @@ class PlayerFragment : Fragment() {
                 binding.tvTitle.text = track.title
                 binding.tvArtist.text = track.artist
 
-                track.artUri?. let{
-                    Log.d(TAG, "***** PlayerFragment currentSong.observe currentSong = ${currentSong.title} " +
-                            "currentSong artUri= ${ track.artUri}")
+                if (track.artUri == null) {
+                    // Загружаем обложку, когда не меняли её
+                    val artUri = ContentUris.withAppendedId(
+                        ("content://media/external/audio/albumart").toUri(), track.albumId)
+                    Log.d(TAG,  "***3 PlayerFragment currentSong.observe Когда track.artUri = null artUri = $artUri")
                     // Загрузка обложки
-                    Glide.with(App.instance)
-                        .load(track.artUri)
-                        .placeholder(R.drawable.muz_player2)
-                        .error(R.drawable.mistakes)
-                        .diskCacheStrategy(DiskCacheStrategy.ALL)
-                        .into(binding.artworkImageView)
+                    showImageWithGlide(binding.root.context, artUri, binding.artworkImageView)
+                }else {
+                    // Загрузка обложки, если заменили её на другую
+                    track.artUri?.let {
+                        Log.d(TAG,"***4 PlayerFragment currentSong.observe artUri != null uri = ${it.toUri()}")
+                        // Загрузка обложки
+                        showImageWithGlide(binding.root.context, it.toUri(), binding.artworkImageView)
+                    }
                 }
             }
         }
@@ -137,6 +144,16 @@ class PlayerFragment : Fragment() {
                 viewModel.clearError()
             }
         }
+    }
+
+    fun showImageWithGlide(context:Context, artUri:Uri, imageView: ImageView){
+        // Загрузка обложки
+        Glide.with(context)
+            .load(artUri)
+            .placeholder(R.drawable.muz_player3)
+            .error(R.drawable.muz_player3)
+            .diskCacheStrategy(DiskCacheStrategy.ALL)
+            .into(imageView)
     }
 
     private fun formatTime(millis: Long): String {
