@@ -35,9 +35,6 @@ class MusicRepository(
     }
 
     private var songs = mutableListOf<Song>()
-    private val albums = mutableMapOf<String, Album>()
-    private val artists = mutableMapOf<String, Artist>()
-    private val folders = mutableMapOf<String, Folder>()
 
      suspend fun loadMusic():List<Song> {
         return (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {

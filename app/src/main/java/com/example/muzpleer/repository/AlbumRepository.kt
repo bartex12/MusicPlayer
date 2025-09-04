@@ -20,13 +20,10 @@ class AlbumRepository(
     }
 
     suspend fun syncAlbumsFromMediaFiles() {
-
         // Очищаем перед синхронизацией!
         albumDao.deleteAll()
-
         // Получаем все медиафайлы
         val mediaFiles = mediaDao.getAllFiles()
-
         // Группируем по альбомам
         val albumsMap =
             mediaFiles.groupBy { it.albumId to it.album }
@@ -49,9 +46,6 @@ class AlbumRepository(
         }catch (e: Exception){
             Log.d(TAG, "*AlbumRepository syncAlbumsFromMediaFiles Exception = ${e.message}")
         }
-//        val albumSize = albumDao.getAllAlbums().size
-//        Log.d(TAG, "*AlbumRepository syncAlbumsFromMediaFiles albumsMap size = ${albumsMap.size}" +
-//                "albumSize = $albumSize")
     }
 
     suspend fun getAllAlbumsWithSongs(): List<Album> {
