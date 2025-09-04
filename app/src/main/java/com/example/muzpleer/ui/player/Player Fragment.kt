@@ -39,6 +39,7 @@ class PlayerFragment : Fragment() {
 
         setupControls()
         observeViewModel()
+       // viewModel.getCurrentSong()?. let{viewModel.setCurrentSong(it)}
         // Скрыть плеер при открытии фрагмента
         hideActivityPlayer()
     }
