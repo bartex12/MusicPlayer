@@ -17,7 +17,10 @@ import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentCoverChangeBinding
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 import com.example.muzpleer.util.Constants.CHANGE_COVER
+import com.example.muzpleer.util.Constants.CHANGE_COVER_ALBUM_SONG
+import com.example.muzpleer.util.Constants.CHANGE_COVER_ARTIST_SONG
 import com.example.muzpleer.util.Constants.CHANGE_COVER_FAVORITES
+import com.example.muzpleer.util.Constants.CHANGE_COVER_FOLDER_SONG
 import com.example.muzpleer.util.Constants.CHANGE_COVER_SONG
 
 class CoverChangeFragment : Fragment() {
@@ -78,9 +81,9 @@ class CoverChangeFragment : Fragment() {
                     when(fromAdapter){
                         //обновляем обложку и записываем в базу
                         CHANGE_COVER_FAVORITES -> {viewModel.updateCoverImageAndSaveFavorites(curUri)}
-                        103 -> {}
-                        102 -> {}
-                        101 -> {}
+                        CHANGE_COVER_FOLDER_SONG-> {}
+                        CHANGE_COVER_ARTIST_SONG -> {}
+                        CHANGE_COVER_ALBUM_SONG -> {}
                         CHANGE_COVER_SONG -> { viewModel.updateCoverImageAndSave(curUri)}
                         else-> {viewModel.updateCoverImageAndSave(curUri)}
                     }
