@@ -503,22 +503,33 @@ class SharedViewModel(
 
                 //записываем путь к файлу обложки в базу
                 repository.updateCoverPath(song.id, uri.toString())
-                // Обновляем выбранную  песню если нужно
-                _selectedSong.value?.let { selected ->
-                    if (selected.id == song.id) {
-                        _selectedSong.value = selected.copy(artUri =uri.toString())
-                        loadCoverImage(uri.toString()) // Загружаем новую обложку
+
+                // Обновляем выбранную песню
+                _selectedSong.value = song.copy(artUri = uri.toString())
+
+                // Обновляем текущую песню если нужно
+                _currentSong.value?.let { current ->
+                    if (current.id == song.id) {
+                        _currentSong.value = current.copy(artUri = uri.toString())
                     }
                 }
+
+//                // Обновляем выбранную  песню если нужно
+//                _selectedSong.value?.let { selected ->
+//                    if (selected.id == song.id) {
+//                        _selectedSong.value = selected.copy(artUri =uri.toString())
+//                        loadCoverImage(uri.toString()) // Загружаем новую обложку
+//                    }
+//                }
             }
         }
     }
 
-    fun updateCoverPath(id:Long, coverPath:String){
-        viewModelScope.launch {
-            repository.updateCoverPath(id, coverPath)
-        }
-    }
+//    fun updateCoverPath(id:Long, coverPath:String){
+//        viewModelScope.launch {
+//            repository.updateCoverPath(id, coverPath)
+//        }
+//    }
 
     // Загрузка обложки
     suspend fun loadCoverImage(coverPath: String?) {

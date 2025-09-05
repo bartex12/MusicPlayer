@@ -66,6 +66,7 @@ class FavoritesFragment: Fragment() {
             adapter = this@FavoritesFragment.adapter
         }
 
+        //загружаем избранные песни
         viewModel.loadFavoriteSongs()
 
         viewModel.filteredFavoriteSongs.observe(viewLifecycleOwner) { filteredFavorites ->
