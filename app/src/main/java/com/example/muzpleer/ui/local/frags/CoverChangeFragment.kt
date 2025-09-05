@@ -16,6 +16,9 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentCoverChangeBinding
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
+import com.example.muzpleer.util.Constants.CHANGE_COVER
+import com.example.muzpleer.util.Constants.CHANGE_COVER_FAVORITES
+import com.example.muzpleer.util.Constants.CHANGE_COVER_SONG
 
 class CoverChangeFragment : Fragment() {
     private var _binding: FragmentCoverChangeBinding? = null
@@ -42,7 +45,7 @@ class CoverChangeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        //обеспечивает установку обложки при открытии CoverChangeFragment
+        //обеспечивает установку обложки при открытии CoverChangeFragment и замене обложки через pickImage
         viewModel.coverImageUri.observe(viewLifecycleOwner) { uri ->
             Log.d(TAG, "4*** CoverChangeFragment coverImageUri.observe: uri = $uri ")
             uri?.let {
@@ -70,8 +73,19 @@ class CoverChangeFragment : Fragment() {
         binding.saveButton.setOnClickListener {
             viewModel.getCoverImageUri()?. let{curUri->
                 Log.d(TAG, "1*** CoverChangeFragment saveButton: curUri = $curUri")
-                //обновляем обложку и записываем в базу
-                viewModel.updateCoverImageAndSave(curUri)
+                if (arguments?.getInt(CHANGE_COVER) != null){
+                    val fromAdapter = requireArguments().getInt(CHANGE_COVER)
+                    when(fromAdapter){
+                        //обновляем обложку и записываем в базу
+                        CHANGE_COVER_FAVORITES -> {viewModel.updateCoverImageAndSaveFavorites(curUri)}
+                        103 -> {}
+                        102 -> {}
+                        101 -> {}
+                        CHANGE_COVER_SONG -> { viewModel.updateCoverImageAndSave(curUri)}
+                        else-> {viewModel.updateCoverImageAndSave(curUri)}
+                    }
+                }
+
             }
             findNavController().navigateUp()
         }

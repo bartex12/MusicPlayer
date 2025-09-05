@@ -22,23 +22,24 @@ import com.example.muzpleer.databinding.ItemMusicBinding
 import com.example.muzpleer.model.Song
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 import com.example.muzpleer.util.Constants.CHANGE_COVER
+import com.example.muzpleer.util.Constants.CHANGE_COVER_FAVORITES
 
-class SongsAdapter(
+class FavoritesAdapter (
     private val viewModel: SharedViewModel,
     private val onItemClick: (Song) -> Unit,
     private val onLongClickListener:(Song)->Unit
-) : RecyclerView.Adapter<SongsAdapter.MusicViewHolder>() {
+) : RecyclerView.Adapter<FavoritesAdapter.MusicViewHolder>() {
 
     companion object{
         const val TAG = "33333"
     }
 
     var data:List<Song> = listOf()
-        @SuppressLint("NotifyDataSetChanged")
-        set(value){
-            field = value
-            notifyDataSetChanged()
-        }
+    @SuppressLint("NotifyDataSetChanged")
+    set(value){
+        field = value
+        notifyDataSetChanged()
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MusicViewHolder {
         val binding = ItemMusicBinding.inflate(
@@ -59,7 +60,7 @@ class SongsAdapter(
         viewModel.selectedSongPosition
             .observe(holder.itemView.context as LifecycleOwner) { selectedPos ->
                 holder.itemView.isSelected = position == selectedPos
-        }
+            }
         //следим за текущей песней - чтобы при возврате с другой вкладки выделение оставалось
         viewModel.currentSong
             .observe(holder.itemView.context as LifecycleOwner) { currentSong ->
@@ -156,13 +157,13 @@ class SongsAdapter(
                     true
                 }
                 R.id.action_change_cover -> {
-                    Log.d(TAG, "!!!SongsAdapter showPopupMenu action_change_cover:" +
+                    Log.d(TAG, "!!!FavoritesAdapter showPopupMenu action_change_cover:" +
                             "song title = ${song.title} song artUri =  ${song.artUri}")
                     viewModel.setSelectedSong(song)
+                    // Навигация через Bundle
                     val bundle = Bundle().apply {
-                        putInt(CHANGE_COVER, 100)
-                        Log.d(TAG,"!!! SongsAdapter showPopupMenu action_change_cover bundle:" +
-                                " CHANGE_COVER_FAVORITE = 100 ")
+                        putInt(CHANGE_COVER, CHANGE_COVER_FAVORITES)
+                        Log.d(TAG,"!!! FavoritesAdapter showPopupMenu action_change_cover bundle: CHANGE_COVER_FAVORITE = 101 ")
                     }
                     view.findNavController().navigate(R.id.coverChangeFragment, bundle)
                     true
@@ -174,16 +175,4 @@ class SongsAdapter(
     }
 }
 
-//            ///обложка имеет Uri track.artworkUri
-//            Log.d(TAG, " %%% MusicAdapter MusicViewHolder bind: albumArtUri =  $albumArtUri  title = ${track.title}")
-//            try {
-//                binding.root.context.contentResolver.openInputStream(albumArtUri)?.use { stream ->
-//                    //val bitmap = BitmapFactory.decodeStream(stream)
-//                   // Log.d(TAG, "MusicViewHolder Обложка найдена: ${bitmap.width}x${bitmap.height}")
-//                    Log.d(TAG, "MusicViewHolder Обложка найдена")
-//                } ?: {
-//                    Log.d(TAG,  "MusicViewHolder Обложка не найдена")
-//                }
-//            } catch (e: Exception) {
-//                Log.d(TAG, "MusicViewHolder Ошибка: ${e.message}")
-//            }
+
