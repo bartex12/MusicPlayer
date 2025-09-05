@@ -219,13 +219,16 @@ class SharedViewModel(
     }
 
     override fun onTrackChanged(track: Song) {
+        //так не меняется автоматом- остаётся старый artUri из плейлиста
         _currentSong.value = track
+        //меняем artUri тогда меняется обложка в альбомах и тд, но в плеере не меняется автоматом
+        //_currentSong.value = track.copy(artUri = getCurrentSong()?.artUri)
         //считаем индекс выбранной песни в отсортированном списке песен,
         // чтобы при возврате на песни можно было перейти к этой песне по индексу
         val indexOfSong = getSortedDataSong(getSongs()).indexOfFirst { it.mediaUri == track.mediaUri }
         _indexOfCurrentSong.value = indexOfSong
-        Log.d(TAG, "SharedViewModel onTrackChanged currentTrack = ${getCurrentSong()?.title}" +
-                "   indexOfSong = $indexOfSong")
+        Log.d(TAG, " !@# !@# SharedViewModel onTrackChanged currentTrack = ${getCurrentSong()?.title}" +
+                "   indexOfSong = $indexOfSong  TRACK.artUri = ${track.artUri}")
     }
 
     override fun onPlaybackStateChanged(isPlaying: Boolean) {
@@ -479,8 +482,20 @@ class SharedViewModel(
         saveCoverToDatabase(uri)
     }
 
+    fun updateCoverImageAndSaveArtistSong(uri: Uri) {
+        Log.d(TAG, "23*** SharedViewModel updateCoverImageAndSaveArtistSong uri = $uri")
+        _coverImageUri.value = uri
+        saveCoverToDatabaseArtistSong(uri)
+    }
+
+    fun updateCoverImageAndSaveAlbumSong(uri: Uri) {
+        Log.d(TAG, "22*** SharedViewModel updateCoverImageAndSaveAlbumSong uri = $uri")
+        _coverImageUri.value = uri
+        saveCoverToDatabaseAlbumSong(uri)
+    }
+
     fun updateCoverImageAndSaveFavorites(uri: Uri) {
-        Log.d(TAG, "2*** SharedViewModel updateCoverImageAndSave uri = $uri")
+        Log.d(TAG, "21*** SharedViewModel updateCoverImageAndSaveFavorites uri = $uri")
         _coverImageUri.value = uri
         saveCoverToDatabaseFavorites(uri)
     }
@@ -503,17 +518,14 @@ class SharedViewModel(
     fun saveCoverToDatabase(uri: Uri) {
         viewModelScope.launch {
             _selectedSong.value?.let { song ->
-//
 //                // Сохраняем в InternalStorage //todo пока не используется
 //                val coverPath =saveCoverToInternalStorage(uri, song)
-//                _coverPath.value = coverPath //               Log.d(TAG, "111*** SharedViewModel saveCoverToDatabase coverPath = $coverPath")
-
+//                _coverPath.value = coverPath
+//                  Log.d(TAG, "111*** SharedViewModel saveCoverToDatabase coverPath = $coverPath")
                 //записываем путь к файлу обложки в базу
                 repository.updateCoverPath(song.id, uri.toString())
-
                 // Обновляем выбранную песню
                 _selectedSong.value = song.copy(artUri = uri.toString())
-
                 // Обновляем текущую песню если нужно
                 _currentSong.value?.let { current ->
                     if (current.id == song.id) {
@@ -529,7 +541,6 @@ class SharedViewModel(
             _selectedSong.value?.let { song ->
                 //записываем путь к файлу обложки в базу
                 repository.updateCoverPath(song.id, uri.toString())
-
                 // Обновляем песню в основном списке песен - нужны оба - _songs и _filteredSongs
                 _songs.value = _songs.value?.map {
                     if (it.id == song.id) it.copy(artUri = uri.toString()) else it
@@ -537,13 +548,65 @@ class SharedViewModel(
                 _filteredSongs.value = _filteredSongs.value?. map{filteredSong->
                     if (filteredSong.id == song.id) filteredSong.copy(artUri = uri.toString()) else filteredSong
                 }
-
                 // Обновляем выбранную песню
                 _selectedSong.value = song.copy(artUri = uri.toString())
-
                 // Обновляем текущую песню если нужно
                 _currentSong.value?.let { current ->
                     if (current.id == song.id) {
+                        _currentSong.value = current.copy(artUri = uri.toString())
+                    }
+                }
+            }
+        }
+    }
+
+    fun saveCoverToDatabaseAlbumSong(uri: Uri) {
+        viewModelScope.launch {
+            _selectedSong.value?.let { selectedSong ->
+                //записываем путь к файлу обложки в базу
+                repository.updateCoverPath(selectedSong.id, uri.toString())
+                // Обновляем песню в основном списке песен - нужны оба - _songs и _filteredSongs
+                _songs.value = _songs.value?.map {s->
+                    if (s.id == selectedSong.id) s.copy(artUri = uri.toString()) else s
+                }
+                _filteredSongs.value = _filteredSongs.value?. map{filteredSong->
+                    if (filteredSong.id == selectedSong.id) filteredSong.copy(artUri = uri.toString()) else filteredSong
+                }
+                _playlist.value = _playlist.value?.map{song->
+                    if (song.id == selectedSong.id) song.copy(artUri = selectedSong.artUri) else song
+                }
+                // Обновляем выбранную песню
+                _selectedSong.value = selectedSong.copy(artUri = uri.toString())
+                // Обновляем текущую песню если нужно
+                _currentSong.value?.let { current ->
+                    if (current.id == selectedSong.id) {
+                        _currentSong.value = current.copy(artUri = uri.toString())
+                    }
+                }
+            }
+        }
+    }
+
+    fun saveCoverToDatabaseArtistSong(uri: Uri) {
+        viewModelScope.launch {
+            _selectedSong.value?.let { selectedSong ->
+                //записываем путь к файлу обложки в базу
+                repository.updateCoverPath(selectedSong.id, uri.toString())
+                // Обновляем песню в основном списке песен - нужны оба - _songs и _filteredSongs
+                _songs.value = _songs.value?.map {s->
+                    if (s.id == selectedSong.id) s.copy(artUri = uri.toString()) else s
+                }
+                _filteredSongs.value = _filteredSongs.value?. map{filteredSong->
+                    if (filteredSong.id == selectedSong.id) filteredSong.copy(artUri = uri.toString()) else filteredSong
+                }
+                _playlist.value = _playlist.value?.map{song->
+                    if (song.id == selectedSong.id) song.copy(artUri = selectedSong.artUri) else song
+                }
+                // Обновляем выбранную песню
+                _selectedSong.value = selectedSong.copy(artUri = uri.toString())
+                // Обновляем текущую песню если нужно
+                _currentSong.value?.let { current ->
+                    if (current.id == selectedSong.id) {
                         _currentSong.value = current.copy(artUri = uri.toString())
                     }
                 }

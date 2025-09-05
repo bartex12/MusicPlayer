@@ -71,13 +71,9 @@ class MusicServiceHandler(
 
     fun playTrack(index: Int) {
         if (index !in playlist.indices) return
-
         currentIndex = index
-
         val track = playlist[index]
-
         Log.d(TAG, "@@@MusicServiceHandler playTrack: index = $index  track = ${track.title}")
-
         player?.let { p ->
             val uri = track.getContentUri()
             val mediaItem =MediaItem.fromUri(uri)

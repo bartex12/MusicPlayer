@@ -18,8 +18,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.viewpager.widget.ViewPager
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentFavoriteBinding
+import com.example.muzpleer.model.AdapterSource
 import com.example.muzpleer.model.SongAndPlaylist
-import com.example.muzpleer.ui.local.adapters.FavoritesAdapter
 import com.example.muzpleer.ui.local.adapters.SongsAdapter
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 import com.example.muzpleer.util.getSortedDataSong
@@ -29,7 +29,7 @@ class FavoritesFragment: Fragment() {
     private var _binding: FragmentFavoriteBinding? = null
     private val binding get() = _binding!!
     private val viewModel: SharedViewModel by activityViewModel()
-    private lateinit var adapter: FavoritesAdapter
+    private lateinit var adapter: SongsAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -43,7 +43,7 @@ class FavoritesFragment: Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        adapter = FavoritesAdapter(viewModel, { song ->
+        adapter = SongsAdapter(viewModel, AdapterSource.FAVORITES_FRAGMENT, { song ->
             //устанавливаем список песен как плейлист
             val playlist = getSortedDataSong(viewModel.getFavoriteSongs())
             viewModel.setPlaylist(playlist) //устанавливаем список песен как плейлист

@@ -84,16 +84,22 @@ class PlayerFragment : Fragment() {
     private fun observeViewModel() {
 
         viewModel.songAndPlaylist.observe(viewLifecycleOwner) { songAndPlaylist ->
-            Log.d(TAG, "*** PlayerFragment onViewCreated currentSong.observe: " +
-                    " currentSong = ${songAndPlaylist.song} currentPlayList.size = ${songAndPlaylist.playlist.size}")
+            Log.d(TAG, "1*** PlayerFragment onViewCreated currentSong.observe: " +
+                    " currentSong title = ${songAndPlaylist.song.title} " +
+                    " currentSong.artUri = ${songAndPlaylist.song.artUri}" +
+                    " playlist.size = ${songAndPlaylist.playlist.size}")
 
             val currentSong = viewModel.getCurrentSong()
+            Log.d(TAG, "2*** PlayerFragment onViewCreated currentSong.observe: " +
+                    " currentSong title = ${currentSong?.title}  " +
+                    " currentSong.artUri = ${currentSong?.artUri}")
+
             //находим индекс трека в плейлисте
             val indexOfTrack =
                 songAndPlaylist.playlist.indexOfFirst {song->
                     song.mediaUri == currentSong?.mediaUri
                 }
-            Log.d(TAG, "*** PlayerFragment onViewCreated indexOfTrack = $indexOfTrack " +
+            Log.d(TAG, "3*** PlayerFragment onViewCreated indexOfTrack = $indexOfTrack " +
                     "songAndPlaylist.playlist.size = ${songAndPlaylist.playlist.size}")
 
             viewModel.setPlaylistForHandler(songAndPlaylist.playlist, indexOfTrack)

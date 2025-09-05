@@ -18,11 +18,13 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.viewpager.widget.ViewPager
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentSongsBinding
+import com.example.muzpleer.model.AdapterSource
 import com.example.muzpleer.model.SongAndPlaylist
 import com.example.muzpleer.ui.local.adapters.SongsAdapter
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 import com.example.muzpleer.util.getSortedDataSong
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class SongFragment : Fragment() {
     private var _binding: FragmentSongsBinding? = null
@@ -43,7 +45,7 @@ class SongFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        adapter = SongsAdapter(viewModel, { song ->
+        adapter = SongsAdapter(viewModel, AdapterSource.SONGS_FRAGMENT, { song ->
             //устанавливаем список песен как плейлист
             val playlist = getSortedDataSong(viewModel.getSongs())
             viewModel.setPlaylist(playlist) //устанавливаем список песен как плейлист
@@ -60,7 +62,7 @@ class SongFragment : Fragment() {
                 playlist = playlist //текущий плейлист
             ))
             findNavController().navigate(R.id.action_tabsLocalFragment_to_playerFragment)
-        })
+        } )
 
         binding.localRecyclerView.apply {
             layoutManager = LinearLayoutManager(requireContext())

@@ -19,12 +19,19 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.ItemMusicBinding
+import com.example.muzpleer.model.AdapterSource
 import com.example.muzpleer.model.Song
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 import com.example.muzpleer.util.Constants.CHANGE_COVER
+import com.example.muzpleer.util.Constants.CHANGE_COVER_ALBUM_SONG
+import com.example.muzpleer.util.Constants.CHANGE_COVER_ARTIST_SONG
+import com.example.muzpleer.util.Constants.CHANGE_COVER_FAVORITES
+import com.example.muzpleer.util.Constants.CHANGE_COVER_FOLDER_SONG
+import com.example.muzpleer.util.Constants.CHANGE_COVER_SONG
 
 class SongsAdapter(
     private val viewModel: SharedViewModel,
+    private val sourceOfSong: AdapterSource,  // Добавляем параметр источника
     private val onItemClick: (Song) -> Unit,
     private val onLongClickListener:(Song)->Unit
 ) : RecyclerView.Adapter<SongsAdapter.MusicViewHolder>() {
@@ -158,12 +165,22 @@ class SongsAdapter(
                 R.id.action_change_cover -> {
                     Log.d(TAG, "!!!SongsAdapter showPopupMenu action_change_cover:" +
                             "song title = ${song.title} song artUri =  ${song.artUri}")
+                    //запоминаем во ViewModel выбранную песню
                     viewModel.setSelectedSong(song)
-                    val bundle = Bundle().apply {
-                        putInt(CHANGE_COVER, 100)
-                        Log.d(TAG,"!!! SongsAdapter showPopupMenu action_change_cover bundle:" +
-                                " CHANGE_COVER_FAVORITE = 100 ")
+                    //устанавливаем источник- откуда вызван адаптер
+                    val adapterSource:Int = when(sourceOfSong){
+                        AdapterSource.SONGS_FRAGMENT -> CHANGE_COVER_SONG
+                        AdapterSource.ALBUM_FRAGMENT  -> CHANGE_COVER_ALBUM_SONG
+                        AdapterSource.ARTIST_FRAGMENT -> CHANGE_COVER_ARTIST_SONG
+                        AdapterSource.FOLDER_FRAGMENT -> CHANGE_COVER_FOLDER_SONG
+                        AdapterSource.FAVORITES_FRAGMENT -> CHANGE_COVER_FAVORITES
                     }
+                    val bundle = Bundle().apply {
+                        putInt(CHANGE_COVER, adapterSource)
+                        Log.d(TAG,"###!!! SongsAdapter showPopupMenu action_change_cover bundle:" +
+                                " adapterSource = $adapterSource ")
+                    }
+                    //идём во фрагмент замены обложки с источником вызова адаптера
                     view.findNavController().navigate(R.id.coverChangeFragment, bundle)
                     true
                 }

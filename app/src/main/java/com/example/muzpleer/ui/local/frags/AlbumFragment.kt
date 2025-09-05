@@ -54,7 +54,6 @@ class AlbumFragment: Fragment() {
                 Log.d(TAG,"33 AlbumFragment onViewCreated bundle: albumId = ${album.id} from = 2 ")
             }
             findNavController().navigate( R.id.alltracksFragment, bundle)
-                //AlltracksFragment.newInstance( albumTracks).arguments)
         }
 
         binding.albumRecyclerView.apply {
@@ -69,6 +68,7 @@ class AlbumFragment: Fragment() {
             val sortedData =getSortedDataAlbum(filteredAlbums)
             adapter.albums = sortedData  //передаём данные в адаптер
         }
+
         //восстанавливаем позицию списка после поворота или возвращения на экран
         binding.albumRecyclerView.layoutManager?.scrollToPosition(viewModel.getPositionAlbum())
 

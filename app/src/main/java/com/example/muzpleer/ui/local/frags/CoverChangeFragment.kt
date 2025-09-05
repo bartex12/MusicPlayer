@@ -78,12 +78,13 @@ class CoverChangeFragment : Fragment() {
                 Log.d(TAG, "1*** CoverChangeFragment saveButton: curUri = $curUri")
                 if (arguments?.getInt(CHANGE_COVER) != null){
                     val fromAdapter = requireArguments().getInt(CHANGE_COVER)
+                    Log.d(TAG, "11*** CoverChangeFragment saveButton: fromAdapter = $fromAdapter")
                     when(fromAdapter){
                         //обновляем обложку и записываем в базу
                         CHANGE_COVER_FAVORITES -> {viewModel.updateCoverImageAndSaveFavorites(curUri)}
-                        CHANGE_COVER_FOLDER_SONG-> {}
-                        CHANGE_COVER_ARTIST_SONG -> {}
-                        CHANGE_COVER_ALBUM_SONG -> {}
+                        CHANGE_COVER_FOLDER_SONG-> {viewModel.updateCoverImageAndSaveAlbumSong(curUri)}
+                        CHANGE_COVER_ARTIST_SONG -> {viewModel.updateCoverImageAndSaveArtistSong(curUri) }
+                        CHANGE_COVER_ALBUM_SONG -> {viewModel.updateCoverImageAndSaveAlbumSong(curUri) }
                         CHANGE_COVER_SONG -> { viewModel.updateCoverImageAndSave(curUri)}
                         else-> {viewModel.updateCoverImageAndSave(curUri)}
                     }
