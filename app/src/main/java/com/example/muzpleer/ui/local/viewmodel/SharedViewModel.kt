@@ -81,6 +81,9 @@ class SharedViewModel(
     private val _listAlbumSong = MutableLiveData<List<Song>>()
     val listAlbumSong: LiveData<List<Song>> = _listAlbumSong
 
+    private val _filteredListAlbumSong = MutableLiveData<List<Song>>()
+    val filteredListAlbumSong: LiveData<List<Song>> = _filteredListAlbumSong
+
     private val _artists = MutableLiveData<List<Artist>>()
     val artists: LiveData<List<Artist>> = _artists
 
@@ -90,6 +93,9 @@ class SharedViewModel(
     private val _listArtistSong = MutableLiveData<List<Song>>()
     val listArtistSong: LiveData<List<Song>> = _listArtistSong
 
+    private val _filteredListArtistSong = MutableLiveData<List<Song>>()
+    val filteredListArtistSong: LiveData<List<Song>> = _filteredListArtistSong
+
     private val _folders = MutableLiveData<List<Folder>>()
     val folders: LiveData<List<Folder>> = _folders
 
@@ -98,6 +104,9 @@ class SharedViewModel(
 
     private val _listFolderSong = MutableLiveData<List<Song>>()
     val listFolderSong: LiveData<List<Song>> = _listFolderSong
+
+    private val _filteredListFolderSong = MutableLiveData<List<Song>>()
+    val filteredListFolderSong: LiveData<List<Song>> = _filteredListFolderSong
 
     private val _currentSong = MutableLiveData<Song?>()
     val currentSong: LiveData<Song?> = _currentSong
@@ -306,6 +315,25 @@ class SharedViewModel(
         }
         _filteredAlbums.value = filteredAlbumList
     }
+
+    internal fun filterAlbumSongs(query: String) {
+        val originalAlbumSongList = (listAlbumSong.value?: listOf()).toMutableList()
+        val filteredAlbumSongList: MutableList<Song> = (filteredListAlbumSong.value ?: listOf()).toMutableList()
+        filteredAlbumSongList.clear()
+        if (query.isEmpty()) {
+            filteredAlbumSongList.addAll(originalAlbumSongList)
+        } else {
+            val searchQuery = query.lowercase(Locale.getDefault())
+            for (albumSong in originalAlbumSongList) {
+                if (albumSong.title.lowercase(Locale.getDefault()).contains(searchQuery) ||
+                    albumSong.artist.lowercase(Locale.getDefault()).contains(searchQuery)) {
+                    filteredAlbumSongList.add(albumSong)
+                }
+            }
+        }
+        _filteredListAlbumSong.value = filteredAlbumSongList
+    }
+
     internal fun filterArtists(query: String) {
         val originalArtistList: MutableList<Artist> =  (artists.value ?: listOf()).toMutableList()
         val filteredArtistList: MutableList<Artist> = (filteredArtists.value ?: listOf()).toMutableList()
@@ -323,6 +351,24 @@ class SharedViewModel(
         _filteredArtists.value = filteredArtistList
     }
 
+    internal fun filterArtistSongs(query: String) {
+        val originalArtistSongList = (listArtistSong.value?: listOf()).toMutableList()
+        val filteredArtistSongList: MutableList<Song> = (filteredListArtistSong.value ?: listOf()).toMutableList()
+        filteredArtistSongList.clear()
+        if (query.isEmpty()) {
+            filteredArtistSongList.addAll(originalArtistSongList)
+        } else {
+            val searchQuery = query.lowercase(Locale.getDefault())
+            for (artistSong in originalArtistSongList) {
+                if (artistSong.title.lowercase(Locale.getDefault()).contains(searchQuery) ||
+                    artistSong.artist.lowercase(Locale.getDefault()).contains(searchQuery)) {
+                    filteredArtistSongList.add(artistSong)
+                }
+            }
+        }
+        _filteredListArtistSong.value = filteredArtistSongList
+    }
+
     internal fun filterFolders(query: String) {
         val originalFolderList: MutableList<Folder> =  (folders.value ?: listOf()).toMutableList()
         val filteredFolderList: MutableList<Folder> = (filteredFolders.value ?: listOf()).toMutableList()
@@ -338,6 +384,24 @@ class SharedViewModel(
             }
         }
         _filteredFolders.value = filteredFolderList
+    }
+
+    internal fun filterFolderSongs(query: String) {
+        val originalFolderSongList: MutableList<Song> =  (listFolderSong.value ?: listOf()).toMutableList()
+        val filteredFolderSongList: MutableList<Song> = (filteredListFolderSong.value ?: listOf()).toMutableList()
+        filteredFolderSongList.clear()
+        if (query.isEmpty()) {
+            filteredFolderSongList.addAll(originalFolderSongList)
+        } else {
+            val searchQuery = query.lowercase(Locale.getDefault())
+            for (folderSong in originalFolderSongList) {
+                if (folderSong.title.lowercase(Locale.getDefault()).contains(searchQuery)||
+                    folderSong.artist.lowercase(Locale.getDefault()).contains(searchQuery))  {
+                    filteredFolderSongList.add(folderSong)
+                }
+            }
+        }
+        _filteredListFolderSong.value = filteredFolderSongList
     }
 
     internal fun filterFavoriteSongs(query: String) {
@@ -707,6 +771,7 @@ class SharedViewModel(
             var listAlbumSong:List<Song> = albumRepository.getAlbumSongList(albumId)
             Log.d(TAG, " * SharedViewModel getSongsByAlbum listAlbumSong size = ${listAlbumSong.size}")
             _listAlbumSong.value = listAlbumSong
+            _filteredListAlbumSong.value = listAlbumSong
         }
     }
 
@@ -715,6 +780,7 @@ class SharedViewModel(
             var listArtistSong:List<Song> = artistsRepository.getArtistSongList(artistId)
             Log.d(TAG, " * SharedViewModel getSongsByArtist listArtistSong size = ${listArtistSong.size}")
             _listArtistSong.value = listArtistSong
+            _filteredListArtistSong.value = listArtistSong
         }
     }
 
@@ -723,6 +789,7 @@ class SharedViewModel(
             var listFolderSong: List<Song> = folderRepository.getFolderSongList(folderPath)
             Log.d(TAG, " * SharedViewModel getSongsByFolder listFolderSong size = ${listFolderSong.size}")
              _listFolderSong.value = listFolderSong
+            _filteredListFolderSong.value = listFolderSong
         }
     }
 }
