@@ -149,12 +149,14 @@ class SharedViewModel(
     private val _coverPath = MutableLiveData<String>()
     val coverPath: LiveData<String> = _coverPath
 
-     fun scanMedia() {
+     fun scanMedia(afterLoad:()->Unit) {
         viewModelScope.launch {
             initParamsSong(repository.loadMusic())
             syncAlbums()
             syncArtist ()
             syncFolders()
+
+            afterLoad.invoke()
         }
     }
 
@@ -401,6 +403,10 @@ class SharedViewModel(
 
     fun getIndexOfCurrentSong():Int{
         return indexOfCurrentSong.value
+    }
+
+    fun getIndexOfSavedSong():Int{
+        return helper.getIndexOfCurrentSong()
     }
 
     fun getPositionFavoriteSong(): Int{  return helper.getPositionFavoriteSong() }

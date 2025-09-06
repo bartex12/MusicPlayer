@@ -87,10 +87,18 @@ class SongFragment : Fragment() {
            }
             adapter.notifyDataSetChanged()
         }
-        //восстанавливаем позицию списка после поворота или возвращения на экран и при новой загрузке
-        binding.localRecyclerView.layoutManager?.scrollToPosition(viewModel.getPositionSong())
 
         initMenu()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        val pos = viewModel.getIndexOfSavedSong()
+        Log.d( TAG,"1---SongsFragment onResume getIndexOfSavedSong = $pos ")
+        //восстанавливаем позицию списка после поворота или возвращения на экран и при новой загрузке
+        val manager = binding.localRecyclerView.layoutManager as LinearLayoutManager
+        Log.d( TAG,"1---SongsFragment onResume manager = $manager ")
+        manager.scrollToPositionWithOffset(pos, 0)
     }
 
     //запоминаем  позицию списка, на которой сделан клик - на случай поворота экрана

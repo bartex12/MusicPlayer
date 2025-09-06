@@ -19,6 +19,7 @@ class PreferenceHelperImpl(private  val app: Application): IPreferenceHelper {
         const val PAGER_LOCAL_POSITION ="PAGER_LOCAL_POSITION"
         const val CURRENT_SONG_KEY = "CURRENT_SONG_KEY"
         const val FIRST_POSITION_FAVORITE_SONG = "FIRST_POSITION_FAVORITE_SONG"
+        const val INDEX_OF_CURRENT_SONG = "INDEX_OF_CURRENT_SONG"
     }
 
     private val prefs: SharedPreferences by lazy {
@@ -146,6 +147,17 @@ class PreferenceHelperImpl(private  val app: Application): IPreferenceHelper {
         val json = app.getSharedPreferences("PlayerPrefs", Context.MODE_PRIVATE)
             .getString("favorites", null)
         return json
+    }
+
+    override fun getIndexOfCurrentSong(): Int {
+        val index = prefs .getInt(INDEX_OF_CURRENT_SONG, 0)
+        Log.d(TAG, "PreferenceHelper getIndexOfCurrentSong index = $index")
+        return index
+    }
+
+    override fun saveIndexOfCurrentSong(index: Int) {
+        putValue(INDEX_OF_CURRENT_SONG to index )
+        Log.d(TAG,"PreferenceHelper saveIndexOfCurrentSong index = $index" )
     }
 
     fun getSoundLevel(): Int {

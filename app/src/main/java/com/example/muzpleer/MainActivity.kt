@@ -98,13 +98,6 @@ class MainActivity : AppCompatActivity() {
         initViews()
         startMediaScan()
 
-        // Восстанавливаем последнюю песню
-        val savedSongId = appPreferences.getCurrentSongId()
-        if (savedSongId != -1L) {
-            viewModel.setCurrentSongById(savedSongId)
-        }
-        Log.d(TAG, "###MainActivity onCreate savedSongId =  $savedSongId")
-
         setSupportActionBar(binding.appBarMain.toolbar)
         val drawerLayout: DrawerLayout = binding.drawerLayout
         val navView: NavigationView = binding.navView
@@ -133,9 +126,6 @@ class MainActivity : AppCompatActivity() {
                     "indexOfTrack = $indexOfTrack " +
                     "songAndPlaylist.playlist.size = ${songAndPlaylist.playlist.size}" +
                     " currentSong title= ${songAndPlaylist.song.title} ")
-
-            Log.d(TAG, "###MainActivity scanForMusic songAndPlaylist.playlist = " +
-                    "${songAndPlaylist.playlist.map { it.title }}")
 
             viewModel.setPlaylistForHandler(songAndPlaylist.playlist, indexOfTrack)
         }
@@ -212,8 +202,16 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun startMediaScan() {
-        viewModel.getRepositorySong {listSong->
-            viewModel.scanMedia()
+        viewModel.scanMedia(){
+            // Восстанавливаем последнюю песню
+            val savedSongId = appPreferences.getCurrentSongId()
+            if (savedSongId != -1L) {
+                viewModel.setCurrentSongById(savedSongId)
+            }
+            Log.d(TAG, "###MainActivity onCreate savedSongId = $savedSongId CurrentSong =  ${ viewModel.getCurrentSong()?.title}")
+        }  //todo потом изменить на загрузку из базы
+        viewModel.getRepositorySong {listSong->  //загрузка из базы
+            Log.d(TAG, "###MainActivity startMediaScan listSong size = ${listSong.size}")
 //            if (listSong.isEmpty()){
 //                Log.d(TAG, "###MainActivity startMediaScan viewModel.scanMedia()")
 //                viewModel.scanMedia()
@@ -243,9 +241,11 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        Log.d(TAG, "###MainActivity onDestroy currentSong =  ${currentSong?.id}")
         // Сохраняем текущую песню при закрытии
         currentSong?.let { appPreferences.saveCurrentSongId(it.id)  }
+        //сохраняем индекс текущей песни в списке вкладки песен
+        appPreferences.saveIndexOfCurrentSong(viewModel.getIndexOfCurrentSong())
+        Log.d(TAG, "###MainActivity onDestroy currentSong id =  ${currentSong?.id} индекс = ${viewModel.getIndexOfCurrentSong()}")
     }
 
     private fun checkPermissions() {
