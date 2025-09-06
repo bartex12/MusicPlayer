@@ -517,18 +517,23 @@ class SharedViewModel(
 
     fun saveCoverToDatabase(uri: Uri) {
         viewModelScope.launch {
-            _selectedSong.value?.let { song ->
+            _selectedSong.value?.let { selectedSong ->
 //                // Сохраняем в InternalStorage //todo пока не используется
 //                val coverPath =saveCoverToInternalStorage(uri, song)
 //                _coverPath.value = coverPath
 //                  Log.d(TAG, "111*** SharedViewModel saveCoverToDatabase coverPath = $coverPath")
+                // Обновляем песню в основном списке песен - нужны оба - _songs и _filteredSongs
+                _songs.value = _songs.value?.map {s->
+                    if (s.id == selectedSong.id) s.copy(artUri = uri.toString()) else s
+                }
+                _filteredSongs.value = _filteredSongs.value?. map{filteredSong->
+                    if (filteredSong.id == selectedSong.id) filteredSong.copy(artUri = uri.toString()) else filteredSong
+                }
                 //записываем путь к файлу обложки в базу
-                repository.updateCoverPath(song.id, uri.toString())
-                // Обновляем выбранную песню
-                _selectedSong.value = song.copy(artUri = uri.toString())
+                repository.updateCoverPath(selectedSong.id, uri.toString())
                 // Обновляем текущую песню если нужно
                 _currentSong.value?.let { current ->
-                    if (current.id == song.id) {
+                    if (current.id == selectedSong.id) {
                         _currentSong.value = current.copy(artUri = uri.toString())
                     }
                 }
@@ -548,8 +553,6 @@ class SharedViewModel(
                 _filteredSongs.value = _filteredSongs.value?. map{filteredSong->
                     if (filteredSong.id == song.id) filteredSong.copy(artUri = uri.toString()) else filteredSong
                 }
-                // Обновляем выбранную песню
-                _selectedSong.value = song.copy(artUri = uri.toString())
                 // Обновляем текущую песню если нужно
                 _currentSong.value?.let { current ->
                     if (current.id == song.id) {
@@ -572,11 +575,6 @@ class SharedViewModel(
                 _filteredSongs.value = _filteredSongs.value?. map{filteredSong->
                     if (filteredSong.id == selectedSong.id) filteredSong.copy(artUri = uri.toString()) else filteredSong
                 }
-                _playlist.value = _playlist.value?.map{song->
-                    if (song.id == selectedSong.id) song.copy(artUri = selectedSong.artUri) else song
-                }
-                // Обновляем выбранную песню
-                _selectedSong.value = selectedSong.copy(artUri = uri.toString())
                 // Обновляем текущую песню если нужно
                 _currentSong.value?.let { current ->
                     if (current.id == selectedSong.id) {
@@ -599,11 +597,6 @@ class SharedViewModel(
                 _filteredSongs.value = _filteredSongs.value?. map{filteredSong->
                     if (filteredSong.id == selectedSong.id) filteredSong.copy(artUri = uri.toString()) else filteredSong
                 }
-                _playlist.value = _playlist.value?.map{song->
-                    if (song.id == selectedSong.id) song.copy(artUri = selectedSong.artUri) else song
-                }
-                // Обновляем выбранную песню
-                _selectedSong.value = selectedSong.copy(artUri = uri.toString())
                 // Обновляем текущую песню если нужно
                 _currentSong.value?.let { current ->
                     if (current.id == selectedSong.id) {

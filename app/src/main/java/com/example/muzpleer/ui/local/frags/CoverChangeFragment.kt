@@ -81,15 +81,14 @@ class CoverChangeFragment : Fragment() {
                     Log.d(TAG, "11*** CoverChangeFragment saveButton: fromAdapter = $fromAdapter")
                     when(fromAdapter){
                         //обновляем обложку и записываем в базу
-                        CHANGE_COVER_FAVORITES -> {viewModel.updateCoverImageAndSaveFavorites(curUri)}
-                        CHANGE_COVER_FOLDER_SONG-> {viewModel.updateCoverImageAndSaveAlbumSong(curUri)}  // todo
-                        CHANGE_COVER_ARTIST_SONG -> {viewModel.updateCoverImageAndSaveArtistSong(curUri) }
-                        CHANGE_COVER_ALBUM_SONG -> {viewModel.updateCoverImageAndSaveAlbumSong(curUri) }
                         CHANGE_COVER_SONG -> { viewModel.updateCoverImageAndSave(curUri)}
+                        CHANGE_COVER_ALBUM_SONG -> {viewModel.updateCoverImageAndSaveAlbumSong(curUri) }
+                        CHANGE_COVER_ARTIST_SONG -> {viewModel.updateCoverImageAndSaveAlbumSong(curUri) }
+                        CHANGE_COVER_FOLDER_SONG-> {viewModel.updateCoverImageAndSaveAlbumSong(curUri)}  // todo
+                        CHANGE_COVER_FAVORITES -> {viewModel.updateCoverImageAndSaveFavorites(curUri)}
                         else-> {viewModel.updateCoverImageAndSave(curUri)}
                     }
                 }
-
             }
             findNavController().navigateUp()
         }
