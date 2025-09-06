@@ -43,7 +43,7 @@ class FavoritesFragment: Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        adapter = SongsAdapter(viewModel, AdapterSource.FAVORITES_FRAGMENT, { song ->
+        adapter = SongsAdapter(viewModel,  { song ->
             //устанавливаем список песен как плейлист
             val playlist = getSortedDataSong(viewModel.getFavoriteSongs())
             viewModel.setPlaylist(playlist) //устанавливаем список песен как плейлист

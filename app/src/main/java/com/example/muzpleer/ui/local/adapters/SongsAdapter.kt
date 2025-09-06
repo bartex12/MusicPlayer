@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.content.ContentUris
 import android.content.Context
 import android.net.Uri
-import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -22,16 +21,10 @@ import com.example.muzpleer.databinding.ItemMusicBinding
 import com.example.muzpleer.model.AdapterSource
 import com.example.muzpleer.model.Song
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
-import com.example.muzpleer.util.Constants.CHANGE_COVER
-import com.example.muzpleer.util.Constants.CHANGE_COVER_ALBUM_SONG
-import com.example.muzpleer.util.Constants.CHANGE_COVER_ARTIST_SONG
-import com.example.muzpleer.util.Constants.CHANGE_COVER_FAVORITES
-import com.example.muzpleer.util.Constants.CHANGE_COVER_FOLDER_SONG
-import com.example.muzpleer.util.Constants.CHANGE_COVER_SONG
+
 
 class SongsAdapter(
     private val viewModel: SharedViewModel,
-    private val sourceOfSong: AdapterSource,  // Добавляем параметр источника
     private val onItemClick: (Song) -> Unit,
     private val onLongClickListener:(Song)->Unit
 ) : RecyclerView.Adapter<SongsAdapter.MusicViewHolder>() {
@@ -167,21 +160,8 @@ class SongsAdapter(
                             "song title = ${song.title} song artUri =  ${song.artUri}")
                     //запоминаем во ViewModel выбранную песню
                     viewModel.setSelectedSong(song)
-                    //устанавливаем источник- откуда вызван адаптер
-                    val adapterSource:Int = when(sourceOfSong){
-                        AdapterSource.SONGS_FRAGMENT -> CHANGE_COVER_SONG
-                        AdapterSource.ALBUM_FRAGMENT  -> CHANGE_COVER_ALBUM_SONG
-                        AdapterSource.ARTIST_FRAGMENT -> CHANGE_COVER_ARTIST_SONG
-                        AdapterSource.FOLDER_FRAGMENT -> CHANGE_COVER_FOLDER_SONG
-                        AdapterSource.FAVORITES_FRAGMENT -> CHANGE_COVER_FAVORITES
-                    }
-                    val bundle = Bundle().apply {
-                        putInt(CHANGE_COVER, adapterSource)
-                        Log.d(TAG,"###!!! SongsAdapter showPopupMenu action_change_cover bundle:" +
-                                " adapterSource = $adapterSource ")
-                    }
                     //идём во фрагмент замены обложки с источником вызова адаптера
-                    view.findNavController().navigate(R.id.coverChangeFragment, bundle)
+                    view.findNavController().navigate(R.id.coverChangeFragment)
                     true
                 }
                 else -> false

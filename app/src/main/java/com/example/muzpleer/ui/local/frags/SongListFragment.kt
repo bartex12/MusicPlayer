@@ -38,13 +38,11 @@ class SongListFragment:Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         val from:Int? = arguments?.getInt("from")
-        var sourceOfSong: AdapterSource = AdapterSource.SONGS_FRAGMENT
         Log.d(TAG, " !@# SongListFragment onViewCreated from =  $from")
         if (from != null){
             when (from){
                 2->{
                     if (arguments?.getLong("albumId") != null)  {
-                        sourceOfSong =AdapterSource.ALBUM_FRAGMENT
                         val albumId = arguments?.getLong("albumId")!!
                         Log.d(TAG, "40!@# SongListFragment arguments albumId  $albumId")
 
@@ -67,7 +65,6 @@ class SongListFragment:Fragment() {
                 }
                 3->{
                     if(arguments?.getLong("artistId") != null) {
-                        sourceOfSong =AdapterSource.ARTIST_FRAGMENT
                         val artistId = arguments?.getLong("artistId")!!
                         Log.d(TAG, "43!@# SongListFragment arguments artistId  $artistId")
 
@@ -90,7 +87,6 @@ class SongListFragment:Fragment() {
                 }
                 4->{
                     if(arguments?.getString("folderPath") != null) {
-                        sourceOfSong =AdapterSource.FOLDER_FRAGMENT
                         val folderPath = arguments?.getString("folderPath")!!
                         Log.d(TAG, "46!@# SongListFragment arguments folderPath  $folderPath")
                         viewModel.getSongsByFolder(folderPath)
@@ -113,18 +109,9 @@ class SongListFragment:Fragment() {
             }
         }
         //Создаём адаптер и передаём туда sourceOfSong, чтобы для песен был один адаптер
-        adapter = SongsAdapter(viewModel, sourceOfSong, { song ->
+        adapter = SongsAdapter(viewModel,  { song ->
             val playlist = viewModel.getPlaylist()
-//            //todo проверить
-//            //меняем artUri в песне плейлиста, так как она потом может стать текущей со старым artUri
-//            playlist.map{songOfPlaylist->{
-//                Log.d(TAG,"49!@# SongListFragment playlist.map " +
-//                        "songOfPlaylist.artUri =${songOfPlaylist.artUri} song.artUri = ${song.artUri}  ")
-//                if(songOfPlaylist.id == song.id){
-//                    songOfPlaylist.copy(artUri = song.artUri)
-//                }else  songOfPlaylist
-//            }
-//            }
+
             viewModel.setSongAndPlaylist(
                 SongAndPlaylist(
                     song = song,
@@ -133,16 +120,6 @@ class SongListFragment:Fragment() {
             viewModel.setCurrentSong(song)
         },{song->
             val playlist = viewModel.getPlaylist()
-//            //todo проверить
-//            //меняем artUri в песне плейлиста, так как она потом может стать текущей со старым artUri
-//            playlist.map{songOfPlaylist->{
-//                Log.d(TAG,"50!@# SongListFragment playlist.map " +
-//                        "songOfPlaylist.artUri =${songOfPlaylist.artUri} song.artUri = ${song.artUri}  ")
-//                if(songOfPlaylist.id == song.id){
-//                    songOfPlaylist.copy(artUri = song.artUri)
-//                }else  songOfPlaylist
-//            }
-//            }
             viewModel.setSongAndPlaylist(
                 SongAndPlaylist(
                     song = song,
@@ -156,8 +133,6 @@ class SongListFragment:Fragment() {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = this@SongListFragment.adapter
         }
-
-
     }
 
     override fun onDestroyView() {

@@ -45,7 +45,7 @@ class SongFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        adapter = SongsAdapter(viewModel, AdapterSource.SONGS_FRAGMENT, { song ->
+        adapter = SongsAdapter(viewModel, { song ->
             //устанавливаем список песен как плейлист
             val playlist = getSortedDataSong(viewModel.getSongs())
             viewModel.setPlaylist(playlist) //устанавливаем список песен как плейлист
