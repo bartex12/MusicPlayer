@@ -1,3 +1,5 @@
+import org.gradle.kotlin.dsl.implementation
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -83,9 +85,16 @@ dependencies {
     implementation ("com.github.bumptech.glide:glide:4.16.0")
     annotationProcessor ("com.github.bumptech.glide:compiler:4.16.0")
 
+    //picasso
+    implementation ("com.squareup.picasso:picasso:2.8")
+
+    //PhotoView
+    implementation ("com.github.chrisbanes:PhotoView:2.3.0")
+
     //CircleImageView http://developer.alexanderklimov.ru/android/library/circleimageview.php
     implementation ("de.hdodenhof:circleimageview:3.1.0")
 
+    //gson
     implementation ("com.google.code.gson:gson:2.11.0")
 
     testImplementation(libs.junit)

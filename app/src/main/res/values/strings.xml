@@ -26,6 +26,8 @@
     <string name="my_tracks">Избранное</string>
     <string name="little_king">МП</string>
 
+    <string name="zoom_zoom">Сильное увеличение</string>
+
     <string-array name="sound_level_entry_number">
         <item>Без звука</item>
         <item>20%</item>

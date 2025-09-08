@@ -2,6 +2,7 @@ package com.example.muzpleer.ui.player
 
 import android.content.ContentUris
 import android.content.Context
+import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -10,16 +11,24 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.SeekBar
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.net.toUri
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
+import androidx.transition.ChangeBounds
+import androidx.transition.ChangeImageTransform
+import androidx.transition.TransitionManager
+import androidx.transition.TransitionSet
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentPlayerBinding
-import com.example.muzpleer.di.App
 import com.example.muzpleer.model.Song
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
+import com.example.muzpleer.util.Constants.MEDIA_IMAGE
+import com.example.muzpleer.util.Constants.MEDIA_TYPE_ANIMATION
+import com.example.muzpleer.util.Constants.URL_ANIMATION
 import com.google.android.material.snackbar.Snackbar
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 
@@ -27,6 +36,7 @@ class PlayerFragment : Fragment() {
     private var _binding: FragmentPlayerBinding? = null
     private val binding get() = _binding!!
     private val viewModel: SharedViewModel by activityViewModel()
+    private var isExpanded = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -79,6 +89,35 @@ class PlayerFragment : Fragment() {
             override fun onStartTrackingTouch(seekBar: SeekBar) {}
             override fun onStopTrackingTouch(seekBar: SeekBar) {}
         })
+
+        binding.artworkImageView.setOnClickListener {
+            isExpanded = !isExpanded
+            //
+            TransitionManager.beginDelayedTransition(
+                binding.playerContainer, TransitionSet()
+                    .addTransition(ChangeBounds())
+                    .addTransition(ChangeImageTransform())
+            )
+            val params = binding.artworkImageView.layoutParams as ConstraintLayout.LayoutParams
+            if (isExpanded) {
+                // Оставляем существующие constraints, но меняем размеры
+                params.topMargin = 0
+                params.width = ConstraintLayout.LayoutParams.MATCH_PARENT
+                params.height = ConstraintLayout.LayoutParams.MATCH_PARENT
+                params.dimensionRatio = ""
+                binding.artworkImageView.scaleType = ImageView.ScaleType.FIT_CENTER
+            } else {
+                // Возвращаем оригинальные размеры
+                params.topMargin = 16
+                params.width = 0
+                params.height = 0
+                params.dimensionRatio = "1:1"
+                params.matchConstraintPercentWidth = 0.6f
+                binding.artworkImageView.scaleType = ImageView.ScaleType.FIT_CENTER
+            }
+
+            binding.artworkImageView.layoutParams = params
+        }
     }
 
     private fun observeViewModel() {
