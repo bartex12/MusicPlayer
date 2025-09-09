@@ -203,13 +203,18 @@ class MainActivity : AppCompatActivity() {
 
     private fun startMediaScan() {
         viewModel.scanMedia(){
+            //сначала сканируем телефон и собираем все музыкальные треки в базе, а потом делаем другие вкладки
+            viewModel.syncAlbums()
+            viewModel.syncArtist ()
+            viewModel.syncFolders()
             // Восстанавливаем последнюю песню
             val savedSongId = appPreferences.getCurrentSongId()
             if (savedSongId != -1L) {
                 viewModel.setCurrentSongById(savedSongId)
             }
             Log.d(TAG, "###MainActivity onCreate savedSongId = $savedSongId CurrentSong =  ${ viewModel.getCurrentSong()?.title}")
-        }  //todo потом изменить на загрузку из базы
+        }
+        //todo потом изменить на загрузку из базы
         viewModel.getRepositorySong {listSong->  //загрузка из базы
             Log.d(TAG, "###MainActivity startMediaScan listSong size = ${listSong.size}")
 //            if (listSong.isEmpty()){

@@ -107,7 +107,12 @@ class MusicRepository(
                 songDao.getById(id)?.let { existingFile ->
                     // Файл существует в базе
                     dbIds.remove(id)  //удаляем запись с этой id из списка всех id
-                    if (existingFile.lastModified != lastModified) {
+
+                    // Проверяем и дату изменения, и путь
+                    val isModified = existingFile.lastModified != lastModified
+                    val isMoved = existingFile.path != path
+
+                    if (isModified || isMoved) {
                         filesToUpdate.add(
                             SongFile(
                                 mediaStoreId = id,

@@ -161,10 +161,6 @@ class SharedViewModel(
      fun scanMedia(afterLoad:()->Unit) {
         viewModelScope.launch {
             initParamsSong(repository.loadMusic())
-            syncAlbums()
-            syncArtist ()
-            syncFolders()
-
             afterLoad.invoke()
         }
     }
