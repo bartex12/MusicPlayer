@@ -166,9 +166,9 @@ class SongListFragment:Fragment() {
         menuHost.addMenuProvider(object : MenuProvider {
 
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-                menuInflater.inflate(R.menu.main, menu)
+                menuInflater.inflate(R.menu.menu_other, menu)
 
-                val searchItem: MenuItem = menu.findItem(R.id.search_toolbar)
+                val searchItem: MenuItem = menu.findItem(R.id.search_toolbar_other)
                 val searchView =searchItem.actionView as SearchView
                 //значок лупы слева в развёрнутом сост и сворачиваем строку поиска (true)
                 searchView.setIconifiedByDefault(true)
@@ -201,9 +201,17 @@ class SongListFragment:Fragment() {
                 })
             }
 
+//            override fun onPrepareMenu(menu: Menu) {
+//                // Получаем текущую позицию ViewPager
+//                val currentTab = viewPager.currentItem
+//                // Показываем "Обновить библиотеку" только на первой вкладке (SongFragment)
+//                val refreshItem = menu.findItem(R.id.updateSongs)
+//                refreshItem.isVisible = currentTab == 0 // 0 - позиция SongFragment
+//            }
+
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
                 when(menuItem.itemId){
-                    R.id.action_to->{
+                    R.id.action_to_other->{
                         if (arguments?.getLong("albumId") != null)  {
                             val albumSongs = viewModel.listAlbumSong.value //список песен альюома
                             val currentSong = viewModel.getCurrentSong()

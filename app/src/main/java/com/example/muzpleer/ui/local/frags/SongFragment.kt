@@ -16,11 +16,15 @@ import androidx.lifecycle.Lifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.viewpager.widget.ViewPager
+import com.example.muzpleer.MainActivity
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentSongsBinding
+import com.example.muzpleer.di.App
 import com.example.muzpleer.model.AdapterSource
 import com.example.muzpleer.model.SongAndPlaylist
 import com.example.muzpleer.ui.local.adapters.SongsAdapter
+import com.example.muzpleer.ui.local.helper.IPreferenceHelper
+import com.example.muzpleer.ui.local.helper.PreferenceHelperImpl
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 import com.example.muzpleer.util.getSortedDataSong
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
@@ -32,6 +36,7 @@ class SongFragment : Fragment() {
     private val viewModel: SharedViewModel by activityViewModel()
     private lateinit var adapter: SongsAdapter
     private var currentSearchQuery = ""
+    private lateinit var appPreferences: IPreferenceHelper
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -44,6 +49,8 @@ class SongFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        appPreferences =PreferenceHelperImpl(App.instance)
 
         adapter = SongsAdapter(viewModel, { song ->
             //устанавливаем список песен как плейлист
@@ -131,7 +138,7 @@ class SongFragment : Fragment() {
         menuHost.addMenuProvider(object : MenuProvider {
 
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-                menuInflater.inflate(R.menu.main, menu)
+                menuInflater.inflate(R.menu.song_menu, menu)
 
                 val searchItem: MenuItem = menu.findItem(R.id.search_toolbar)
                 val searchView =searchItem.actionView as SearchView
@@ -155,9 +162,16 @@ class SongFragment : Fragment() {
                         viewModel.filterSongs(newText.orEmpty())
                         return true
                     }
-
                 })
             }
+
+//            override fun onPrepareMenu(menu: Menu) {
+//                // Получаем текущую позицию ViewPager
+//                val currentTab = viewPager.currentItem
+//                // Показываем "Обновить библиотеку" только на первой вкладке (SongFragment)
+//                val refreshItem = menu.findItem(R.id.updateSongs)
+//                refreshItem.isVisible = currentTab == 0 // 0 - позиция SongFragment
+//            }
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
                 when(menuItem.itemId){
@@ -171,6 +185,20 @@ class SongFragment : Fragment() {
                             if(pos >=0 ) it.scrollToPositionWithOffset(pos, 0) else it.scrollToPosition(0)
                         }
                         return true
+                    }
+                    R.id.updateSongs->{
+                        val currentSong = viewModel.getCurrentSong()
+                        viewModel.scanMedia(){
+                            //сначала сканируем телефон и собираем все музыкальные треки в базе, а потом делаем другие вкладки
+                            viewModel.syncAlbums()
+                            viewModel.syncArtist ()
+                            viewModel.syncFolders()
+                            // Восстанавливаем последнюю песню
+                            currentSong?. let{
+                                viewModel.setCurrentSongById(currentSong.id)
+                            }
+                            Log.d(TAG, "###SongFragment onMenuItemSelected currentSong = ${currentSong?.title} ")
+                        }
                     }
                 }
                 return false

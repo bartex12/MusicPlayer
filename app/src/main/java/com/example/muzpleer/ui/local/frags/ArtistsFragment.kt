@@ -102,9 +102,9 @@ class ArtistsFragment:Fragment() {
         menuHost.addMenuProvider(object : MenuProvider {
 
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-                menuInflater.inflate(R.menu.main, menu)
+                menuInflater.inflate(R.menu.menu_other, menu)
 
-                val searchItem: MenuItem = menu.findItem(R.id.search_toolbar)
+                val searchItem: MenuItem = menu.findItem(R.id.search_toolbar_other)
                 val searchView =searchItem.actionView as SearchView
                 //значок лупы слева в развёрнутом сост и сворачиваем строку поиска (true)
                 searchView.setIconifiedByDefault(true)
@@ -123,7 +123,8 @@ class ArtistsFragment:Fragment() {
                 })
             }
             override fun onPrepareMenu(menu: Menu) {
-                menu.findItem(R.id.action_to).isVisible =false
+                menu.findItem(R.id.action_to_other).isVisible =false
+
             }
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
                 return false

@@ -112,9 +112,9 @@ class FavoritesFragment: Fragment() {
         menuHost.addMenuProvider(object : MenuProvider {
 
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-                menuInflater.inflate(R.menu.main, menu)
+                menuInflater.inflate(R.menu.menu_other, menu)
 
-                val searchItem: MenuItem = menu.findItem(R.id.search_toolbar)
+                val searchItem: MenuItem = menu.findItem(R.id.search_toolbar_other)
                 val searchView =searchItem.actionView as SearchView
                 //значок лупы слева в развёрнутом сост и сворачиваем строку поиска (true)
                 searchView.setIconifiedByDefault(true)
@@ -133,9 +133,23 @@ class FavoritesFragment: Fragment() {
                 })
             }
             override fun onPrepareMenu(menu: Menu) {
-                menu.findItem(R.id.action_to).isVisible =false
+                if(viewModel.getFavoriteSongs().size < 10){
+                    menu.findItem(R.id.action_to_other).isVisible = false
+                }
             }
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                when(menuItem.itemId){
+                    R.id.action_to_other->{
+                        val favoriteSongs = viewModel.getFavoriteSongs() //список песен артиста
+                        val currentSong = viewModel.getCurrentSong()
+                        val indexOfSong = getSortedDataSong(favoriteSongs).indexOfFirst { it.mediaUri == currentSong?.mediaUri }
+                        Log.d(TAG, "$$$ FavoritesFragment onMenuItemSelected indexOfSong = $indexOfSong")
+                        (binding.favoriteRecyclerView.layoutManager as LinearLayoutManager).let{
+                            if(indexOfSong >= 0 ) it.scrollToPositionWithOffset(indexOfSong, 0) else it.scrollToPosition(0)
+                        }
+                        return true
+                    }
+                }
                 return false
             }
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
