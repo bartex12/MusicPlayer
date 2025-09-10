@@ -8,6 +8,7 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.appcompat.widget.SearchView
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
@@ -164,14 +165,6 @@ class SongFragment : Fragment() {
                     }
                 })
             }
-
-//            override fun onPrepareMenu(menu: Menu) {
-//                // Получаем текущую позицию ViewPager
-//                val currentTab = viewPager.currentItem
-//                // Показываем "Обновить библиотеку" только на первой вкладке (SongFragment)
-//                val refreshItem = menu.findItem(R.id.updateSongs)
-//                refreshItem.isVisible = currentTab == 0 // 0 - позиция SongFragment
-//            }
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
                 when(menuItem.itemId){

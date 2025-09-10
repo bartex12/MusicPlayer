@@ -788,4 +788,110 @@ class SharedViewModel(
             _filteredListFolderSong.value = listFolderSong
         }
     }
+
+//    fun saveCoverToDatabase(uri: Uri) {
+//        viewModelScope.launch {
+//            _selectedSong.value?.let { selectedSong ->
+////                // Сохраняем в InternalStorage //todo пока не используется
+////                val coverPath =saveCoverToInternalStorage(uri, song)
+////                _coverPath.value = coverPath
+////                  Log.d(TAG, "111*** SharedViewModel saveCoverToDatabase coverPath = $coverPath")
+//                // Обновляем песню в основном списке песен - нужны оба - _songs и _filteredSongs
+//                _songs.value = _songs.value?.map {s->
+//                    if (s.id == selectedSong.id) s.copy(artUri = uri.toString()) else s
+//                }
+//                _filteredSongs.value = _filteredSongs.value?. map{filteredSong->
+//                    if (filteredSong.id == selectedSong.id) filteredSong.copy(artUri = uri.toString()) else filteredSong
+//                }
+//                //записываем путь к файлу обложки в базу
+//                repository.updateCoverPath(selectedSong.id, uri.toString())
+//                // Обновляем текущую песню если нужно
+//                _currentSong.value?.let { current ->
+//                    if (current.id == selectedSong.id) {
+//                        _currentSong.value = current.copy(artUri = uri.toString())
+//                    }
+//                }
+//            }
+//        }
+//    }
+
+    fun updateSongInfo(
+        songId: Long,
+        title: String,
+        artist: String,
+        album: String?,
+        author: String?,
+        genre: String?,
+        year: Int?
+    ) {
+        viewModelScope.launch {
+            try {
+                // Обновляем в базе данных
+                repository.updateSongInfo(songId, title, artist, album, author, genre, year)
+
+                // Обновляем в текущих данных
+                _songs.value = _songs.value?.map { song ->
+                    if (song.id == songId) {
+                        song.copy(
+                            title = title,
+                            artist = artist,
+                            albumName = album,
+                            author = author,
+                            genre = genre,
+                            year = year
+                        )
+                    } else {
+                        song
+                    }
+                }
+
+                _filteredSongs.value = _filteredSongs.value?. map{filteredSong->
+                    if (filteredSong.id == songId) filteredSong.copy(
+                        title = title,
+                        artist = artist,
+                        albumName = album,
+                        author = author,
+                        genre = genre,
+                        year = year
+                    ) else filteredSong
+                }
+
+                // Обновляем выбранную песню если нужно
+                _selectedSong.value?.let { selected ->
+                    if (selected.id == songId) {
+                        _selectedSong.value = selected.copy(
+                            title = title,
+                            artist = artist,
+                            albumName = album,
+                            author = author,
+                            genre = genre,
+                            year = year
+                        )
+                    }
+                }
+
+                // Обновляем текущую песню если нужно
+                _currentSong.value?.let { current ->
+                    if (current.id == songId) {
+                        _currentSong.value = current.copy(
+                            title = title,
+                            artist = artist,
+                            albumName = album,
+                            author = author,
+                            genre = genre,
+                            year = year
+                        )
+                    }
+                }
+                // Уведомляем об успешном обновлении
+                //_message.value = "Информация обновлена"
+                Toast.makeText(App.instance, "Информация обновлена", Toast.LENGTH_SHORT).show()
+            } catch (e: Exception) {
+                //_message.value = "Ошибка обновления: ${e.message}"
+                Log.d(TAG, "SharedViewModel updateSongInfo: Ошибка обновления: ${e.message} ")
+                //Toast.makeText(App.instance, "Ошибка обновления: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
 }

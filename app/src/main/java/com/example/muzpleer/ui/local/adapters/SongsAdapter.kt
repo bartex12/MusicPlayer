@@ -9,10 +9,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.Toast
 import androidx.appcompat.widget.PopupMenu
 import androidx.core.net.toUri
 import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.findNavController
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
@@ -155,13 +157,19 @@ class SongsAdapter(
                     viewModel.toggleFavorite(song)
                     true
                 }
-                R.id.action_change_cover -> {
+                R.id.action_change_cover -> {  //сменить обложку
                     Log.d(TAG, "!!!SongsAdapter showPopupMenu action_change_cover:" +
                             "song title = ${song.title} song artUri =  ${song.artUri}")
                     //запоминаем во ViewModel выбранную песню
                     viewModel.setSelectedSong(song)
                     //идём во фрагмент замены обложки с источником вызова адаптера
                     view.findNavController().navigate(R.id.coverChangeFragment)
+                    true
+                }
+                R.id.edit_song_info -> { //изменить информацию о песне
+                    viewModel.setSelectedSong(song)
+                    // Переходим к редактированию
+                    view.findNavController().navigate(R.id.action_tabLocalFragment_to_editSongFragment)
                     true
                 }
                 else -> false

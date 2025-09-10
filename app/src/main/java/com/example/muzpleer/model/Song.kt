@@ -19,6 +19,10 @@ data class Song(
     val albumName: String? = null, //название альбома из local
     val albumId: Long = -1, // id альбома из local
     val folderPath: String = "",  //путь к папке
+    // Новые поля
+    val author: String? = null,
+    val genre: String? = null,
+    val year: Int? = null
 ): Parcelable{
 
     fun getContentUri(): Uri {

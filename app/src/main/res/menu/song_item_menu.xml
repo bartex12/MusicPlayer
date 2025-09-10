@@ -17,5 +17,11 @@
         android:title="Изменить обложку"
         app:showAsAction="never" />
 
+    <item
+        android:id="@+id/edit_song_info"
+        android:title="Изменить информацию о песне"
+        android:icon="@drawable/baseline_change_circle_24"
+        app:showAsAction="never"/>
+
     <!-- Другие пункты меню -->
 </menu>

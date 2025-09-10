@@ -201,14 +201,6 @@ class SongListFragment:Fragment() {
                 })
             }
 
-//            override fun onPrepareMenu(menu: Menu) {
-//                // Получаем текущую позицию ViewPager
-//                val currentTab = viewPager.currentItem
-//                // Показываем "Обновить библиотеку" только на первой вкладке (SongFragment)
-//                val refreshItem = menu.findItem(R.id.updateSongs)
-//                refreshItem.isVisible = currentTab == 0 // 0 - позиция SongFragment
-//            }
-
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
                 when(menuItem.itemId){
                     R.id.action_to_other->{

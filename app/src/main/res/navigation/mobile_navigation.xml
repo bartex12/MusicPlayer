@@ -27,6 +27,9 @@
         <action
             android:id="@+id/action_tabsLocalFragment_to_playerFragment"
             app:destination="@id/playerFragment" />
+        <action
+            android:id="@+id/action_tabLocalFragment_to_editSongFragment"
+            app:destination="@id/editSongFragment" />
     </fragment>
     <fragment
         android:id="@+id/albumFragment"
@@ -61,6 +64,17 @@
         <action
             android:id="@+id/action_to_coverChangeFragment"
             app:destination="@id/coverChangeFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/editSongFragment"
+        android:name="com.example.muzpleer.ui.local.frags.EditSongFragment"
+        android:label="Редактирование песни"
+        tools:layout="@layout/fragment_edit_song">
+        <action
+            android:id="@+id/action_editSongFragment_to_tabLocalFragment"
+            app:destination="@id/tabLocalFragment"
+            app:popUpTo="@id/tabLocalFragment"
+            app:popUpToInclusive="true"/>
     </fragment>
 
 </navigation>

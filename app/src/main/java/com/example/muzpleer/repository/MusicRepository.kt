@@ -263,4 +263,17 @@ class MusicRepository(
         Log.d(TAG, "7***MusicRepository updateCoverPath  coverPath из базы = ${songDao.getById(id)?.artUri}")
     }
 
+    suspend fun updateSongInfo(
+        songId: Long,
+        title: String,
+        artist: String,
+        album: String?,
+        author: String?,
+        genre: String?,
+        year: Int?
+    ) {
+        Log.d(TAG, "8*** MusicRepository updateSongInfo title = $title author = $author")
+        songDao.updateSongInfo(songId, title, artist, album.toString(), author, genre, year)
+        Log.d(TAG, "9***MusicRepository updateSongInfo  author из базы = ${songDao.getById(songId)?.author}")
+    }
 }

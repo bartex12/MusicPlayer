@@ -19,5 +19,9 @@ data class SongFile(
     val folderPath: String = "", //путь к папке
     val lastModified: Long,
     val size: Long,
-    val dateAdded: Long
+    val dateAdded: Long,
+    // Новые поля
+    val author: String? = null,      // Автор текста
+    val genre: String? = null,       // Жанр
+    val year: Int? = null            // Год выпуска
 )
