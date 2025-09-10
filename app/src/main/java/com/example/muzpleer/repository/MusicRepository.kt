@@ -12,14 +12,10 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.content.FileProvider
 import androidx.core.net.toUri
-import com.example.muzpleer.model.Album
-import com.example.muzpleer.model.Artist
-import com.example.muzpleer.model.Folder
 import com.example.muzpleer.model.Song
 import com.example.muzpleer.room.dao.SongDao
 import com.example.muzpleer.room.entity.SongFile
 import com.example.muzpleer.room.utils.fromSongFileListToSongList
-import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -111,6 +107,9 @@ class MusicRepository(
                     // Проверяем и дату изменения, и путь
                     val isModified = existingFile.lastModified != lastModified
                     val isMoved = existingFile.path != path
+                    val isTitleChanged = existingFile.title != title
+                    val isArtistChanged = existingFile.artist != artist
+                    val isAlbumChanged = existingFile.album != album
 
                     if (isModified || isMoved) {
                         filesToUpdate.add(

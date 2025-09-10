@@ -2,7 +2,6 @@ package com.example.muzpleer.ui.player
 
 import android.content.ContentUris
 import android.content.Context
-import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -15,7 +14,6 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.net.toUri
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
-import androidx.navigation.fragment.findNavController
 import androidx.transition.ChangeBounds
 import androidx.transition.ChangeImageTransform
 import androidx.transition.TransitionManager
@@ -26,9 +24,6 @@ import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentPlayerBinding
 import com.example.muzpleer.model.Song
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
-import com.example.muzpleer.util.Constants.MEDIA_IMAGE
-import com.example.muzpleer.util.Constants.MEDIA_TYPE_ANIMATION
-import com.example.muzpleer.util.Constants.URL_ANIMATION
 import com.google.android.material.snackbar.Snackbar
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 

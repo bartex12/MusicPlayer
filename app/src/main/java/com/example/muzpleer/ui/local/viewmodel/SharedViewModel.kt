@@ -10,7 +10,6 @@ import androidx.core.net.toUri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.liveData
 import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.RecyclerView
 import com.example.muzpleer.di.App
@@ -25,11 +24,8 @@ import com.example.muzpleer.repository.FavoriteRepository
 import com.example.muzpleer.repository.FolderRepository
 import com.example.muzpleer.repository.MusicRepository
 import com.example.muzpleer.service.MusicServiceHandler
-import com.example.muzpleer.ui.local.frags.CoverChangeFragment
 import com.example.muzpleer.ui.local.helper.IPreferenceHelper
 import com.example.muzpleer.util.getSortedDataSong
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
