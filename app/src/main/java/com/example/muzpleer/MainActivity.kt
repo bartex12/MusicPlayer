@@ -5,6 +5,7 @@ import android.content.ActivityNotFoundException
 import android.content.ContentUris
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -105,7 +106,16 @@ class MainActivity : AppCompatActivity() {
         initViews()
         startMediaScan()
 
+        //поддержка экшенбара
         setSupportActionBar(binding.appBarMain.toolbar)
+        //отключаем показ заголовка тулбара, так как там свой макет с main_title
+        supportActionBar?.setDisplayShowTitleEnabled(false)
+        //текстовое поле в тулбаре
+        with(binding.appBarMain.toolbar.findViewById<TextView>(R.id.main_title)){
+            textSize = 16f
+            setTextColor(Color.WHITE)
+            text = context.getString(R.string.app_name2)
+        }
         val drawerLayout: DrawerLayout = binding.drawerLayout
         val navView: NavigationView = binding.navView
         // Passing each menu ID as a set of Ids because each
@@ -114,7 +124,6 @@ class MainActivity : AppCompatActivity() {
             setOf(
                 R.id.tabLocalFragment,  R.id.settingsFragment), drawerLayout
         )
-
         setupActionBarWithNavController(navController, appBarConfiguration)
         //автоматически связывает пункты меню с destinations в NavGraph
         navView.setupWithNavController(navController)
