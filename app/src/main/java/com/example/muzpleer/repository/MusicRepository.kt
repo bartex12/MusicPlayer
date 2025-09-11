@@ -341,4 +341,8 @@ class MusicRepository(
             null
         }
     }
+
+    suspend fun getSongFileById(songId:Long):SongFile?{
+        return songDao.getById(songId)
+    }
 }

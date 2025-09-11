@@ -1,6 +1,7 @@
 package com.example.muzpleer.ui.local.adapters
 
 import android.annotation.SuppressLint
+import android.app.Dialog
 import android.content.ContentUris
 import android.content.Context
 import android.content.Intent
@@ -10,7 +11,9 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.ImageView
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.widget.PopupMenu
 import androidx.core.content.FileProvider
@@ -26,6 +29,8 @@ import com.example.muzpleer.di.App
 import com.example.muzpleer.model.Song
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 import com.example.muzpleer.util.formatAsTime
+import com.example.muzpleer.util.formatDate
+import com.example.muzpleer.util.formatFileSize
 import java.io.File
 
 
@@ -173,10 +178,48 @@ class SongsAdapter(
                     shareSong(context, song) // Вызов функции для отправки песни
                     true
                 }
+                R.id.  action_song_info -> {
+                    showSongInfoDialog(context, song)
+                    true
+                }
                 else -> false
             }
         }
         popup.show()
+    }
+
+    private fun showSongInfoDialog(context:Context,song: Song) {
+        val dialog = Dialog(context)
+        dialog.setContentView(R.layout.dialog_song_info)
+        dialog.window?.setLayout(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT
+        )
+        dialog.window?.setBackgroundDrawableResource(android.R.color.white)
+
+        // Заполняем данные
+        dialog.findViewById<TextView>(R.id.tvTitle).text = song.title ?: "Неизвестно"
+        dialog.findViewById<TextView>(R.id.tvArtist).text = song.artist ?: "Неизвестно"
+        dialog.findViewById<TextView>(R.id.tvAlbum).text = song.albumName ?: "Неизвестно"
+        dialog.findViewById<TextView>(R.id.tvAuthor).text = song.author ?: "Неизвестно"
+        dialog.findViewById<TextView>(R.id.tvLocation).text = song.folderPath ?: "Неизвестно"
+
+        // Для размера файла и дат нужно получить полную информацию из базы
+        viewModel.getSongDetails(song.id) { songFile ->
+            dialog.findViewById<TextView>(R.id.tvSize).text =
+                formatFileSize(songFile?.size ?: 0)
+            dialog.findViewById<TextView>(R.id.tvYear).text =
+                songFile?.year?.toString() ?: "Неизвестно"
+            dialog.findViewById<TextView>(R.id.tvDateAdded).text =
+                formatDate(songFile?.dateAdded ?: 0)
+            dialog.findViewById<TextView>(R.id.tvDateModified).text =
+                formatDate(songFile?.lastModified ?: 0)
+        }
+        // Обработка кнопки
+        dialog.findViewById<Button>(R.id.btnUnderstand).setOnClickListener {
+            dialog.dismiss()
+        }
+        dialog.show()
     }
 
     fun shareSong(context:Context, song: Song) {

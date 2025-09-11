@@ -29,6 +29,10 @@
         android:title="Поделиться"
         android:icon="@drawable/baseline_share_24"
         app:showAsAction="never"/>
-
+    <item
+        android:id="@+id/action_song_info"
+        android:title="О песне"
+        android:icon="@drawable/baseline_info_outline_24"
+        app:showAsAction="never"/>
     <!-- Другие пункты меню -->
 </menu>

@@ -4,6 +4,9 @@ import com.example.muzpleer.model.Album
 import com.example.muzpleer.model.Artist
 import com.example.muzpleer.model.Folder
 import com.example.muzpleer.model.Song
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 fun getTracksCountString(count: Int): String {
     return when {
@@ -67,4 +70,29 @@ fun getSortedDataSong(tracks:List<Song>):List<Song>{
         { track -> track.title.lowercase() }
     )
     )
+}
+
+// Добавьте в SongsAdapter или в отдельный файл Utils.kt
+fun formatFileSize(size: Long): String {
+    return when {
+        size >= 1024 * 1024 -> "${String.format("%.1f", size / (1024.0 * 1024.0))} MB"
+        size >= 1024 -> "${String.format("%.1f", size / 1024.0)} KB"
+        else -> "$size B"
+    }
+}
+
+fun formatDate(timestamp: Long): String {
+    return try {
+        val sdf = SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault())
+        sdf.format(Date(timestamp))
+    } catch (e: Exception) {
+        "Неизвестно"
+    }
+}
+
+fun formatDuration(duration: Long): String {
+    val seconds = duration / 1000
+    val minutes = seconds / 60
+    val remainingSeconds = seconds % 60
+    return String.format("%02d:%02d", minutes, remainingSeconds)
 }
