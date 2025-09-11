@@ -2,8 +2,8 @@
     <string name="app_name">MuzPlayer4</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
-    <string name="nav_header_title">Android Studio</string>
-    <string name="nav_header_subtitle">android.studio@android.com</string>
+    <string name="nav_header_title">Музыкальный плеер</string>
+    <string name="nav_header_subtitle">Аудиотреки в памяти телефона</string>
     <string name="nav_header_desc">Navigation header</string>
     <string name="action_settings">Settings</string>
 
@@ -27,6 +27,14 @@
     <string name="little_king">МП</string>
 
     <string name="zoom_zoom">Сильное увеличение</string>
+
+    <string name="favorites">Избранное</string>
+    <string name="help">Справка</string>
+    <string name="share">Поделиться</string>
+    <string name="send">Оценить</string>
+    <string name="addition">Дополнительно</string>
+    <string name="settings">Настройки</string>
+    <string name="stub">Заглушка</string>
 
     <string-array name="sound_level_entry_number">
         <item>Без звука</item>

@@ -33,4 +33,9 @@
     <color name="whisper">#F6F6FA</color>
     <color name="bright_gray">#663b4351</color>
     <color name="_gray">#3b4351</color>
+    <color name="whisper2">#15008577</color>
+    <color name="whisper2Purple">#156200EE</color>
+    <color name="whisper2Black">#15424242</color>
+    <color name="colorAccent40Alfa">#662962FF</color>
+
 </resources>

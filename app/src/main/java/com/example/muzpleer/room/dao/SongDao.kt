@@ -67,4 +67,9 @@ interface SongDao {
 
     @Query("UPDATE media_files SET title = :title, artist = :artist, album = :album, author = :author, genre = :genre, year = :year WHERE mediaStoreId = :id")
     suspend fun updateSongInfo(id: Long, title: String, artist: String, album: String, author: String?, genre: String?, year: Int?)
+
+    // метод для получения всех полей
+    @Query("SELECT * FROM media_files WHERE mediaStoreId = :id")
+    suspend fun getSongWithDetails(id: Long): SongFile?
 }
+

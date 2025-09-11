@@ -1,6 +1,7 @@
 package com.example.muzpleer
 
 import android.Manifest
+import android.content.ActivityNotFoundException
 import android.content.ContentUris
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -12,6 +13,7 @@ import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
 import android.util.Log
+import android.view.MenuItem
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
@@ -30,6 +32,7 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
+import androidx.viewpager.widget.ViewPager
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.example.muzpleer.databinding.ActivityMainBinding
@@ -37,6 +40,7 @@ import com.example.muzpleer.model.Song
 import com.example.muzpleer.ui.local.helper.IPreferenceHelper
 import com.example.muzpleer.ui.local.helper.PreferenceHelperImpl
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
+import com.example.muzpleer.util.toast
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -59,6 +63,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var appPreferences: IPreferenceHelper
     private var currentSong: Song? = null
+    private var viewPager: ViewPager? = null
 
     private val storagePermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -88,6 +93,8 @@ class MainActivity : AppCompatActivity() {
         navController = findNavController(R.id.nav_host_fragment_content_main)
 
         appPreferences =PreferenceHelperImpl(this.application)
+        // Находим ViewPager через findViewById
+        viewPager = findViewById(R.id.view_pager_local)
 
         //получаем разрешения
         checkPermissions()
@@ -109,7 +116,51 @@ class MainActivity : AppCompatActivity() {
         )
 
         setupActionBarWithNavController(navController, appBarConfiguration)
+        //автоматически связывает пункты меню с destinations в NavGraph
         navView.setupWithNavController(navController)
+        //слушатель меню шторки - нужен для дополнительной кастомной логики
+        navView.setNavigationItemSelectedListener(object : NavigationView.OnNavigationItemSelectedListener{
+            override fun onNavigationItemSelected(item: MenuItem): Boolean {
+                // Выделяем выбранный пункт меню в шторке
+                //item.isChecked = true
+                binding.drawerLayout.closeDrawer(GravityCompat.START)
+
+                return when (item.itemId) {
+                    R.id.nav_favorites -> {
+                        Log.d(TAG, "MainActivity onNavigationItemSelected nav_favorites")
+                        navController.navigate(R.id.favoritesFragment)
+                        //viewPager?.setCurrentItem(4)
+                        true
+                    }
+                    R.id.nav_setting -> {
+                        Log.d(TAG, "MainActivity onNavigationItemSelected nav_setting")
+                        navController.navigate(R.id.settingsFragment)
+                        true
+                    }
+                    R.id.nav_help ->{
+                        Log.d(TAG, "MainActivity onNavigationItemSelected nav_help")
+                        //navController.navigate(R.id.helpFragment)
+                        true
+                    }
+                    R.id.nav_share -> {
+                        Log.d(TAG, "MainActivity onNavigationItemSelected nav_share")
+                        //поделиться - передаём ссылку на приложение в маркете
+                        shareApp()
+                        toast(getString(R.string.stub))
+                        true
+                    }
+                    R.id.nav_rate -> {
+                        Log.d(TAG, "MainActivity onNavigationItemSelected nav_send")
+                        //оценить приложение - попадаем на страницу приложения в маркете
+                        rateApp()
+                        toast(getString(R.string.stub))
+                        true
+                    }
+                    else -> false
+                }
+            }
+
+        })
 
         viewModel.isPlaying.observe(this) { isPlaying ->
             playPause.setImageResource(
@@ -387,5 +438,46 @@ class MainActivity : AppCompatActivity() {
 
     companion object{
         const val TAG = "33333"
+    }
+
+    private fun shareApp() {
+        try {
+            val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                type = "text/plain"
+                putExtra(Intent.EXTRA_SUBJECT, getString(R.string.app_name))
+                putExtra(Intent.EXTRA_TEXT,
+                    "Скачайте крутой музыкальный плеер: https://play.google.com/store/apps/details?id=${packageName}")
+            }
+            startActivity(Intent.createChooser(shareIntent, "Поделиться приложением"))
+
+        } catch (e: Exception) {
+            Toast.makeText(this, "Не удалось поделиться приложением", Toast.LENGTH_SHORT).show()
+            Log.e(TAG, "Ошибка при分享приложения: ${e.message}")
+        }
+    }
+
+    private fun rateApp() {
+        try {
+            val intent = Intent(Intent.ACTION_VIEW).apply {
+                data = Uri.parse("market://details?id=$packageName")
+                setPackage("com.android.vending") // Направляем в Google Play
+            }
+
+            startActivity(intent)
+
+        } catch (e: ActivityNotFoundException) {
+            // Если Google Play не установлен, открываем в браузере
+            try {
+                val intent = Intent(Intent.ACTION_VIEW).apply {
+                    data = Uri.parse("https://play.google.com/store/apps/details?id=$packageName")
+                }
+                startActivity(intent)
+            } catch (e: Exception) {
+                Toast.makeText(this, "Не удалось открыть страницу оценки", Toast.LENGTH_SHORT).show()
+            }
+        } catch (e: Exception) {
+            Toast.makeText(this, "Ошибка при открытии магазина", Toast.LENGTH_SHORT).show()
+            Log.e(TAG, "Ошибка при открытии магазина: ${e.message}")
+        }
     }
 }

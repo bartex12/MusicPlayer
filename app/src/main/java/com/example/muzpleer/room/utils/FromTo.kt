@@ -18,7 +18,11 @@ fun fromSongFileListToSongList(songFiles:List<SongFile>):List<Song>{
             isLocal = songFile.isLocal ,
             albumName = songFile.album ,
             albumId = songFile.albumId ,
-            folderPath = songFile.folderPath
+            folderPath = songFile.folderPath,
+            // Новые поля
+            author = songFile.author,
+            genre = songFile.genre,
+            year = songFile.year
         )
     }
 }
@@ -35,7 +39,11 @@ fun fromSongFileToSong(songFile:SongFile):Song{
             isLocal = songFile.isLocal ,
             albumName = songFile.album ,
             albumId = songFile.albumId ,
-            folderPath = songFile.folderPath
+            folderPath = songFile.folderPath,
+            // Новые поля
+            author = songFile.author,
+            genre = songFile.genre,
+            year = songFile.year
         )
 }
 

@@ -111,7 +111,7 @@ class MusicRepository(
                     val isArtistChanged = existingFile.artist != artist
                     val isAlbumChanged = existingFile.album != album
 
-                    if (isModified || isMoved) {
+                    if (isModified || isMoved || isTitleChanged || isArtistChanged || isAlbumChanged) {
                         filesToUpdate.add(
                             SongFile(
                                 mediaStoreId = id,
@@ -127,9 +127,14 @@ class MusicRepository(
                                 size = sizeFile,
                                 dateAdded = dateAdded,
                                 folderPath = folderPath,
-                                artUri = null
+                                artUri = null,
+                                // Новые поля - сохраняем существующие значения, если они есть
+                                author = existingFile.author ?: getAuthorFromMetadata(context, path),
+                                genre = existingFile.genre ?: getGenreFromMetadata(context, path),
+                                year = existingFile.year ?: getYearFromMetadata(context, path)
                             )
                         )
+                        Log.d(TAG, "File updated: $path (changes: modified=$isModified, moved=$isMoved, title=$isTitleChanged, artist=$isArtistChanged, album=$isAlbumChanged)")
                     }
                 } ?: run {
                     // Новый файл
@@ -148,7 +153,11 @@ class MusicRepository(
                             size = sizeFile,
                             dateAdded = dateAdded,
                             folderPath = folderPath,
-                            artUri = null
+                            artUri = null,
+                            // Новые поля - извлекаем из метаданных
+                            author = getAuthorFromMetadata(context, path),
+                            genre = getGenreFromMetadata(context, path),
+                            year = getYearFromMetadata(context, path)
                         )
                     )
                 }
@@ -273,6 +282,63 @@ class MusicRepository(
     ) {
         Log.d(TAG, "8*** MusicRepository updateSongInfo title = $title author = $author")
         songDao.updateSongInfo(songId, title, artist, album.toString(), author, genre, year)
+        // Также обновляем lastModified чтобы изменения сохранились при следующем сканировании
+        val updatedFile = songDao.getSongWithDetails(songId)
+        updatedFile?.let {
+            songDao.update(it.copy(lastModified = System.currentTimeMillis()))
+        }
         Log.d(TAG, "9***MusicRepository updateSongInfo  author из базы = ${songDao.getById(songId)?.author}")
+    }
+
+    private fun getAuthorFromMetadata(context: Context, filePath: String): String? {
+        return try {
+            val retriever = MediaMetadataRetriever()
+            retriever.setDataSource(filePath)
+            val author = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_AUTHOR)
+            retriever.release()
+            author
+        } catch (e: Exception) {
+            Log.d(TAG, "Failed to extract author metadata from $filePath error = ${e.message}")
+            null
+        }
+    }
+
+    private fun getGenreFromMetadata(context: Context, filePath: String): String? {
+        return try {
+            val retriever = MediaMetadataRetriever()
+            retriever.setDataSource(filePath)
+            val genre = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_GENRE)
+            retriever.release()
+            genre
+        } catch (e: Exception) {
+            Log.d(TAG, "Failed to extract genre metadata from $filePath error = ${e.message}")
+            null
+        }
+    }
+
+    private fun getYearFromMetadata(context: Context, filePath: String): Int? {
+        return try {
+            val retriever = MediaMetadataRetriever()
+            retriever.setDataSource(filePath)
+            val yearStr = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_YEAR)
+            retriever.release()
+            yearStr?.toIntOrNull()
+        } catch (e: Exception) {
+            Log.d(TAG, "Failed to extract year metadata from $filePath error = ${e.message}")
+            null
+        }
+    }
+
+    private fun getComposerFromMetadata(context: Context, filePath: String): String? {
+        return try {
+            val retriever = MediaMetadataRetriever()
+            retriever.setDataSource(filePath)
+            val composer = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_COMPOSER)
+            retriever.release()
+            composer
+        } catch (e: Exception) {
+            Log.d(TAG, "Failed to extract composer metadata from $filePath error = ${e.message}")
+            null
+        }
     }
 }

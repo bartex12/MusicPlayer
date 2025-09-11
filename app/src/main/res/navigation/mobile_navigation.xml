@@ -76,5 +76,10 @@
             app:popUpTo="@id/tabLocalFragment"
             app:popUpToInclusive="true"/>
     </fragment>
+    <fragment
+        android:id="@+id/favoritesFragment"
+        android:name="com.example.muzpleer.ui.local.frags.FavoritesFragment"
+        android:label="FavoritesFragment"
+        tools:layout="@layout/fragment_favorite"/>
 
 </navigation>

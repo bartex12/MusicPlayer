@@ -3,13 +3,17 @@ package com.example.muzpleer.ui.local.adapters
 import android.annotation.SuppressLint
 import android.content.ContentUris
 import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.Toast
 import androidx.appcompat.widget.PopupMenu
+import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.findNavController
@@ -18,8 +22,11 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.ItemMusicBinding
+import com.example.muzpleer.di.App
 import com.example.muzpleer.model.Song
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
+import com.example.muzpleer.util.formatAsTime
+import java.io.File
 
 
 class SongsAdapter(
@@ -115,14 +122,6 @@ class SongsAdapter(
                 false
             }
         }
-
-        @SuppressLint("DefaultLocale")
-        private fun Long.formatAsTime(): String {
-            val seconds = this / 1000
-            val minutes = seconds / 60
-            val remainingSeconds = seconds % 60
-            return String.format("%02d:%02d", minutes, remainingSeconds)
-        }
     }
 
     fun showImageWithGlide(context:Context, artUri:Uri, imageView: ImageView){
@@ -136,7 +135,8 @@ class SongsAdapter(
     }
 
     private fun showPopupMenu(view: View, song: Song) {
-        val popup = PopupMenu(view.context, view)
+        val context = view.context
+        val popup = PopupMenu(context, view)
         popup.menuInflater.inflate(R.menu.song_item_menu, popup.menu)
 
         viewModel.checkIsFavoriteWithCallback(song.id) {isFavorite->
@@ -169,12 +169,69 @@ class SongsAdapter(
                     view.findNavController().navigate(R.id.action_tabLocalFragment_to_editSongFragment)
                     true
                 }
+                R.id.action_send -> {
+                    shareSong(context, song) // Вызов функции для отправки песни
+                    true
+                }
                 else -> false
             }
         }
         popup.show()
     }
+
+    fun shareSong(context:Context, song: Song) {
+        try {
+            // Создаем URI для файла
+            val file = File(song.mediaUri)
+            val uri = FileProvider.getUriForFile(
+                context,
+                "${context.packageName}.fileprovider",
+                file
+            )
+
+            // Создаем интент для отправки песни
+            val shareIntent = Intent().apply {
+                action = Intent.ACTION_SEND
+                putExtra(Intent.EXTRA_STREAM, uri)
+                type = "audio/*"
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                // Добавляем дополнительную информацию о песне
+                putExtra(Intent.EXTRA_SUBJECT, song.title)
+                putExtra(Intent.EXTRA_TEXT, "Песня: ${song.title}")
+            }
+            //такой вариант не поддерживается в телеге
+            //context.startActivity(Intent.createChooser(shareIntent, "Поделиться песней"))
+            // Создаем chooser с заголовком
+            val chooserIntent = Intent.createChooser(shareIntent, "Поделиться песней")
+
+            // Предоставляем временные права доступа
+            val resInfoList = context.packageManager
+                .queryIntentActivities(chooserIntent, PackageManager.MATCH_DEFAULT_ONLY)
+
+            for (resolveInfo in resInfoList) {
+                val packageName = resolveInfo.activityInfo.packageName
+                context.grantUriPermission(
+                    packageName,
+                    uri,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION
+                )
+            }
+
+            // Запускаем chooser
+            context.startActivity(chooserIntent)
+
+        } catch (e: Exception) {
+            Log.d(SharedViewModel.Companion.TAG, "SongsAdapter shareSong Ошибка при отправке песни: ${e.message}")
+            Toast.makeText(context, "Не удалось поделиться песней", Toast.LENGTH_SHORT).show()
+        }
+    }
 }
+
+
+
+
+
+
 
 //            ///обложка имеет Uri track.artworkUri
 //            Log.d(TAG, " %%% MusicAdapter MusicViewHolder bind: albumArtUri =  $albumArtUri  title = ${track.title}")

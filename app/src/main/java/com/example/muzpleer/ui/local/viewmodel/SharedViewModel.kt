@@ -1,11 +1,14 @@
 package com.example.muzpleer.ui.local.viewmodel
 
 import android.content.ContentUris
+import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.util.Log
 import android.widget.Toast
+import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -24,6 +27,7 @@ import com.example.muzpleer.repository.FavoriteRepository
 import com.example.muzpleer.repository.FolderRepository
 import com.example.muzpleer.repository.MusicRepository
 import com.example.muzpleer.service.MusicServiceHandler
+import com.example.muzpleer.ui.local.adapters.SongsAdapter
 import com.example.muzpleer.ui.local.helper.IPreferenceHelper
 import com.example.muzpleer.util.getSortedDataSong
 import kotlinx.coroutines.Dispatchers
@@ -889,5 +893,52 @@ class SharedViewModel(
             }
         }
     }
+    internal fun shareSong(song: Song) {
+        val context = App.instance
 
+        try {
+//            // Создаем URI для файла
+//            val file = File(song.mediaUri)
+//            val uri = FileProvider.getUriForFile(
+//                context,
+//                "${context.packageName}.fileprovider",
+//                file
+//            )
+
+            // Создаем интент для отправки песни
+            val shareIntent = Intent().apply {
+                action = Intent.ACTION_SEND
+                putExtra(Intent.EXTRA_STREAM, song.mediaUri)
+                type = "audio/*"
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+
+                // Добавляем дополнительную информацию о песне
+                putExtra(Intent.EXTRA_SUBJECT, song.title)
+                putExtra(Intent.EXTRA_TEXT, "Поделиться песней: ${song.title} - ${song.artist}")
+            }
+            context.startActivity(Intent.createChooser(shareIntent, "Поделиться песней"))
+//            // Создаем chooser с заголовком
+//            val chooserIntent = Intent.createChooser(shareIntent, "Поделиться песней")
+//
+//            // Предоставляем временные права доступа
+//            val resInfoList = context.packageManager
+//                .queryIntentActivities(chooserIntent, PackageManager.MATCH_DEFAULT_ONLY)
+//
+//            for (resolveInfo in resInfoList) {
+//                val packageName = resolveInfo.activityInfo.packageName
+//                context.grantUriPermission(
+//                    packageName,
+//                    uri,
+//                    Intent.FLAG_GRANT_READ_URI_PERMISSION
+//                )
+//            }
+//
+//            // Запускаем chooser
+//            context.startActivity(chooserIntent)
+
+        } catch (e: Exception) {
+            Log.d(TAG, "SongsAdapter shareSong Ошибка при отправке песни: ${e.message}")
+            Toast.makeText(context, "Не удалось поделиться песней", Toast.LENGTH_SHORT).show()
+        }
+    }
 }

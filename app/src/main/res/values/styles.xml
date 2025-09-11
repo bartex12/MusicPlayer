@@ -21,5 +21,28 @@
         <item name="android:visibility">visible</item>
     </style>
 
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
+    <!--        свои атрибуты-->
+    <item name="colorBottomIcon">?colorPrimary</item>
+    <item name="favorite"> @style/ButtonFavoriteStyle</item>
+    <item name="favoriteRemove"> @style/ButtonFavoriteStyle</item>
+    <item name="bottom_sheet_view_background"> @color/bright_gray</item>
+    <item name="bottom_sheet_root_background"> @color/whisper</item>
+    <item name="card_background_tint"> @color/whisper2</item>
+
+    <!--        <item name="android:forceDarkAllowed"> true </item>-->
+</style>
+
+    <style name="ButtonFavoriteStyle" parent="Widget.MaterialComponents.Button.OutlinedButton.Icon">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginStart">16dp</item>
+        <item name="android:layout_marginEnd">16dp</item>
+        <item name="android:textColor">?colorPrimary</item>
+        <item name="android:textSize">12sp</item>
+        <item name="strokeColor">?colorPrimary</item>
+    </style>
+
 
 </resources>
