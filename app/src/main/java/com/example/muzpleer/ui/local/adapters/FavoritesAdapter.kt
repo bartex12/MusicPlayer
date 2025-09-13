@@ -34,6 +34,7 @@ import com.example.muzpleer.util.formatAsTime
 import com.example.muzpleer.util.formatDate
 import com.example.muzpleer.util.formatFileSize
 import java.io.File
+import java.util.Collections
 
 class FavoritesAdapter(
     private val viewModel: SharedViewModel,
@@ -43,6 +44,8 @@ class FavoritesAdapter(
 
     private var isEditMode = false
     private lateinit var itemTouchHelper: ItemTouchHelper // Добавляем ссылку
+    // Временный список для перетаскивания
+    private val dragData = mutableListOf<Song>()
 
     companion object{
         const val TAG = "33333"
@@ -286,6 +289,11 @@ class FavoritesAdapter(
 
     fun setEditMode(enable: Boolean) {
         isEditMode = enable
+        if (enable) {
+            // Инициализируем временный список
+            dragData.clear()
+            dragData.addAll(data)
+        }
         notifyDataSetChanged() // Перерисовываем для показа/скрытия иконки перетаскивания
     }
 
@@ -295,19 +303,33 @@ class FavoritesAdapter(
     }
 
     override fun onItemMove(fromPosition: Int, toPosition: Int): Boolean {
-        // Меняем порядок в данных
-        val newData = data.toMutableList()
-        val movedItem = newData.removeAt(fromPosition)
-        newData.add(toPosition, movedItem)
-        data = newData
-
-        // Сохраняем новый порядок в базу
-        viewModel.updateFavoritesOrder(newData)
+        // Работаем с временным списком
+        if (fromPosition < toPosition) {
+            for (i in fromPosition until toPosition) {
+                Collections.swap(dragData, i, i + 1)
+            }
+        } else {
+            for (i in fromPosition downTo toPosition + 1) {
+                Collections.swap(dragData, i, i - 1)
+            }
+        }
+        notifyItemMoved(fromPosition, toPosition)
 
         return true
     }
 
+    override fun onDrop() {
+        // Сохраняем окончательный порядок
+        data = dragData.toList()
+        viewModel.updateFavoritesOrder(data)
+    }
+
     override fun onItemDismiss(position: Int) {
         // Не используется, но должен быть реализован
+    }
+
+    // Добавляем метод в адаптер
+    fun saveOrderOnDragEnd() {
+        viewModel.updateFavoritesOrder(data)
     }
 }

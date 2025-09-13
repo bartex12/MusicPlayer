@@ -9,6 +9,7 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.SearchView
+import androidx.core.content.ContextCompat
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
@@ -125,7 +126,7 @@ class FavoritesFragment: Fragment() {
                 //пишем подсказку в строке поиска
                 searchView.queryHint = getString(R.string.search_folder)
                 //устанавливаем в панели действий кнопку ( > )для отправки поискового запроса
-                searchView.isSubmitButtonEnabled = true
+                //searchView.isSubmitButtonEnabled = true
                 //устанавливаем слушатель
                 searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
                     override fun onQueryTextSubmit(query: String?) = false
@@ -141,10 +142,18 @@ class FavoritesFragment: Fragment() {
                 editItem.title = if (isEditMode) "Готово" else "Редактировать порядок"
             }
             override fun onPrepareMenu(menu: Menu) {
-                if(viewModel.getFavoriteSongs().size < 10){
-                    menu.findItem(R.id.action_to_other).isVisible = false
+                super.onPrepareMenu(menu)
+                val editItem = menu.findItem(R.id.action_edit_order)
+
+                // Меняем цвет в зависимости от режима
+                val color = if (isEditMode) {
+                    ContextCompat.getColor(requireContext(), R.color.green)
+                } else {
+                    ContextCompat.getColor(requireContext(), R.color.white)
                 }
+                editItem?.icon?.setTint(color)
             }
+
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
                 when(menuItem.itemId){
                     R.id.action_to_other->{

@@ -53,6 +53,8 @@ class ItemTouchHelperCallback(private val adapter: ItemTouchHelperAdapter) :
     override fun clearView(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder) {
         super.clearView(recyclerView, viewHolder)
 
+        adapter.onDrop()
+
         // Восстанавливаем внешний вид после перетаскивания
         viewHolder.itemView.apply {
             alpha = 1.0f
