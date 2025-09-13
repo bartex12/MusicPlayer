@@ -1,14 +1,11 @@
 package com.example.muzpleer.ui.local.viewmodel
 
 import android.content.ContentUris
-import android.content.Intent
-import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.util.Log
 import android.widget.Toast
-import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -26,9 +23,9 @@ import com.example.muzpleer.repository.ArtistRepository
 import com.example.muzpleer.repository.FavoriteRepository
 import com.example.muzpleer.repository.FolderRepository
 import com.example.muzpleer.repository.MusicRepository
+import com.example.muzpleer.room.entity.FavoriteSong
 import com.example.muzpleer.room.entity.SongFile
 import com.example.muzpleer.service.MusicServiceHandler
-import com.example.muzpleer.ui.local.adapters.SongsAdapter
 import com.example.muzpleer.ui.local.helper.IPreferenceHelper
 import com.example.muzpleer.util.getSortedDataSong
 import kotlinx.coroutines.Dispatchers
@@ -477,7 +474,8 @@ class SharedViewModel(
         viewModelScope.launch {
             _loading.value = true
             try {
-                val songs = favoriteRepository.getFavoriteSongs()
+                val songs = favoriteRepository.getOrderedFavorites()
+                //val songs = favoriteRepository.getAllFavorites()
                 _favoriteSongs.value = songs
                 _filteredFavoriteSongs.value = songs
             } catch (e: Exception) {
@@ -493,7 +491,7 @@ class SharedViewModel(
         viewModelScope.launch {
             val isNowFavorite = favoriteRepository.toggleFavorite(song.id)
             // Обновляем список избранного
-            val songs = favoriteRepository.getFavoriteSongs()
+            val songs = favoriteRepository.getAllFavorites()
             _favoriteSongs.value = songs
             _filteredFavoriteSongs.value = songs
         }
@@ -905,6 +903,33 @@ class SharedViewModel(
             withContext(Dispatchers.Main) {
                 callback(songFile)
             }
+        }
+    }
+
+    fun updateFavoritesOrder(orderedSongs: List<Song>) {
+        viewModelScope.launch {
+            val favorites:List<FavoriteSong> = favoriteRepository.getAllFavoriteSongs()
+            val updatedFavorites: MutableList<FavoriteSong> = mutableListOf<FavoriteSong>()
+
+            orderedSongs.forEachIndexed { index, song ->
+                val favorite = favorites.find { it.songId == song.id }
+                favorite?.let {
+                    updatedFavorites.add(it.copy(sortOrder = index))
+                }
+            }
+            favoriteRepository.updateFavoriteOrder(updatedFavorites)
+
+            // Обновляем LiveData
+            _favoriteSongs.value = orderedSongs
+            _filteredFavoriteSongs.value = orderedSongs
+        }
+    }
+
+    fun getOrderedFavoriteSong() {
+        viewModelScope.launch {
+            val songs= favoriteRepository.getOrderedFavorites()
+            _favoriteSongs.value=songs
+            _filteredFavoriteSongs.value=songs
         }
     }
 }

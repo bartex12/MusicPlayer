@@ -124,7 +124,7 @@ class ArtistsFragment:Fragment() {
             }
             override fun onPrepareMenu(menu: Menu) {
                 menu.findItem(R.id.action_to_other).isVisible =false
-
+                menu.findItem(R.id.action_edit_order).isVisible =false
             }
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
                 return false

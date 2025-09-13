@@ -5,6 +5,7 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Update
 import com.example.muzpleer.room.entity.FavoriteSong
 
 @Dao
@@ -29,4 +30,16 @@ interface FavoriteDao {
 
     @Query("DELETE FROM favorite_songs")
     suspend fun deleteAll()
+
+    @Update
+    suspend fun update(favorite: FavoriteSong)
+
+    @Query("UPDATE favorite_songs SET sortOrder = :newOrder WHERE id = :id")
+    suspend fun updateSortOrder(id: Long, newOrder: Int)
+
+    @Query("SELECT * FROM favorite_songs ORDER BY sortOrder ASC")
+    suspend fun getAllOrdered(): List<FavoriteSong>
+
+    @Query("SELECT MAX(sortOrder) FROM favorite_songs")
+    suspend fun getMaxSortOrder(): Int?
 }

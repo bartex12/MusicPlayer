@@ -1,9 +1,12 @@
 package com.example.muzpleer.room
 
 import android.content.Context
+import android.util.Log
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.muzpleer.room.entity.FavoriteSong
 import com.example.muzpleer.room.dao.AlbumDao
 import com.example.muzpleer.room.dao.ArtistDao
@@ -18,7 +21,7 @@ import com.example.muzpleer.room.entity.SongFile
 @Database(
     entities = [SongFile::class, AlbumFile::class, ArtistFile::class,
         FolderFile::class, FavoriteSong::class,],
-    version = 3,
+    version = 4,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -29,6 +32,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun favoriteDao(): FavoriteDao
 
     companion object {
+        const val TAG = "33333"
         private const val DATABASE_NAME = "music_player.db"
 
         fun create(context: Context): AppDatabase {

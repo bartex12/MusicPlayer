@@ -16,4 +16,11 @@
         android:title="К песне"
         android:icon="@drawable/outline_flag_24"
         app:showAsAction="collapseActionView|ifRoom" />
+
+    <item
+        android:id="@+id/action_edit_order"
+        android:title="Редактировать порядок"
+        android:orderInCategory="300"
+        android:icon="@drawable/baseline_edit_note_24"
+        app:showAsAction="ifRoom"/>
 </menu>

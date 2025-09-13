@@ -259,6 +259,9 @@ class MainActivity : AppCompatActivity() {
         next.setOnClickListener { viewModel.playNext() }
 
         artWork.setOnClickListener { navController.navigate(R.id.playerFragment) }
+        title.setOnClickListener { navController.navigate(R.id.playerFragment) }
+        artist.setOnClickListener { navController.navigate(R.id.playerFragment) }
+
     }
 
     private fun startMediaScan() {

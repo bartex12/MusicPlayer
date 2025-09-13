@@ -15,7 +15,7 @@ class FavoriteRepository(
     private val songDao: SongDao
 ) {
     suspend fun addToFavorites(songId: Long) {
-        val favorite = FavoriteSong(songId = songId)
+        val favorite: FavoriteSong = FavoriteSong(songId = songId)
         favoriteDao.insert(favorite)
     }
 
@@ -27,7 +27,7 @@ class FavoriteRepository(
         return favoriteDao.isFavorite(songId)
     }
 
-    suspend fun getFavoriteSongs(): List<Song> {
+    suspend fun getAllFavorites(): List<Song> {
         val favorites = favoriteDao.getAllFavorites()
         return favorites.mapNotNull { favorite ->
             val favoriteFile: SongFile? = songDao.getById(favorite.songId)
@@ -35,6 +35,10 @@ class FavoriteRepository(
                 fromSongFileToSong(it)
             }
         }
+    }
+
+    suspend fun getAllFavoriteSongs(): List<FavoriteSong> {
+        return favoriteDao.getAllFavorites()
     }
 
     suspend fun toggleFavorite(songId: Long): Boolean {
@@ -52,5 +56,19 @@ class FavoriteRepository(
 
     suspend fun clearAllFavorites() {
         favoriteDao.deleteAll()
+    }
+
+    suspend fun updateFavoriteOrder(favorites: List<FavoriteSong>) {
+        favorites.forEachIndexed { index, favorite ->
+            favoriteDao.updateSortOrder(favorite.id, index)
+        }
+    }
+
+    suspend fun getOrderedFavorites(): List<Song> {
+        val favorites = favoriteDao.getAllOrdered()
+        val songsFile = favorites.mapNotNull { favorite ->
+            songDao.getById(favorite.songId)
+        }
+        return fromSongFileListToSongList(songsFile)
     }
 }

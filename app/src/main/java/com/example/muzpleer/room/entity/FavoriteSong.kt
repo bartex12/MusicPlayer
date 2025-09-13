@@ -21,5 +21,6 @@ import com.example.muzpleer.model.Song
 data class FavoriteSong(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val songId: Long, // ID песни из таблицы songs
-    val addedAt: Long = System.currentTimeMillis()
+    val addedAt: Long = System.currentTimeMillis(),
+    var sortOrder: Int = 0 // Новое поле для порядка сортировки
 )

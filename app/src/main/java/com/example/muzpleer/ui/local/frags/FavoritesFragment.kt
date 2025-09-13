@@ -13,22 +13,26 @@ import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
-import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.viewpager.widget.ViewPager
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentFavoriteBinding
 import com.example.muzpleer.model.SongAndPlaylist
-import com.example.muzpleer.ui.local.adapters.SongsAdapter
+import com.example.muzpleer.ui.local.adapters.FavoritesAdapter
+import com.example.muzpleer.ui.local.adapters.touch.ItemTouchHelperCallback
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 import com.example.muzpleer.util.getSortedDataSong
+import com.google.android.material.snackbar.Snackbar
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 
 class FavoritesFragment: Fragment() {
     private var _binding: FragmentFavoriteBinding? = null
     private val binding get() = _binding!!
     private val viewModel: SharedViewModel by activityViewModel()
-    private lateinit var adapter: SongsAdapter
+    private lateinit var adapter: FavoritesAdapter
+    private lateinit var itemTouchHelper: ItemTouchHelper
+    private var isEditMode = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -42,24 +46,24 @@ class FavoritesFragment: Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        adapter = SongsAdapter(viewModel,  { song ->
+        adapter = FavoritesAdapter(viewModel) { song ->
             //устанавливаем список песен как плейлист
-            val playlist = getSortedDataSong(viewModel.getFavoriteSongs())
+            val playlist=viewModel.getFavoriteSongs()
             viewModel.setPlaylist(playlist) //устанавливаем список песен как плейлист
-            viewModel.setSongAndPlaylist( SongAndPlaylist(
-                song = song,  //текущая песня
-                playlist = playlist //текущий плейлист
-            ))
-        }, {song->
-            //устанавливаем список песен как плейлист
-            val playlist = getSortedDataSong(viewModel.getFavoriteSongs())
-            viewModel.setPlaylist(playlist) //устанавливаем список песен как плейлист
-            viewModel.setSongAndPlaylist( SongAndPlaylist(
-                song = song,  //текущая песня
-                playlist = playlist //текущий плейлист
-            ))
-            findNavController().navigate(R.id.action_tabsLocalFragment_to_playerFragment)
-        })
+            viewModel.setSongAndPlaylist(
+                SongAndPlaylist(
+                    song=song,  //текущая песня
+                    playlist=playlist //текущий плейлист
+                )
+            )
+        }
+
+        // Настраиваем ItemTouchHelper
+        val callback = ItemTouchHelperCallback(adapter)
+        itemTouchHelper = ItemTouchHelper(callback)
+        // Передаем ItemTouchHelper в адаптер
+        adapter.setItemTouchHelper(itemTouchHelper)
+        itemTouchHelper.attachToRecyclerView(binding.favoriteRecyclerView)
 
         binding.favoriteRecyclerView.apply {
             layoutManager = LinearLayoutManager(requireContext())
@@ -70,8 +74,9 @@ class FavoritesFragment: Fragment() {
         viewModel.loadFavoriteSongs()
 
         viewModel.filteredFavoriteSongs.observe(viewLifecycleOwner) { filteredFavorites ->
-            val sortedData = getSortedDataSong(filteredFavorites)
-            adapter.data = sortedData  //передаём данные в адаптер
+            //val sortedData = getSortedDataSong(filteredFavorites)
+           // adapter.data = sortedData  //передаём данные в адаптер
+            adapter.data = filteredFavorites  //передаём данные в адаптер
             binding.favoriteEmpty.visibility = if (filteredFavorites.isEmpty()) View.VISIBLE else View.GONE
         }
 
@@ -130,6 +135,10 @@ class FavoritesFragment: Fragment() {
                         return true
                     }
                 })
+
+                // Показываем/скрываем пункт в зависимости от режима
+                val editItem = menu.findItem(R.id.action_edit_order)
+                editItem.title = if (isEditMode) "Готово" else "Редактировать порядок"
             }
             override fun onPrepareMenu(menu: Menu) {
                 if(viewModel.getFavoriteSongs().size < 10){
@@ -148,9 +157,42 @@ class FavoritesFragment: Fragment() {
                         }
                         return true
                     }
+
+                    R.id.action_edit_order -> {
+                        toggleEditMode()
+                        true
+                    }
                 }
                 return false
             }
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
     }
+
+    private fun toggleEditMode() {
+        isEditMode = !isEditMode
+        adapter.setEditMode(isEditMode)
+
+        // Включаем/выключаем возможность перетаскивания
+        if (isEditMode) {
+            itemTouchHelper.attachToRecyclerView(binding.favoriteRecyclerView)
+        } else {
+            itemTouchHelper.attachToRecyclerView(null) // Отключаем перетаскивание
+        }
+
+        // Обновляем меню
+        activity?.invalidateOptionsMenu()
+
+        // Показываем/скрываем подсказку
+        if (isEditMode) {
+            showEditModeHint()
+        }
+    }
+
+    private fun showEditModeHint() {
+        Snackbar.make(binding.root, "Перетаскивайте песни для изменения порядка",
+            Snackbar.LENGTH_LONG)
+            .setAction("OK") {toggleEditMode() }
+            .show()
+    }
+
 }
