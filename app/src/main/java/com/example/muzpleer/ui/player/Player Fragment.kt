@@ -130,7 +130,6 @@ class PlayerFragment : Fragment() {
             val indexOfTrack =
                 songAndPlaylist.playlist.indexOfFirst {song->
                     song.mediaUri == currentSong?.mediaUri
-                    song.mediaUri == currentSong?.mediaUri
                 }
             //перед передачей в Handler меняем в передаваемом плейлисте artUri для текущего трека
             songAndPlaylist.playlist[indexOfTrack].artUri =currentSong?.artUri

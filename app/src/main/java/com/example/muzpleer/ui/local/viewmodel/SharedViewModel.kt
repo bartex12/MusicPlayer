@@ -578,6 +578,10 @@ class SharedViewModel(
                 }
                 //записываем путь к файлу обложки в базу
                 repository.updateCoverPath(selectedSong.id, uri.toString())
+
+                // Обновляем выбранную песню
+                _selectedSong.value = selectedSong.copy(artUri = uri.toString())
+
                 // Обновляем текущую песню если нужно
                 _currentSong.value?.let { current ->
                     if (current.id == selectedSong.id) {

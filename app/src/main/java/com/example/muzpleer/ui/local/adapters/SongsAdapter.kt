@@ -171,7 +171,7 @@ class SongsAdapter(
                 R.id.edit_song_info -> { //изменить информацию о песне
                     viewModel.setSelectedSong(song)
                     // Переходим к редактированию
-                    view.findNavController().navigate(R.id.action_tabLocalFragment_to_editSongFragment)
+                    view.findNavController().navigate(R.id.editSongFragment)
                     true
                 }
                 R.id.action_send -> {

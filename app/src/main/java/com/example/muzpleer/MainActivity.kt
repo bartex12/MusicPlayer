@@ -304,12 +304,19 @@ class MainActivity : AppCompatActivity() {
         return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
+    override fun onStop() {
+        super.onStop()
         // Сохраняем текущую песню при закрытии
         currentSong?.let { appPreferences.saveCurrentSongId(it.id)  }
         //сохраняем индекс текущей песни в списке вкладки песен
         appPreferences.saveIndexOfCurrentSong(viewModel.getIndexOfCurrentSong())
+        Log.d(TAG, "###MainActivity onStop " +
+                "currentSong id =  ${currentSong?.id} индекс = ${viewModel.getIndexOfCurrentSong()}")
+    }
+
+
+    override fun onDestroy() {
+        super.onDestroy()
         Log.d(TAG, "###MainActivity onDestroy currentSong id =  ${currentSong?.id} индекс = ${viewModel.getIndexOfCurrentSong()}")
     }
 
