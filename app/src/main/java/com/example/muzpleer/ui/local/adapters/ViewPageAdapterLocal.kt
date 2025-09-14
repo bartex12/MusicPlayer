@@ -12,6 +12,7 @@ import com.example.muzpleer.ui.local.frags.SongFragment
 import com.example.muzpleer.ui.local.frags.ArtistsFragment
 import com.example.muzpleer.ui.local.frags.FavoritesFragment
 import com.example.muzpleer.ui.local.frags.FolderFragment
+import com.example.muzpleer.ui.local.frags.PlaylistFragment
 
 
 class ViewPageAdapterLocal(private val context: Context, fragmentManager : FragmentManager,
@@ -27,7 +28,8 @@ class ViewPageAdapterLocal(private val context: Context, fragmentManager : Fragm
         AlbumFragment.newInstance(viewPager),
         ArtistsFragment.newInstance(viewPager),
         FolderFragment.newInstance(viewPager),
-        FavoritesFragment.newInstance(viewPager)
+        FavoritesFragment.newInstance(viewPager),
+        PlaylistFragment.newInstance(viewPager)
     )
 
     private val titles = arrayOf(
@@ -35,7 +37,8 @@ class ViewPageAdapterLocal(private val context: Context, fragmentManager : Fragm
         context.getString(R.string.albums),
         context.getString(R.string.singers),
         context.getString(R.string.folders),
-        context.getString(R.string.my_tracks)
+        context.getString(R.string.my_tracks),
+        context.getString(R.string.my_playlists)
     )
 
     override fun getCount(): Int {

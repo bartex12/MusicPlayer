@@ -14,64 +14,68 @@ import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.viewpager.widget.ViewPager
 import com.example.muzpleer.R
-import com.example.muzpleer.databinding.FragmentAlbumBinding
-import com.example.muzpleer.ui.local.adapters.AlbumsAdapter
+import com.example.muzpleer.databinding.FragmentPlaylistBinding
+import com.example.muzpleer.ui.local.adapters.PlaylistAdapter
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
-import com.example.muzpleer.util.getSortedDataAlbum
+import com.example.muzpleer.util.getSortedDataPlaylists
 import com.example.muzpleer.util.getSortedDataSong
+import com.google.android.material.snackbar.Snackbar
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 
-
-class AlbumFragment: Fragment() {
-    private var _binding: FragmentAlbumBinding? = null
+class PlaylistFragment():Fragment() {
+    private var _binding: FragmentPlaylistBinding? = null
     private val binding get() = _binding!!
     private val viewModel: SharedViewModel by activityViewModel()
-    private lateinit var adapter: AlbumsAdapter
+    private lateinit var adapter: PlaylistAdapter
+    private var isEditMode = false
+    private lateinit var itemTouchHelper: ItemTouchHelper
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentAlbumBinding.inflate(inflater, container, false)
+        _binding = FragmentPlaylistBinding.inflate(inflater, container, false)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        adapter = AlbumsAdapter (viewModel){ album ->
-            val playlist = getSortedDataSong(album.songs)
-            viewModel.setPlaylist(playlist) //устанавливаем список песен как плейлист
+        adapter = PlaylistAdapter (viewModel){ playlist ->
+            val newPlaylist = getSortedDataSong(playlist.playlistSongs)
+            viewModel.setPlaylist(newPlaylist) //устанавливаем список песен как плейлист
 
             // Навигация через Bundle
             val bundle = Bundle().apply {
-                putInt("from", 2)
-                putLong("albumId", album.id)
-                Log.d(TAG,"33 AlbumFragment onViewCreated bundle: albumId = ${album.id} from = 2 ")
+                putInt("from", 5)
+                putLong("playlistId", playlist.id)
+                Log.d(TAG,"33 AlbumFragment onViewCreated bundle: playlist = ${playlist.id} from = 5 ")
             }
             findNavController().navigate( R.id.alltracksFragment, bundle)
         }
 
-        binding.albumRecyclerView.apply {
+        binding.playlistRecyclerView.apply {
             layoutManager = LinearLayoutManager(requireContext())
-            adapter = this@AlbumFragment.adapter
+            adapter = this@PlaylistFragment.adapter
         }
 
-        viewModel.filteredAlbums.observe(viewLifecycleOwner) { filteredAlbums ->
-            Log.d(TAG,"33 AlbumFragment onViewCreated filteredAlbums.observe: filteredAlbums.size= ${filteredAlbums.size} ")
-            if (viewModel.getSongs().isEmpty()) binding.progressBarAlbum.visibility = View.VISIBLE else binding.progressBarAlbum.visibility = View.GONE
-            if (filteredAlbums.isEmpty()) binding.imageHolder3Album.visibility = View.VISIBLE else binding.imageHolder3Album.visibility = View.GONE
-            val sortedData =getSortedDataAlbum(filteredAlbums)
-            adapter.albums = sortedData  //передаём данные в адаптер
+        viewModel.filteredPlaylists.observe(viewLifecycleOwner) { filteredPlaylists ->
+            Log.d(TAG,"53 PlaylistFragment onViewCreated filteredPlaylists.observe: filteredPlaylists.size= ${filteredPlaylists.size} ")
+            if (viewModel.getSongs().isEmpty()) binding.progressBarPlaylist.visibility = View.VISIBLE else binding.progressBarPlaylist.visibility = View.GONE
+            if (filteredPlaylists.isEmpty()) binding.imageHolder3Playlist.visibility = View.VISIBLE else binding.imageHolder3Playlist.visibility = View.GONE
+            val sortedData =getSortedDataPlaylists(filteredPlaylists)
+            adapter.playlist = sortedData  //передаём данные в адаптер
         }
 
         //восстанавливаем позицию списка после поворота или возвращения на экран
-        binding.albumRecyclerView.layoutManager?.scrollToPosition(viewModel.getPositionAlbum())
+        binding.playlistRecyclerView.layoutManager?.scrollToPosition(viewModel.getPositionPlaylist())
 
+        viewModel.loadPlaylists()
         initMenu()
     }
 
@@ -79,9 +83,9 @@ class AlbumFragment: Fragment() {
     override fun onPause() {
         super.onPause()
         //определяем первую видимую позицию
-        val manager = binding.albumRecyclerView.layoutManager as LinearLayoutManager
+        val manager = binding.playlistRecyclerView.layoutManager as LinearLayoutManager
         val firstPosition = manager.findFirstVisibleItemPosition()
-        Log.d(TAG, "AlbumFragment onPause firstPosition = $firstPosition")
+        Log.d(TAG, "PlaylistFragment onPause firstPosition = $firstPosition")
         viewModel.savePositionAlbum(firstPosition)
     }
 
@@ -94,9 +98,9 @@ class AlbumFragment: Fragment() {
         const val TAG = "33333"
         private lateinit var viewPager: ViewPager
 
-        fun newInstance(viewPager: ViewPager): AlbumFragment {
+        fun newInstance(viewPager: ViewPager): PlaylistFragment {
             this.viewPager = viewPager
-            return AlbumFragment()
+            return PlaylistFragment()
         }
     }
 
@@ -114,24 +118,57 @@ class AlbumFragment: Fragment() {
                 //пишем подсказку в строке поиска
                 searchView.queryHint = getString(R.string.search_album)
                 //устанавливаем в панели действий кнопку ( > )для отправки поискового запроса
-                searchView.isSubmitButtonEnabled = true
+                //searchView.isSubmitButtonEnabled = true
                 //устанавливаем слушатель
                 searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
                     override fun onQueryTextSubmit(query: String?) = false
 
                     override fun onQueryTextChange(newText: String?): Boolean {
-                        viewModel.filterAlbums(newText.orEmpty())
+                        viewModel.filterPlaylists(newText.orEmpty())
                         return true
                     }
                 })
             }
             override fun onPrepareMenu(menu: Menu) {
                 menu.findItem(R.id.action_to_other).isVisible =false
-                menu.findItem(R.id.action_edit_order).isVisible =false
             }
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                when(menuItem.itemId) {
+                    R.id.action_edit_order -> {
+                        toggleEditMode()
+                        true
+                    }
+                }
                 return false
             }
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
+    }
+
+    private fun toggleEditMode() {
+        //todo восстановить перетаскивание
+//        isEditMode = !isEditMode
+//        adapter.setEditMode(isEditMode)
+//
+//        // Включаем/выключаем возможность перетаскивания
+//        if (isEditMode) {
+//            itemTouchHelper.attachToRecyclerView(binding.favoriteRecyclerView)
+//        } else {
+//            itemTouchHelper.attachToRecyclerView(null) // Отключаем перетаскивание
+//        }
+//
+//        // Обновляем меню
+//        activity?.invalidateOptionsMenu()
+//
+//        // Показываем/скрываем подсказку
+//        if (isEditMode) {
+//            showEditModeHint()
+//        }
+    }
+
+    private fun showEditModeHint() {
+        Snackbar.make(binding.root, "Перетаскивайте песни для изменения порядка",
+            Snackbar.LENGTH_LONG)
+            .setAction("OK") {toggleEditMode() }
+            .show()
     }
 }

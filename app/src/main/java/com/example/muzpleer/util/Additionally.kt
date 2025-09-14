@@ -3,6 +3,7 @@ package com.example.muzpleer.util
 import com.example.muzpleer.model.Album
 import com.example.muzpleer.model.Artist
 import com.example.muzpleer.model.Folder
+import com.example.muzpleer.model.Playlist
 import com.example.muzpleer.model.Song
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -60,6 +61,18 @@ fun getSortedDataAlbum(tracks:List<Album>):List<Album>{
     )
     )
 }
+
+fun getSortedDataPlaylists(tracks:List<Playlist>):List<Playlist>{
+    return tracks.sortedWith(compareBy(
+        { playlist -> when {
+            playlist.playlistName.matches(Regex("^[а-яА-ЯёЁ].*")) -> 0
+            playlist.playlistName.matches(Regex("^[a-zA-Z].*")) -> 1
+            else -> 2}
+        },
+        { playlist -> playlist.playlistName.lowercase() }
+    ))
+}
+
 fun getSortedDataSong(tracks:List<Song>):List<Song>{
     return tracks.sortedWith(compareBy(
         { track -> when {

@@ -1,7 +1,10 @@
 package com.example.muzpleer.room.entity
 
+import android.net.Uri
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.example.muzpleer.model.Song
+import java.io.File
 
 @Entity(tableName = "media_files")
 data class SongFile(
@@ -24,4 +27,24 @@ data class SongFile(
     val author: String? = null,      // Автор текста
     val genre: String? = null,       // Жанр
     val year: Int? = null            // Год выпуска
-)
+){
+    // Метод конвертации в Domain model
+    fun toSong(): Song {
+        return Song(
+            id = this.mediaStoreId,
+            title = this.title ?: "Неизвестно",
+            artist = this.artist ?: "Неизвестно",
+            artistId = this.artistId,
+            duration = this.duration,
+            mediaUri =Uri.fromFile(File(this.path)).toString(),
+            artUri = this.artUri,
+            isLocal = this.isLocal,
+            albumName = this.album,
+            albumId = this.albumId,
+            folderPath = this.folderPath,
+            author = this.author,
+            genre = this.genre,
+            year = this.year
+        )
+    }
+}

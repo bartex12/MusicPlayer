@@ -2,7 +2,9 @@ package com.example.muzpleer.room.utils
 
 import android.net.Uri
 import androidx.core.net.toUri
+import com.example.muzpleer.model.Playlist
 import com.example.muzpleer.model.Song
+import com.example.muzpleer.room.entity.PlaylistFile
 import com.example.muzpleer.room.entity.SongFile
 
 fun fromSongFileListToSongList(songFiles:List<SongFile>):List<Song>{
@@ -64,4 +66,17 @@ private fun String?.toUri(): Uri? {
 
 private fun generateArtistId(artistName: String): Long {
     return artistName.hashCode().toLong()
+}
+
+// Extension функции для конвертации
+fun PlaylistFile.toPlaylist(songs: List<Song>): Playlist {
+    return Playlist(
+        id = this.id,
+        playlistName = this.playlistName,
+        playlistArtUri = this.playlistArtUri?.toUri(),
+        playlistSongs = songs,
+        songCount = this.songCount,
+        createdAt = this.createdAt,
+        updatedAt = this.updatedAt
+    )
 }

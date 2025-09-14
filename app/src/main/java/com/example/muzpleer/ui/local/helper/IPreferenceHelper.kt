@@ -7,6 +7,9 @@ interface IPreferenceHelper {
     fun savePositionAlbum(position:Int)
     fun getPositionAlbum(): Int
 
+    fun savePositionPlaylist(position:Int)
+    fun getPositionPlaylist(): Int
+
     fun savePositionArtist(position:Int)
     fun getPositionArtist(): Int
 

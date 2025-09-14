@@ -16,6 +16,7 @@ import com.example.muzpleer.di.App
 import com.example.muzpleer.model.Album
 import com.example.muzpleer.model.Artist
 import com.example.muzpleer.model.Folder
+import com.example.muzpleer.model.Playlist
 import com.example.muzpleer.model.Song
 import com.example.muzpleer.model.SongAndPlaylist
 import com.example.muzpleer.repository.AlbumRepository
@@ -23,6 +24,7 @@ import com.example.muzpleer.repository.ArtistRepository
 import com.example.muzpleer.repository.FavoriteRepository
 import com.example.muzpleer.repository.FolderRepository
 import com.example.muzpleer.repository.MusicRepository
+import com.example.muzpleer.repository.PlaylistRepository
 import com.example.muzpleer.room.entity.FavoriteSong
 import com.example.muzpleer.room.entity.SongFile
 import com.example.muzpleer.service.MusicServiceHandler
@@ -43,7 +45,8 @@ class SharedViewModel(
     private val artistsRepository: ArtistRepository,
     private val playerHandler: MusicServiceHandler,
     private val folderRepository: FolderRepository,
-    private val favoriteRepository: FavoriteRepository
+    private val favoriteRepository: FavoriteRepository,
+    private val playlistRepository: PlaylistRepository
 ) : ViewModel(), MusicServiceHandler.PlayerCallback{
 
     init {
@@ -155,6 +158,15 @@ class SharedViewModel(
 
     private val _coverPath = MutableLiveData<String>()
     val coverPath: LiveData<String> = _coverPath
+
+    private val _playlists = MutableLiveData<List<Playlist>>()
+    val playlists: LiveData<List<Playlist>> = _playlists
+
+    private val _filteredPlaylists = MutableLiveData<List<Playlist>>()
+    val filteredPlaylists: LiveData<List<Playlist>> = _filteredPlaylists
+
+    private val _currentPlaylist = MutableLiveData<Playlist?>()
+    val currentPlaylist: LiveData<Playlist?> = _currentPlaylist
 
      fun scanMedia(afterLoad:()->Unit) {
         viewModelScope.launch {
@@ -310,6 +322,23 @@ class SharedViewModel(
         _filteredAlbums.value = filteredAlbumList
     }
 
+    internal fun filterPlaylists(query: String) {
+        val originalPlaylistList: MutableList<Playlist> =  (playlists.value ?: listOf()).toMutableList()
+        val filteredPlaylistList: MutableList<Playlist> = (filteredPlaylists.value ?: listOf()).toMutableList()
+        filteredPlaylistList.clear()
+        if (query.isEmpty()) {
+            filteredPlaylistList.addAll(originalPlaylistList)
+        } else {
+            val searchQuery = query.lowercase(Locale.getDefault())
+            for (playlist in originalPlaylistList) {
+                if (playlist.playlistName.lowercase(Locale.getDefault()).contains(searchQuery) ) {
+                    filteredPlaylistList.add(playlist)
+                }
+            }
+        }
+        _filteredPlaylists.value = filteredPlaylistList
+    }
+
     internal fun filterAlbumSongs(query: String) {
         val originalAlbumSongList = (listAlbumSong.value?: listOf()).toMutableList()
         val filteredAlbumSongList: MutableList<Song> = (filteredListAlbumSong.value ?: listOf()).toMutableList()
@@ -429,6 +458,9 @@ class SharedViewModel(
 
     fun getPositionAlbum(): Int{  return helper.getPositionAlbum() }
     fun savePositionAlbum(position: Int){helper.savePositionAlbum(position)}
+
+    fun getPositionPlaylist(): Int{  return helper.getPositionPlaylist() }
+    fun savePositionPlaylist(position: Int){helper.savePositionPlaylist(position)}
 
     fun getPositionArtist(): Int{  return helper.getPositionArtist() }
     fun savePositionArtist(position: Int){helper.savePositionArtist(position)}
@@ -930,6 +962,74 @@ class SharedViewModel(
             val songs= favoriteRepository.getOrderedFavorites()
             _favoriteSongs.value=songs
             _filteredFavoriteSongs.value=songs
+        }
+    }
+
+    fun loadPlaylists() {
+        viewModelScope.launch {
+            try {
+                val playlists = playlistRepository.getAllPlaylists()
+                _playlists.value = playlists
+                _filteredPlaylists.value = playlists
+            } catch (e: Exception) {
+                Log.d(TAG,"SharedViewModel loadPlaylists Error loading playlists error = ${e.message}")
+            }
+        }
+    }
+
+    fun createPlaylist(name: String, onSuccess: (Long) -> Unit = {}) {
+        viewModelScope.launch {
+            try {
+                val playlistId = playlistRepository.createPlaylist(name)
+                loadPlaylists() // Перезагружаем список
+                onSuccess(playlistId)
+            } catch (e: Exception) {
+                Log.d(TAG,"SharedViewModel createPlaylist Error creating playlists error = ${e.message}")
+            }
+        }
+    }
+
+    fun addToPlaylist(playlistId: Long, songIds: List<Long>) {
+        viewModelScope.launch {
+            try {
+                playlistRepository.addSongsToPlaylist(playlistId, songIds)
+                loadPlaylists() // Перезагружаем список
+            } catch (e: Exception) {
+                Log.d(TAG,"SharedViewModel addToPlaylist Error adding songs to playlist error = ${e.message}")
+            }
+        }
+    }
+
+    fun loadPlaylist(playlistId: Long) {
+        viewModelScope.launch {
+            try {
+                val playlist = playlistRepository.getPlaylistWithSongs(playlistId)
+                _currentPlaylist.value = playlist
+            } catch (e: Exception) {
+                Log.d(TAG,"SharedViewModel loadPlaylist Error loading playlist error = ${e.message}")
+            }
+        }
+    }
+
+    fun updatePlaylistOrder(playlists: List<Playlist>) {
+        viewModelScope.launch {
+            try {
+                playlistRepository.updatePlaylistOrder(playlists)
+                loadPlaylists()
+            } catch (e: Exception) {
+                Log.d(TAG,"SharedViewModel updatePlaylistOrder Error updating playlist order error = ${e.message}")
+            }
+        }
+    }
+
+    fun deletePlaylist(playlistId: Long) {
+        viewModelScope.launch {
+            try {
+                playlistRepository.deletePlaylist(playlistId)
+                loadPlaylists()
+            } catch (e: Exception) {
+                Log.d(TAG,"SharedViewModel deletePlaylist Error deleting playlist error = ${e.message}")
+            }
         }
     }
 }

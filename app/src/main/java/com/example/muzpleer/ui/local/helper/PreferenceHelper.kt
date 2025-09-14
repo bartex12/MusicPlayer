@@ -16,6 +16,7 @@ class PreferenceHelperImpl(private  val app: Application): IPreferenceHelper {
         const val FIRST_POSITION_ALBUM = "FIRST_POSITION_ALBUM"
         const val FIRST_POSITION_ARTIST ="FIRST_POSITION_ARTIST"
         const val FIRST_POSITION_FOLDER ="FIRST_POSITION_FOLDER"
+        const val FIRST_POSITION_PLAYLIST = "FIRST_POSITION_PLAYLIST"
         const val PAGER_LOCAL_POSITION ="PAGER_LOCAL_POSITION"
         const val CURRENT_SONG_KEY = "CURRENT_SONG_KEY"
         const val FIRST_POSITION_FAVORITE_SONG = "FIRST_POSITION_FAVORITE_SONG"
@@ -62,6 +63,17 @@ class PreferenceHelperImpl(private  val app: Application): IPreferenceHelper {
     override fun getPositionAlbum(): Int {
         val position = prefs .getInt(FIRST_POSITION_ALBUM, 0)
         Log.d(TAG, "PreferenceHelper getPositionAlbum position = $position")
+        return position
+    }
+
+    override fun savePositionPlaylist(position: Int) {
+        putValue(FIRST_POSITION_PLAYLIST to position )
+        Log.d(TAG,"PreferenceHelper savePositionPlaylist position = $position" )
+    }
+
+    override fun getPositionPlaylist(): Int {
+        val position = prefs .getInt(FIRST_POSITION_PLAYLIST, 0)
+        Log.d(TAG, "PreferenceHelper getPositionPlaylist position = $position")
         return position
     }
 
