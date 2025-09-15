@@ -796,6 +796,20 @@ class SharedViewModel(
             }
         }
     }
+//    fun syncPlaylists() {
+//        viewModelScope.launch {
+//            _loading.value = true
+//            try {
+//                playlistRepository.syncFoldersFromMediaFiles()
+//                loadFolders() // Перезагружаем после синхронизации
+//            } catch (e: Exception) {
+//                Log.e("FolderViewModel", "Error syncing folders", e)
+//            } finally {
+//                _loading.value = false
+//            }
+//        }
+//    }
+
 
     fun getSongsByAlbum(albumId: Long){
         viewModelScope.launch {
@@ -969,10 +983,11 @@ class SharedViewModel(
         viewModelScope.launch {
             try {
                 val playlists = playlistRepository.getAllPlaylists()
+                Log.d(TAG,"#**# SharedViewModel loadPlaylists playlists size = ${playlists.size}")
                 _playlists.value = playlists
                 _filteredPlaylists.value = playlists
             } catch (e: Exception) {
-                Log.d(TAG,"SharedViewModel loadPlaylists Error loading playlists error = ${e.message}")
+                Log.d(TAG,"#**# SharedViewModel loadPlaylists Error loading playlists error = ${e.message}")
             }
         }
     }

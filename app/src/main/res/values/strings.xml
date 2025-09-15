@@ -38,6 +38,7 @@
     <string name="addition">Дополнительно</string>
     <string name="settings">Настройки</string>
     <string name="stub">Заглушка</string>
+    <string name="new_playlist">Новый плейлист</string>
 
     <string-array name="sound_level_entry_number">
         <item>Без звука</item>

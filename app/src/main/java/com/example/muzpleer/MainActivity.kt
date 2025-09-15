@@ -270,6 +270,8 @@ class MainActivity : AppCompatActivity() {
             viewModel.syncAlbums()
             viewModel.syncArtist ()
             viewModel.syncFolders()
+            viewModel.loadPlaylists()
+
             // Восстанавливаем последнюю песню
             val savedSongId = appPreferences.getCurrentSongId()
             if (savedSongId != -1L) {

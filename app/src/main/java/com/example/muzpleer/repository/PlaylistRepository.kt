@@ -1,10 +1,13 @@
 package com.example.muzpleer.repository
 
+import android.util.Log
 import androidx.core.net.toUri
 import com.example.muzpleer.model.Playlist
 import com.example.muzpleer.model.Song
+import com.example.muzpleer.repository.FolderRepository.Companion.TAG
 import com.example.muzpleer.room.dao.PlaylistDao
 import com.example.muzpleer.room.dao.SongDao
+import com.example.muzpleer.room.entity.FolderFile
 import com.example.muzpleer.room.entity.PlaylistFile
 import com.example.muzpleer.room.entity.PlaylistSongCrossRef
 import com.example.muzpleer.room.utils.toPlaylist
@@ -14,8 +17,13 @@ class PlaylistRepository(
     private val songDao: SongDao
 ) {
 
+    companion object{
+        const val TAG= "33333"
+    }
     suspend fun getAllPlaylists(): List<Playlist> {
-        return playlistDao.getAllPlaylists().map { it.toPlaylist(getSongsForPlaylist(it.id)) }
+        val listOfPlaylists = playlistDao.getAllPlaylists().map { it.toPlaylist(getSongsForPlaylist(it.id)) }
+        Log.d(TAG, "PlaylistRepository getAllPlaylists: listOfPlaylists size = ${listOfPlaylists.size}  ")
+        return listOfPlaylists
     }
 
     suspend fun getPlaylistWithSongs(playlistId: Long): Playlist? {
