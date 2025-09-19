@@ -1,0 +1,62 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:id="@+id/allSongsOption"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Просмотреть все песни"
+        android:textStyle="bold"
+        android:textSize="16sp"
+        android:padding="16dp"
+        android:drawableStart="@drawable/twotone_find_replace_24"
+        android:drawablePadding="8dp"/>
+
+    <TextView
+        android:id="@+id/albumsOption"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textStyle="bold"
+        android:textSize="16sp"
+        android:text="Просмотреть альбомы"
+        android:padding="16dp"
+        android:drawableStart="@drawable/twotone_find_replace_24"
+        android:drawablePadding="8dp"/>
+
+    <TextView
+        android:id="@+id/artistsOption"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textStyle="bold"
+        android:textSize="16sp"
+        android:text="Просмотреть исполнителей"
+        android:padding="16dp"
+        android:drawableStart="@drawable/twotone_find_replace_24"
+        android:drawablePadding="8dp"/>
+
+    <TextView
+        android:id="@+id/foldersOption"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textStyle="bold"
+        android:textSize="16sp"
+        android:text="Просмотреть папки"
+        android:padding="16dp"
+        android:drawableStart="@drawable/twotone_find_replace_24"
+        android:drawablePadding="8dp"/>
+
+    <TextView
+        android:id="@+id/favoritesOption"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textStyle="bold"
+        android:textSize="16sp"
+        android:text="Просмотреть избранное"
+        android:padding="16dp"
+        android:drawableStart="@drawable/twotone_find_replace_24"
+        android:drawablePadding="8dp"/>
+
+</LinearLayout>

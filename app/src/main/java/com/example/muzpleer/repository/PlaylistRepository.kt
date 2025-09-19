@@ -1,13 +1,12 @@
 package com.example.muzpleer.repository
 
 import android.util.Log
-import androidx.core.net.toUri
+import android.widget.Toast
+import com.example.muzpleer.di.App
 import com.example.muzpleer.model.Playlist
 import com.example.muzpleer.model.Song
-import com.example.muzpleer.repository.FolderRepository.Companion.TAG
 import com.example.muzpleer.room.dao.PlaylistDao
 import com.example.muzpleer.room.dao.SongDao
-import com.example.muzpleer.room.entity.FolderFile
 import com.example.muzpleer.room.entity.PlaylistFile
 import com.example.muzpleer.room.entity.PlaylistSongCrossRef
 import com.example.muzpleer.room.utils.toPlaylist
@@ -64,6 +63,34 @@ class PlaylistRepository(
 
         // Обновляем счетчик песен
         updateSongCount(playlistId)
+    }
+
+    suspend fun addSongsToPlaylistWithSongs(playlistId: Long, songs: List<Song>) {
+        // Получаем ID существующих песен в плейлисте
+        val existingSongIds = playlistDao.getSongIdsInPlaylist(playlistId).toSet()
+
+        // Фильтруем песни, оставляем только те, которых еще нет в плейлисте
+        val newSongs = songs.filter { song ->
+            !existingSongIds.contains(song.id)
+        }
+
+        if (newSongs.isEmpty()) {
+            if(songs.size == 1){
+                Toast.makeText(App.instance, "Эта песня уже есть в плейлисте", Toast.LENGTH_SHORT).show()
+            }else {
+                Toast.makeText(App.instance, "Эти песни уже есть в плейлисте", Toast.LENGTH_SHORT).show()
+            }
+            return
+        }
+
+        val songIds = newSongs.map { it.id }
+        addSongsToPlaylist(playlistId, songIds)
+        // Показать сообщение об успехе и вернуться к выбору источника
+        val songsSelected = songs.size
+        val songsAdded = songIds.size
+        val songsWereInPlaylist = songs.size - songIds.size
+        Toast.makeText(App.instance,
+            "Выбрано: $songsSelected; Добавлено: $songsAdded; Уже было в плейлисте: $songsWereInPlaylist", Toast.LENGTH_LONG).show()
     }
 
     suspend fun updatePlaylistOrder(playlists: List<Playlist>) {

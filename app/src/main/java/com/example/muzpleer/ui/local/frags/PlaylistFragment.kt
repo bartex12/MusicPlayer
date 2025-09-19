@@ -26,6 +26,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.viewpager.widget.ViewPager
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentPlaylistBinding
+import com.example.muzpleer.model.SongAndPlaylist
 import com.example.muzpleer.ui.local.adapters.PlaylistAdapter
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 import com.example.muzpleer.util.getSortedDataPlaylists
@@ -55,8 +56,9 @@ class PlaylistFragment():Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         adapter = PlaylistAdapter (viewModel){ playlist ->
-            val newPlaylist = getSortedDataSong(playlist.playlistSongs)
-            viewModel.setPlaylist(newPlaylist) //устанавливаем список песен как плейлист
+//            val newPlaylist = getSortedDataSong(playlist.playlistSongs)
+//            viewModel.setPlaylist(newPlaylist) //устанавливаем список песен как плейлист
+            //здесь setSongAndPlaylist не делаем, так как здесь нет песен
 
             // Навигация через Bundle
             val bundle = Bundle().apply {
@@ -64,7 +66,7 @@ class PlaylistFragment():Fragment() {
                 putLong("playlistId", playlist.id)
                 Log.d(TAG,"33 AlbumFragment onViewCreated bundle: playlist = ${playlist.id} from = 5 ")
             }
-            findNavController().navigate( R.id.alltracksFragment, bundle)
+            findNavController().navigate( R.id.songPlaylistFragment, bundle)
         }
 
         binding.playlistRecyclerView.apply {
@@ -86,8 +88,6 @@ class PlaylistFragment():Fragment() {
 
         //восстанавливаем позицию списка после поворота или возвращения на экран
         binding.playlistRecyclerView.layoutManager?.scrollToPosition(viewModel.getPositionPlaylist())
-
-        //viewModel.loadPlaylists()
 
         initMenu()
     }
@@ -195,7 +195,6 @@ class PlaylistFragment():Fragment() {
                 ViewGroup.LayoutParams.WRAP_CONTENT
             )
         }
-
         // Находим все элементы
         val editText = dialog.findViewById<TextInputEditText>(R.id.etPlaylistName)
         val charCount = dialog.findViewById<TextView>(R.id.tvCharCount) // Вот эта переменная!

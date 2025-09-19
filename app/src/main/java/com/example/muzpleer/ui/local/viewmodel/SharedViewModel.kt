@@ -159,14 +159,23 @@ class SharedViewModel(
     private val _coverPath = MutableLiveData<String>()
     val coverPath: LiveData<String> = _coverPath
 
-    private val _playlists = MutableLiveData<List<Playlist>>()
+    private val _playlists = MutableLiveData<List<Playlist>>() //все плейлисты в списке плейлистов,
     val playlists: LiveData<List<Playlist>> = _playlists
 
-    private val _filteredPlaylists = MutableLiveData<List<Playlist>>()
+    private val _filteredPlaylists = MutableLiveData<List<Playlist>>() //все плейлисты в списке плейлистов, отфильтрованные поиском
     val filteredPlaylists: LiveData<List<Playlist>> = _filteredPlaylists
 
-    private val _currentPlaylist = MutableLiveData<Playlist?>()
-    val currentPlaylist: LiveData<Playlist?> = _currentPlaylist
+    private val _currentPlaylist = MutableLiveData<Playlist?>()  //конкретный плейлист
+    val currentPlaylist : LiveData<Playlist?> = _currentPlaylist
+
+    private val _currentPlaylistSongs = MutableLiveData<List<Song>?>()  //список песен конкретного плейлиста
+    val currentPlaylistSongs : LiveData<List<Song>?> = _currentPlaylistSongs
+
+    private val _currentFilteredPlaylistSongs = MutableLiveData<List<Song>?>()  //отфильтрованный поиском список песен конкретного плейлиста
+    val currentFilteredPlaylistSongs: LiveData<List<Song>?> = _currentFilteredPlaylistSongs
+
+//    private val _allSongs = MutableLiveData<List<Song>>()
+//    val allSongs: LiveData<List<Song>> = _allSongs
 
      fun scanMedia(afterLoad:()->Unit) {
         viewModelScope.launch {
@@ -239,11 +248,15 @@ class SharedViewModel(
         //так не меняется автоматом- остаётся старый artUri из плейлиста
         _currentSong.value = track
         //считаем индекс выбранной песни в отсортированном списке песен,
-        // чтобы при возврате на песни можно было перейти к этой песне по индексу
-        val indexOfSong = getSortedDataSong(getSongs()).indexOfFirst { it.mediaUri == track.mediaUri }
+        // чтобы при возврате на песни можно было перейти к этой песне по индекс
+        val trackMediaUri = getNormalizedPath(track.mediaUri)
+        val indexOfSong = getSortedDataSong(getSongs())
+            .indexOfFirst { getNormalizedPath(it.mediaUri) == trackMediaUri }
+        Log.d(TAG, " !@# !@# SharedViewModel onTrackChanged track title = ${track.title} " +
+                "track mediaUri = ${track.mediaUri} trackMediaUri = $trackMediaUri")
         _indexOfCurrentSong.value = indexOfSong
-        Log.d(TAG, " !@# !@# SharedViewModel onTrackChanged currentTrack = ${getCurrentSong()?.title}" +
-                "   indexOfSong = $indexOfSong  TRACK.artUri = ${track.artUri}")
+        Log.d(TAG, " !@# !@# SharedViewModel onTrackChanged indexOfSong = $indexOfSong " +
+                "  currentTrack  title = ${getCurrentSong()?.title}")
     }
 
     override fun onPlaybackStateChanged(isPlaying: Boolean) {
@@ -257,6 +270,15 @@ class SharedViewModel(
 
     override fun onError(message: String) {
         _errorMessage.postValue(message)
+    }
+
+    //функция для нормализации URI
+    fun getNormalizedPath(uriString: String): String {
+        return if (uriString.startsWith("file://")) {
+            Uri.decode(uriString.substring(7))
+        } else {
+            uriString
+        }
     }
 
     fun clearError() {
@@ -445,6 +467,27 @@ class SharedViewModel(
         _filteredFavoriteSongs.value = filteredSongsList
     }
 
+    internal fun filterPlaylistSongs(query: String) {
+        val playlistSongs =currentPlaylistSongs.value
+        val originalSongsList: MutableList<Song> =playlistSongs?.toMutableList() ?: mutableListOf()
+        val filteredPlaylistSong =currentFilteredPlaylistSongs.value
+        val filteredSongsList: MutableList<Song> =filteredPlaylistSong?.toMutableList() ?: mutableListOf()
+        filteredSongsList.clear( )
+        if (query.isEmpty()) {
+            filteredSongsList.addAll(originalSongsList)
+        } else {
+            val searchQuery = query.lowercase(Locale.getDefault())
+            for (song in originalSongsList) {
+                if (song.title.lowercase(Locale.getDefault()).contains(searchQuery) ||
+                    song.artist.lowercase(Locale.getDefault()).contains(searchQuery)) {
+                    filteredSongsList.add(song)
+                }
+            }
+        }
+        _currentFilteredPlaylistSongs.value = filteredSongsList
+    }
+
+
     fun getSongs():List<Song> {
        return songs.value
     }
@@ -518,6 +561,9 @@ class SharedViewModel(
         }
     }
 
+    fun getAllFavoriteSongs():List<Song>{
+        return favoriteSongs.value
+    }
 
     fun toggleFavorite(song: Song) {
         viewModelScope.launch {
@@ -686,23 +732,6 @@ class SharedViewModel(
         }
     }
 
-//    // Обновление песни (при смене обложки)
-//    fun updateSongCover(songId: Long, newCoverPath: String?) {
-//        viewModelScope.launch {
-//            // Обновляем в базе
-//            repository.updateCoverPath(songId, newCoverPath.toString())
-//
-//            // Если это текущая песня - обновляем LiveData
-//            if (_currentSong.value?.id == songId) {
-//                _currentSong.value = _currentSong.value?.copy(artUri = newCoverPath)
-//                loadCoverImage(newCoverPath)
-//            }
-//
-//            // Можно добавить broadcast для уведомления других частей приложения
-//        }
-//    }
-
-
     //загрузка альбомов
     fun loadAlbums() {
         viewModelScope.launch {
@@ -796,20 +825,6 @@ class SharedViewModel(
             }
         }
     }
-//    fun syncPlaylists() {
-//        viewModelScope.launch {
-//            _loading.value = true
-//            try {
-//                playlistRepository.syncFoldersFromMediaFiles()
-//                loadFolders() // Перезагружаем после синхронизации
-//            } catch (e: Exception) {
-//                Log.e("FolderViewModel", "Error syncing folders", e)
-//            } finally {
-//                _loading.value = false
-//            }
-//        }
-//    }
-
 
     fun getSongsByAlbum(albumId: Long){
         viewModelScope.launch {
@@ -837,32 +852,6 @@ class SharedViewModel(
             _filteredListFolderSong.value = listFolderSong
         }
     }
-
-//    fun saveCoverToDatabase(uri: Uri) {
-//        viewModelScope.launch {
-//            _selectedSong.value?.let { selectedSong ->
-////                // Сохраняем в InternalStorage //todo пока не используется
-////                val coverPath =saveCoverToInternalStorage(uri, song)
-////                _coverPath.value = coverPath
-////                  Log.d(TAG, "111*** SharedViewModel saveCoverToDatabase coverPath = $coverPath")
-//                // Обновляем песню в основном списке песен - нужны оба - _songs и _filteredSongs
-//                _songs.value = _songs.value?.map {s->
-//                    if (s.id == selectedSong.id) s.copy(artUri = uri.toString()) else s
-//                }
-//                _filteredSongs.value = _filteredSongs.value?. map{filteredSong->
-//                    if (filteredSong.id == selectedSong.id) filteredSong.copy(artUri = uri.toString()) else filteredSong
-//                }
-//                //записываем путь к файлу обложки в базу
-//                repository.updateCoverPath(selectedSong.id, uri.toString())
-//                // Обновляем текущую песню если нужно
-//                _currentSong.value?.let { current ->
-//                    if (current.id == selectedSong.id) {
-//                        _currentSong.value = current.copy(artUri = uri.toString())
-//                    }
-//                }
-//            }
-//        }
-//    }
 
     fun updateSongInfo(
         songId: Long,
@@ -979,6 +968,7 @@ class SharedViewModel(
         }
     }
 
+    //грузим все плейлисты для отображения списком
     fun loadPlaylists() {
         viewModelScope.launch {
             try {
@@ -1015,15 +1005,32 @@ class SharedViewModel(
         }
     }
 
-    fun loadPlaylist(playlistId: Long) {
+    fun loadCurrentPlaylistForSongs(playlistId: Long) {
         viewModelScope.launch {
             try {
                 val playlist = playlistRepository.getPlaylistWithSongs(playlistId)
                 _currentPlaylist.value = playlist
+                _currentPlaylistSongs.value =playlist?.playlistSongs
+                _currentFilteredPlaylistSongs.value = playlist?.playlistSongs
             } catch (e: Exception) {
                 Log.d(TAG,"SharedViewModel loadPlaylist Error loading playlist error = ${e.message}")
             }
         }
+    }
+
+    fun setCurrentPlaylistByPlaylistId(playlistId:Long){
+        viewModelScope.launch {
+            try {
+            val playlist=playlistRepository.getPlaylistWithSongs(playlistId)
+                _currentPlaylist.value = playlist
+            } catch (e: Exception) {
+                Log.d(TAG,"SharedViewModel getPlaylistByPlaylistId Error loading playlist error = ${e.message}")
+            }
+        }
+    }
+
+    fun getCurrentPlaylist():Playlist?{
+        return currentPlaylist.value
     }
 
     fun updatePlaylistOrder(playlists: List<Playlist>) {
@@ -1045,6 +1052,28 @@ class SharedViewModel(
             } catch (e: Exception) {
                 Log.d(TAG,"SharedViewModel deletePlaylist Error deleting playlist error = ${e.message}")
             }
+        }
+    }
+
+    fun addSongsToPlaylistWhithSongs(playlistId: Long, songs: List<Song>) {
+        viewModelScope.launch {
+            playlistRepository.addSongsToPlaylistWithSongs(playlistId, songs)
+            //перезагружаем плейлисты для обновления количества песен в каждом плейлисте
+            loadPlaylists()
+        }
+    }
+
+    fun loadAllSongsForAdding() {
+        viewModelScope.launch {
+            val allSongs =  repository.getSongsFromDatabase()
+            _songs.value = allSongs
+            _filteredSongs.value = allSongs
+        }
+    }
+
+    fun loadFavoritesSongsForAdding() {
+        viewModelScope.launch {
+            _favoriteSongs.value = favoriteRepository.getOrderedFavorites()
         }
     }
 }

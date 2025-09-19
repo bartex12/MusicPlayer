@@ -6,6 +6,7 @@ plugins {
     id("org.jetbrains.kotlin.plugin.parcelize")
     id ("kotlin-kapt")
     id("com.google.devtools.ksp") version "2.0.0-1.0.21" apply false
+    id("androidx.navigation.safeargs.kotlin") // для safeargs в навигацию
 }
 
 android {

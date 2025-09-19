@@ -63,4 +63,7 @@ interface PlaylistDao {
 
     @Query("SELECT MAX(sortOrder) FROM playlist_songs WHERE playlistId = :playlistId")
     suspend fun getMaxSongOrderInPlaylist(playlistId: Long): Int?
+
+    @Query("SELECT songId FROM playlist_songs WHERE playlistId = :playlistId")
+    suspend fun getSongIdsInPlaylist(playlistId: Long): List<Long>
 }

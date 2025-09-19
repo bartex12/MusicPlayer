@@ -1,11 +1,13 @@
 package com.example.muzpleer.ui.local.adapters
 
 import android.annotation.SuppressLint
-import android.util.Log
+import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.PopupMenu
+import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -13,8 +15,7 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.ItemPlaylistBinding
 import com.example.muzpleer.model.Playlist
-import com.example.muzpleer.model.Song
-import com.example.muzpleer.ui.local.adapters.SongsAdapter.Companion.TAG
+import com.example.muzpleer.ui.local.TabLocalFragmentDirections
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 import com.example.muzpleer.util.getTracksCountString
 
@@ -81,7 +82,7 @@ class PlaylistAdapter(
             when (menuItem.itemId) {
 
                 R.id.add_song_to_playlist -> {  //добавить песню в плейлист
-
+                    navigateToAddSongsSource(view, playlist)
                     true
                 }
                 R.id.rename_playlist -> { //переименовать плейлист
@@ -89,8 +90,7 @@ class PlaylistAdapter(
                     true
                 }
                 R.id.delete_playlist -> {  //удалить плейлист
-                    //todo добавить диалог - Вы уверены?
-                    viewModel.deletePlaylist(playlist.id)
+                    showDeleteDialog(context, playlist)
                     true
                 }
                 else -> false
@@ -98,6 +98,26 @@ class PlaylistAdapter(
         }
         popup.show()
     }
+    fun showDeleteDialog(context:Context, playlist: Playlist) {
+        val deleteDialog = AlertDialog.Builder(context)
+        deleteDialog.setTitle("Удалить: Вы уверены?")
+        deleteDialog.setPositiveButton("Нет") { _, _ ->
+            //ничего не делаем
+            deleteDialog.create().dismiss()
+        }
+        deleteDialog.setNegativeButton("Да" ) { _, _ -> //поручаем удаление файла ViewModel
+            viewModel.deletePlaylist(playlist.id)
+        }
+        deleteDialog.show()
+    }
 
+    private fun navigateToAddSongsSource(view: View,  playlist: Playlist) {
+        val action =TabLocalFragmentDirections.actionTabLocalFragmentToAddSongsSourceFragment(
+            playlistId = playlist.id
+        )
+        val navController = view.findNavController()
+        navController.navigate(action)
+
+    }
 }
 

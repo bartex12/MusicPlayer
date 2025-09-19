@@ -75,11 +75,22 @@ class SongsAdapter(
         viewModel.currentSong
             .observe(holder.itemView.context as LifecycleOwner) { currentSong ->
                 try{
-                    holder.itemView.isSelected = data[position].mediaUri == currentSong?.mediaUri
+                    val dataMediaUri = getNormalizedPath(data[position].mediaUri)
+                    val currentSongMediaUri = getNormalizedPath(currentSong?.mediaUri.toString())
+
+                    holder.itemView.isSelected = dataMediaUri == currentSongMediaUri
                 }catch(e: Exception){
                     Log.d(TAG, "SongsAdapter Ошибка: ${e.message}")
                 }
             }
+    }
+
+    fun getNormalizedPath(uriString: String): String {
+        return if (uriString.startsWith("file://")) {
+            Uri.decode(uriString.substring(7))
+        } else {
+            uriString
+        }
     }
 
     override fun getItemCount(): Int {

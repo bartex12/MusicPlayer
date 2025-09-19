@@ -18,6 +18,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentAlltracksBinding
+import com.example.muzpleer.model.Playlist
 import com.example.muzpleer.model.Song
 import com.example.muzpleer.model.SongAndPlaylist
 import com.example.muzpleer.ui.local.adapters.SongsAdapter
@@ -117,7 +118,6 @@ class SongListFragment:Fragment() {
                 }
             }
         }
-        //Создаём адаптер и передаём туда sourceOfSong, чтобы для песен был один адаптер
         adapter = SongsAdapter(viewModel,  { song ->
             val playlist = viewModel.getPlaylist()
 

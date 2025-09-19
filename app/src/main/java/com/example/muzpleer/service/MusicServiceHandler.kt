@@ -77,7 +77,7 @@ class MusicServiceHandler(
         player?.let { p ->
             val uri = track.getContentUri()
             val mediaItem =MediaItem.fromUri(uri)
-            Log.d(TAG, "@@@MusicServiceHandler playTrack: uri = $uri artUri = ${track.artUri}")
+            Log.d(TAG, "@@@MusicServiceHandler playTrack:mediaUri = ${track.mediaUri} uri = $uri artUri = ${track.artUri}")
             p.setMediaItem(mediaItem)
             p.prepare()
             p.play()
