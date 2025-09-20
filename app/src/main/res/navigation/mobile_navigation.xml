@@ -105,6 +105,9 @@
             <argument
                 android:name="playlistId"
                 app:argType="long"/>
+            <argument
+                android:name="selectionType"
+                app:argType="com.example.muzpleer.ui.local.frags.SelectionType"/>
         </action>
 
         <action
@@ -126,8 +129,15 @@
 
     <fragment
         android:id="@+id/albumsSelectionFragment"
-        android:name="com.example.muzpleer.ui.local.frags.AlbumsSelectionFragment"
-        android:label="Выбор альбома"/>
+        android:name="com.example.muzpleer.ui.local.frags.AlbumSelectionFragment"
+        android:label="Выбор альбома">
+        <argument
+            android:name="playlistId"
+            app:argType="long"/>
+        <argument
+            android:name="selectionType"
+            app:argType="com.example.muzpleer.ui.local.frags.SelectionType"/>
+    </fragment>
 
     <fragment
         android:id="@+id/artistsSelectionFragment"

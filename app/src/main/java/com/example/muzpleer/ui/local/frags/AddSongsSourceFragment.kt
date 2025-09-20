@@ -46,7 +46,7 @@ class AddSongsSourceFragment : Fragment() {
         binding.albumsOption.setOnClickListener {
             Toast.makeText(requireContext(), "Функция выбора альбомов в разработке", Toast.LENGTH_SHORT).show()
             // TODO: Реализовать позже
-            //navigateToAlbumsSelection()
+            navigateToAlbumsSelection(SelectionType.ALBUM)
         }
 
         binding.artistsOption.setOnClickListener {
@@ -74,9 +74,10 @@ class AddSongsSourceFragment : Fragment() {
         findNavController().navigate(action)
     }
 
-    private fun navigateToAlbumsSelection() {
+    private fun navigateToAlbumsSelection(selectionType: SelectionType) {
         val action = AddSongsSourceFragmentDirections.actionAddSongsSourceToAlbumsSelection(
-            playlistId = playlistId
+            playlistId = playlistId,
+            selectionType = selectionType
         )
         findNavController().navigate(action)
     }

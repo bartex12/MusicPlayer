@@ -53,15 +53,13 @@ class PlaylistFragment():Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         adapter = PlaylistAdapter (viewModel){ playlist ->
-//            val newPlaylist = getSortedDataSong(playlist.playlistSongs)
-//            viewModel.setPlaylist(newPlaylist) //устанавливаем список песен как плейлист
-            //здесь setSongAndPlaylist не делаем, так как здесь нет песен
+            //здесь setPlaylist и setSongAndPlaylist не делаем, так как здесь нет песен
 
             // Навигация через Bundle
             val bundle = Bundle().apply {
                 putInt("from", 5)
                 putLong("playlistId", playlist.id)
-                Log.d(TAG,"33 AlbumFragment onViewCreated bundle: playlist = ${playlist.id} from = 5 ")
+                Log.d(TAG,"33 PlaylistFragment onViewCreated bundle: playlist = ${playlist.id} from = 5 ")
             }
             findNavController().navigate( R.id.songPlaylistFragment, bundle)
         }

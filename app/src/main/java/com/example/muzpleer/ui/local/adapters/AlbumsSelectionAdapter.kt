@@ -7,18 +7,19 @@ import android.view.ViewGroup
 import androidx.core.net.toUri
 import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.RecyclerView
-import com.example.muzpleer.databinding.ItemAlbumBinding
-import com.example.muzpleer.model.Album
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.example.muzpleer.R
+import com.example.muzpleer.databinding.ItemAlbumBinding
+import com.example.muzpleer.databinding.ItemAlbumSelectionBinding
+import com.example.muzpleer.model.Album
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 import com.example.muzpleer.util.getTracksCountString
 
-class AlbumsAdapter(
+class AlbumsSelectionAdapter(
     private val viewModel: SharedViewModel,
     private val onAlbumClick: (Album) -> Unit
-) : RecyclerView.Adapter<AlbumsAdapter.AlbumViewHolder>() {
+) : RecyclerView.Adapter<AlbumsSelectionAdapter.AlbumViewHolder>() {
 
     var albums:List<Album> = listOf()
         @SuppressLint("NotifyDataSetChanged")
@@ -29,7 +30,7 @@ class AlbumsAdapter(
 
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AlbumViewHolder {
-        val binding = ItemAlbumBinding.inflate(
+        val binding = ItemAlbumSelectionBinding.inflate(
             LayoutInflater.from(parent.context),
             parent,
             false
@@ -49,13 +50,13 @@ class AlbumsAdapter(
 
     override fun getItemCount() = albums.size
 
-    inner class AlbumViewHolder(private val binding: ItemAlbumBinding)
+    inner class AlbumViewHolder(private val binding: ItemAlbumSelectionBinding)
         : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(album: Album) {
-            binding.albumTitle.text = album.title
-            binding.albumArtist.text = album.artist
-            binding.tracksCount.text = getTracksCountString( album.songs.size)
+            binding.albumTitleSelection.text = album.title
+            binding.albumArtistSelection.text = album.artist
+            binding.tracksCountSelection.text = getTracksCountString( album.songs.size)
 
             // Загружаем обложку, если есть
             val albumArtUri = ContentUris.withAppendedId(
@@ -68,7 +69,7 @@ class AlbumsAdapter(
                 .placeholder(R.drawable.muz_player5)
                 .error(R.drawable.muz_player5)
                 .diskCacheStrategy(DiskCacheStrategy.ALL)
-                .into(binding.albumArt)
+                .into(binding.albumArtSelection)
 
             itemView.setOnClickListener {
                 viewModel.setSelectedAlbumPosition(absoluteAdapterPosition)

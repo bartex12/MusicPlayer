@@ -115,8 +115,7 @@ class PlaylistAdapter(
         val action =TabLocalFragmentDirections.actionTabLocalFragmentToAddSongsSourceFragment(
             playlistId = playlist.id
         )
-        val navController = view.findNavController()
-        navController.navigate(action)
+        view.findNavController().navigate(action)
 
     }
 }

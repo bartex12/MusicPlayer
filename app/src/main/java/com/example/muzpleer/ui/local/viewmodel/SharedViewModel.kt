@@ -1076,4 +1076,10 @@ class SharedViewModel(
             _favoriteSongs.value = favoriteRepository.getOrderedFavorites()
         }
     }
+
+    fun loadAlbumSongsForAdding(albumId:Long){
+        viewModelScope.launch {
+            _listAlbumSong.value = albumRepository.getAlbumSongList(albumId)
+        }
+    }
 }

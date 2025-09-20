@@ -37,15 +37,23 @@ class SongsSelectionFragment : Fragment() {
         selectionType = arguments?.getSerializable("selectionType") as? SelectionType
             ?: SelectionType.ALL_SONGS
 
+        when (selectionType) {
+            SelectionType.ALL_SONGS -> {
+                viewModel.loadAllSongsForAdding()
+            }
+            SelectionType.FAVORITES ->{
+                viewModel.loadFavoritesSongsForAdding()
+            }
+            SelectionType.ALBUM ->{
+                val albumId = arguments?.getLong("albumId") ?: -1
+                viewModel.loadAlbumSongsForAdding(albumId)
+            }
+            else -> {}
+        }
+
         setupRecyclerView()
         setupObservers()
         setupButtons()
-
-        when (selectionType) {
-            SelectionType.ALL_SONGS -> viewModel.loadAllSongsForAdding()
-            SelectionType.FAVORITES -> viewModel.loadFavoritesSongsForAdding()
-            else -> {}
-        }
     }
 
     private fun setupRecyclerView() {
@@ -68,6 +76,12 @@ class SongsSelectionFragment : Fragment() {
             }
             SelectionType.FAVORITES -> {
                 viewModel.favoriteSongs.observe(viewLifecycleOwner) { songs ->
+                    adapter.submitList(songs)
+                    updateSelectionCount(0)
+                }
+            }
+            SelectionType.ALBUM ->{
+                viewModel.listAlbumSong.observe(viewLifecycleOwner) { songs ->
                     adapter.submitList(songs)
                     updateSelectionCount(0)
                 }
@@ -101,6 +115,9 @@ class SongsSelectionFragment : Fragment() {
 //            // Показать сообщение об успехе и вернуться к выбору источника
 //            Toast.makeText(requireContext(), "Песни добавлены", Toast.LENGTH_SHORT).show()
             findNavController().navigateUp() // Вернуться к выбору источника
+            if(selectionType == SelectionType.ALBUM){
+                findNavController().navigateUp()
+            }
         }else {
             Toast.makeText(requireContext(), "Выберите песни для добавления", Toast.LENGTH_SHORT).show()
         }
