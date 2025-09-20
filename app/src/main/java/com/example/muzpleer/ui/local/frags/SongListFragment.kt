@@ -18,7 +18,6 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentAlltracksBinding
-import com.example.muzpleer.model.Playlist
 import com.example.muzpleer.model.Song
 import com.example.muzpleer.model.SongAndPlaylist
 import com.example.muzpleer.ui.local.adapters.SongsAdapter
@@ -207,7 +206,7 @@ class SongListFragment:Fragment() {
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
                 when(menuItem.itemId){
-                    R.id.action_to_other->{
+                    R.id.action_go_to_song->{
                         if (arguments?.getLong("albumId") != null)  {
                             val albumSongs = viewModel.listAlbumSong.value //список песен альюома
                             val currentSong = viewModel.getCurrentSong()

@@ -156,7 +156,7 @@ class FavoritesFragment: Fragment() {
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
                 when(menuItem.itemId){
-                    R.id.action_to_other->{
+                    R.id.action_go_to_song->{
                         val favoriteSongs = viewModel.getFavoriteSongs() //список песен артиста
                         val currentSong = viewModel.getCurrentSong()
                         val indexOfSong = getSortedDataSong(favoriteSongs).indexOfFirst { it.mediaUri == currentSong?.mediaUri }

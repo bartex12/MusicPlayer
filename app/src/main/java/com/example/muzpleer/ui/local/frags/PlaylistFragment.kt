@@ -13,7 +13,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.Button
-import android.widget.EditText
 import android.widget.TextView
 import androidx.appcompat.widget.SearchView
 import androidx.core.view.MenuHost
@@ -26,11 +25,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.viewpager.widget.ViewPager
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentPlaylistBinding
-import com.example.muzpleer.model.SongAndPlaylist
 import com.example.muzpleer.ui.local.adapters.PlaylistAdapter
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 import com.example.muzpleer.util.getSortedDataPlaylists
-import com.example.muzpleer.util.getSortedDataSong
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.TextInputEditText
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
@@ -142,7 +139,7 @@ class PlaylistFragment():Fragment() {
                 })
             }
             override fun onPrepareMenu(menu: Menu) {
-                menu.findItem(R.id.action_to_other).isVisible =false
+                menu.findItem(R.id.action_go_to_song).isVisible =false
                 menu.findItem(R.id.action_edit_order).isVisible =false //todo потом убрать
             }
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {

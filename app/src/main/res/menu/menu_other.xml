@@ -11,7 +11,7 @@
 
 
     <item
-        android:id="@+id/action_to_other"
+        android:id="@+id/action_go_to_song"
         android:orderInCategory="200"
         android:title="К песне"
         android:icon="@drawable/outline_flag_24"

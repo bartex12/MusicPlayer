@@ -22,6 +22,7 @@ import com.example.muzpleer.model.Song
 import com.example.muzpleer.model.SongAndPlaylist
 import com.example.muzpleer.ui.local.adapters.SongsAdapter
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
+import com.example.muzpleer.util.getNormalizedPath
 import com.example.muzpleer.util.getSortedDataSong
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 import kotlin.getValue
@@ -164,17 +165,19 @@ class SongPlaylistFragment:Fragment() {
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
                 when(menuItem.itemId){
-                    R.id.action_to_other->{
-                        if(arguments?.getString("playlistId") != null) {
-                            val currentPlaylistSongs = viewModel.currentPlaylistSongs.value //список песен в плейлисте
-                            val currentSong = viewModel.getCurrentSong()
-                            if (currentPlaylistSongs != null){
-                                val indexOfSong = getSortedDataSong(currentPlaylistSongs).indexOfFirst { it.mediaUri == currentSong?.mediaUri }
-                                Log.d(TAG, "4$$$ SongListFragment onMenuItemSelected indexOfSong = $indexOfSong")
-                                (binding.alltracksPlaylistRecyclerView.layoutManager as LinearLayoutManager).let{
-                                    if(indexOfSong >= 0 ) it.scrollToPositionWithOffset(indexOfSong, 0) else it.scrollToPosition(0)
-                                }
-                            }
+                    R.id.action_go_to_song->{
+                        //список песен в плейлисте
+                        val currentPlaylistSongs  = getSortedDataSong(viewModel.getCurrentPlaylist()?.playlistSongs ?: listOf())
+                       //текущая песня
+                        val currentSong = viewModel.getCurrentSong()
+
+                        val currentSongMediaUri = getNormalizedPath(currentSong?.mediaUri ?: "")
+                        val indexOfSong = getSortedDataSong(currentPlaylistSongs)
+                            .indexOfFirst { getNormalizedPath(it.mediaUri) == currentSongMediaUri }
+                        Log.d(TAG, "4$$$ SongListFragment onMenuItemSelected indexOfSong = $indexOfSong currentSongMediaUri = $currentSongMediaUri")
+
+                        (binding.alltracksPlaylistRecyclerView.layoutManager as LinearLayoutManager).let{
+                            if(indexOfSong >= 0 ) it.scrollToPositionWithOffset(indexOfSong, 0) else it.scrollToPosition(0)
                         }
                         return true
                     }

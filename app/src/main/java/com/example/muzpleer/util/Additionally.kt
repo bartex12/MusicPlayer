@@ -1,5 +1,6 @@
 package com.example.muzpleer.util
 
+import android.net.Uri
 import com.example.muzpleer.model.Album
 import com.example.muzpleer.model.Artist
 import com.example.muzpleer.model.Folder
@@ -108,4 +109,13 @@ fun formatDuration(duration: Long): String {
     val minutes = seconds / 60
     val remainingSeconds = seconds % 60
     return String.format("%02d:%02d", minutes, remainingSeconds)
+}
+
+//функция для нормализации URI
+fun getNormalizedPath(uriString: String): String {
+    return if (uriString.startsWith("file://")) {
+        Uri.decode(uriString.substring(7))
+    } else {
+        uriString
+    }
 }
