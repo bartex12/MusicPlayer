@@ -114,5 +114,10 @@ class PlaylistRepository(
     suspend fun renamePlaylist(playlistId: Long, newName: String) {
         playlistDao.renamePlaylist(playlistId, newName)
     }
+
+    suspend fun updatePlaylistArtUri(playlistId: Long, artUri: String?) {
+        playlistDao.updatePlaylistArtUri(playlistId, artUri)
+    }
+
 }
 

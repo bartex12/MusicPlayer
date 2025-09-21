@@ -34,6 +34,7 @@
             android:id="@+id/action_tabLocalFragment_to_addSongsSourceFragment"
             app:destination="@id/addSongsSourceFragment" />
     </fragment>
+
     <fragment
         android:id="@+id/albumFragment"
         android:name="com.example.muzpleer.ui.local.frags.AlbumFragment"
@@ -182,4 +183,9 @@
             android:id="@+id/action_songPlaylistFragment_to_playerFragment"
             app:destination="@id/playerFragment" />
     </fragment>
+    <fragment
+        android:id="@+id/coverChangeLevelFragment"
+        android:name="com.example.muzpleer.ui.local.frags.CoverChangeLevelFragment"
+        android:label="Изменение обложки"
+        tools:layout="@layout/fragment_cover_change_level"/>
 </navigation>

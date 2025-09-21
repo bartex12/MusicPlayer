@@ -2,6 +2,7 @@ package com.example.muzpleer.ui.local.adapters
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.os.Bundle
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
@@ -10,6 +11,7 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.PopupMenu
+import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.RecyclerView
@@ -19,6 +21,8 @@ import com.example.muzpleer.R
 import com.example.muzpleer.databinding.ItemPlaylistBinding
 import com.example.muzpleer.model.Playlist
 import com.example.muzpleer.ui.local.TabLocalFragmentDirections
+import com.example.muzpleer.ui.local.frags.CoverChangeLevelFragment
+import com.example.muzpleer.ui.local.frags.CoverChangeLevelFragment.LevelType
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 import com.example.muzpleer.util.getTracksCountString
 import com.google.android.material.textfield.TextInputLayout
@@ -46,6 +50,11 @@ class PlaylistAdapter(
 
     override fun onBindViewHolder(holder: PlaylistViewHolder, position: Int) {
         holder.bind(playlist[position])
+        // Следим за изменениями выбранной позиции
+        viewModel.selectedPlaylistPosition
+            .observe(holder.itemView.context as LifecycleOwner) { selectedPos ->
+                holder.itemView.isSelected = position == selectedPos
+            }
     }
 
     override fun getItemCount()=playlist.size
@@ -71,7 +80,7 @@ class PlaylistAdapter(
             }
 
             itemView.setOnClickListener {
-                viewModel.setSelectedAlbumPosition(absoluteAdapterPosition)
+                viewModel.setSelectedPlaylistPosition(absoluteAdapterPosition)
                 onPlaylistClick(playlist)
             }
         }
@@ -87,6 +96,10 @@ class PlaylistAdapter(
 
                 R.id.add_song_to_playlist -> {  //добавить песню в плейлист
                     navigateToAddSongsSource(view, playlist)
+                    true
+                }
+                R.id.action_change_cover_playlist -> {  //изменить обложку плейлиста
+                    navigateToChangePlaylistCover(view, playlist)
                     true
                 }
                 R.id.rename_playlist -> { //переименовать плейлист
@@ -168,7 +181,15 @@ class PlaylistAdapter(
             playlistId = playlist.id
         )
         view.findNavController().navigate(action)
+    }
 
+    private fun navigateToChangePlaylistCover(view: View,  playlist: Playlist) {
+        viewModel.setCurrentPlaylistByPlaylistId(playlist.id)
+        val bundle: Bundle  = Bundle().apply{
+            putLong("levelId", playlist.id)
+            putSerializable("levelType", LevelType.PLAYLIST)
+        }
+        view.findNavController().navigate(R.id.coverChangeLevelFragment, bundle)
     }
 }
 

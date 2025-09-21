@@ -94,7 +94,7 @@ class PlaylistFragment():Fragment() {
         val manager = binding.playlistRecyclerView.layoutManager as LinearLayoutManager
         val firstPosition = manager.findFirstVisibleItemPosition()
         Log.d(TAG, "PlaylistFragment onPause firstPosition = $firstPosition")
-        viewModel.savePositionAlbum(firstPosition)
+        viewModel.savePositionPlaylist(firstPosition)
     }
 
     override fun onDestroyView() {

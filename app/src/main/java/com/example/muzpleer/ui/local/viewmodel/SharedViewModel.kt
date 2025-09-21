@@ -29,6 +29,7 @@ import com.example.muzpleer.room.entity.FavoriteSong
 import com.example.muzpleer.room.entity.SongFile
 import com.example.muzpleer.service.MusicServiceHandler
 import com.example.muzpleer.ui.local.helper.IPreferenceHelper
+import com.example.muzpleer.ui.local.viewmodel.SharedViewModel.Companion.TAG
 import com.example.muzpleer.util.getSortedDataSong
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -140,6 +141,9 @@ class SharedViewModel(
     private val _selectedFolderPosition = MutableLiveData<Int>(RecyclerView.NO_POSITION)
     val selectedFolderPosition: LiveData<Int> = _selectedFolderPosition
 
+    private val _selectedPlaylistPosition = MutableLiveData<Int>(RecyclerView.NO_POSITION)
+    val selectedPlaylistPosition: LiveData<Int> = _selectedPlaylistPosition
+
     private val _playerVisibility = MutableLiveData<Boolean>(true)
     val playerVisibility: LiveData<Boolean> = _playerVisibility
 
@@ -152,6 +156,9 @@ class SharedViewModel(
 
     private val _coverImageUri = MutableLiveData<Uri?>()
     val coverImageUri: LiveData<Uri?> = _coverImageUri
+
+    private val _coverImageUriLevel = MutableLiveData<Uri?>()
+    val coverImageUriLevel: LiveData<Uri?> = _coverImageUriLevel
 
     private val _loading = MutableLiveData<Boolean>()
     val loading: LiveData<Boolean> = _loading
@@ -519,6 +526,7 @@ class SharedViewModel(
     fun setSelectedAlbumPosition(position: Int) { _selectedAlbumPosition.value = position }
     fun setSelectedArtistPosition(position: Int) { _selectedArtistPosition.value = position }
     fun setSelectedFolderPosition(position: Int) { _selectedFolderPosition.value = position }
+    fun setSelectedPlaylistPosition(position: Int) { _selectedPlaylistPosition.value = position }
 
     fun setCurrentSongById(songId: Long) {
         songs.value?.find { it.id == songId }?.let { song ->
@@ -613,14 +621,29 @@ class SharedViewModel(
         _coverImageUri.value = uri
     }
 
+    fun updateCoverImageLevel(uri: Uri) {
+        Log.d(TAG, "***SharedViewModel updateCoverImageLevel  uri= $uri ")
+        _coverImageUriLevel.value = uri
+    }
+
     fun getCoverImageUri():Uri? {
         return coverImageUri.value
+    }
+
+    fun getCoverImageUriLevel():Uri? {
+        return coverImageUriLevel.value
     }
 
     fun updateCoverImageAndSave(uri: Uri) {
         Log.d(TAG, "2*** SharedViewModel updateCoverImageAndSave uri = $uri")
         _coverImageUri.value = uri
         saveCoverToDatabase(uri)
+    }
+
+    fun updateCoverImageLevelAndSave(uri: Uri, levelId:Long) {
+        Log.d(TAG, "5--- SharedViewModel updateCoverImageAndSave uri = $uri levelId =$levelId")
+        _coverImageUriLevel.value = uri
+        saveCoverLevelToDatabase(uri, levelId)
     }
 
     fun getDefaultCoverUri(song: Song): Uri{
@@ -668,13 +691,14 @@ class SharedViewModel(
         }
     }
 
-//
-
-//    fun updateCoverPath(id:Long, coverPath:String){
-//        viewModelScope.launch {
-//            repository.updateCoverPath(id, coverPath)
-//        }
-//    }
+   fun  saveCoverLevelToDatabase(uri: Uri, levelId:Long){
+       Log.d(TAG, "6--- SharedViewModel saveCoverLevelToDatabase uri = $uri levelId = $levelId")
+       //todo доделать если надо как в предыдущем методе
+       viewModelScope.launch {
+           playlistRepository.updatePlaylistArtUri(levelId, uri.toString())
+           loadPlaylists() // Обновляем список
+       }
+   }
 
     // Загрузка обложки
     suspend fun loadCoverImage(coverPath: String?) {
@@ -1023,6 +1047,7 @@ class SharedViewModel(
             try {
             val playlist=playlistRepository.getPlaylistWithSongs(playlistId)
                 _currentPlaylist.value = playlist
+                _coverImageUriLevel.value =playlist?.playlistArtUri
             } catch (e: Exception) {
                 Log.d(TAG,"SharedViewModel getPlaylistByPlaylistId Error loading playlist error = ${e.message}")
             }
@@ -1094,6 +1119,7 @@ class SharedViewModel(
             _listFolderSong.value = folderRepository.getFolderSongList(folderPath)
         }
     }
+
     fun renamePlaylist(playlistId: Long, newName: String) {
         viewModelScope.launch {
             playlistRepository.renamePlaylist(playlistId, newName)
@@ -1101,4 +1127,23 @@ class SharedViewModel(
             loadPlaylists()
         }
     }
+
+    fun setCurrentPlaylist(playlist: Playlist){
+
+    }
 }
+
+//fun setSelectedSong(song: Song) {
+//    _selectedSong.value = song
+//    if(song.artUri == null){
+//        val uri = getDefaultCoverUri(song)
+//        updateCoverImage(uri)
+//        //DefaultCoverUri = content://media/external/audio/albumart/3
+//        Log.d(TAG, "***SharedViewModel setSelectedSong song.artUri == null DefaultCoverUri = $uri")
+//    }else{
+//        val uri = (song.artUri!!).toUri()
+//        //val uri = "content://com.android.providers.media.documents/document/image%3A135257".toUri()
+//        updateCoverImage(uri)
+//        Log.d(TAG, "***SharedViewModel setSelectedSong song.artUri = $uri song = ${song.title}")
+//    }
+//}
