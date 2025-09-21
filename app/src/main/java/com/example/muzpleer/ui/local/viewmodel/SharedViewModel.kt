@@ -1094,5 +1094,11 @@ class SharedViewModel(
             _listFolderSong.value = folderRepository.getFolderSongList(folderPath)
         }
     }
-
+    fun renamePlaylist(playlistId: Long, newName: String) {
+        viewModelScope.launch {
+            playlistRepository.renamePlaylist(playlistId, newName)
+            // Автоматически обновим список через LiveData
+            loadPlaylists()
+        }
+    }
 }

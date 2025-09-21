@@ -110,5 +110,9 @@ class PlaylistRepository(
     suspend fun deletePlaylist(playlistId: Long) {
         playlistDao.deleteById(playlistId)
     }
+
+    suspend fun renamePlaylist(playlistId: Long, newName: String) {
+        playlistDao.renamePlaylist(playlistId, newName)
+    }
 }
 
