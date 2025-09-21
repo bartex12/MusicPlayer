@@ -40,8 +40,6 @@ class AlbumSelectionFragment: Fragment() {
             ?: SelectionType.ALL_SONGS
 
         adapter = AlbumsSelectionAdapter (viewModel){ album ->
-            //val playlist = getSortedDataSong(album.songs)
-           // viewModel.setPlaylist(playlist) //устанавливаем список песен как плейлист
 
             // Навигация через Bundle
             val bundle = Bundle().apply {
@@ -53,11 +51,6 @@ class AlbumSelectionFragment: Fragment() {
             }
             findNavController().navigate( R.id.songsSelectionFragment, bundle)
         }
-//
-//        when (selectionType) {
-//            SelectionType.ALBUM -> viewModel.loadAlbumSongsForAdding()
-//            else -> {}
-//        }
 
         binding.albumSelectionRecyclerView.apply {
             layoutManager = LinearLayoutManager(requireContext())

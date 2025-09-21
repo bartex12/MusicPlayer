@@ -10,18 +10,18 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.example.muzpleer.R
-import com.example.muzpleer.databinding.ItemAlbumBinding
 import com.example.muzpleer.databinding.ItemAlbumSelectionBinding
-import com.example.muzpleer.model.Album
+import com.example.muzpleer.model.Artist
+import com.example.muzpleer.model.Folder
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 import com.example.muzpleer.util.getTracksCountString
 
-class AlbumsSelectionAdapter(
+class FoldersSelectionAdapter (
     private val viewModel: SharedViewModel,
-    private val onAlbumClick: (Album) -> Unit
-) : RecyclerView.Adapter<AlbumsSelectionAdapter.AlbumViewHolder>() {
+    private val onFolderClick: (Folder) -> Unit
+) : RecyclerView.Adapter<FoldersSelectionAdapter.AlbumViewHolder>() {
 
-    var albums:List<Album> = listOf()
+    var folders:List<Folder> = listOf()
         @SuppressLint("NotifyDataSetChanged")
         set(value){
             field = value
@@ -39,7 +39,7 @@ class AlbumsSelectionAdapter(
     }
 
     override fun onBindViewHolder(holder: AlbumViewHolder, position: Int) {
-        holder.bind(albums[position])
+        holder.bind(folders[position])
 
         // Следим за изменениями выбранной позиции
         viewModel.selectedAlbumPosition
@@ -48,24 +48,24 @@ class AlbumsSelectionAdapter(
             }
     }
 
-    override fun getItemCount() = albums.size
+    override fun getItemCount() = folders.size
 
     inner class AlbumViewHolder(private val binding: ItemAlbumSelectionBinding)
         : RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(album: Album) {
-            binding.albumTitleSelection.text = album.title
-            binding.albumArtistSelection.text = album.artist
-            binding.tracksCountSelection.text = getTracksCountString( album.songs.size)
+        fun bind(folder: Folder) {
+            binding.albumTitleSelection.text = folder.name
+            binding.albumArtistSelection.text = folder.path
+            binding.tracksCountSelection.text = getTracksCountString( folder.songs.size)
 
 //            // Загружаем обложку, если есть
 //            val albumArtUri = ContentUris.withAppendedId(
 //                "content://media/external/audio/albumart".toUri(),
-//                album.albumId)
+//                folder.id)
 
             // Загрузка обложки альбома
             Glide.with(binding.root.context)
-                .load(album.artworkUri)
+                .load(folder.artworkUri)
                 .placeholder(R.drawable.muz_player5)
                 .error(R.drawable.muz_player5)
                 .diskCacheStrategy(DiskCacheStrategy.ALL)
@@ -73,7 +73,7 @@ class AlbumsSelectionAdapter(
 
             itemView.setOnClickListener {
                 viewModel.setSelectedAlbumPosition(absoluteAdapterPosition)
-                onAlbumClick(album)
+                onFolderClick(folder)
             }
         }
     }

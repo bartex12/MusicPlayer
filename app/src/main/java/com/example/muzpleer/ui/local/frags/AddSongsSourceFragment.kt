@@ -11,6 +11,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.example.muzpleer.databinding.FragmentAddSongsSourceBinding
+import com.example.muzpleer.ui.local.frags.SelectionType
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 
 class AddSongsSourceFragment : Fragment() {
@@ -44,21 +45,21 @@ class AddSongsSourceFragment : Fragment() {
         }
 
         binding.albumsOption.setOnClickListener {
-            Toast.makeText(requireContext(), "Функция выбора альбомов в разработке", Toast.LENGTH_SHORT).show()
+            //Toast.makeText(requireContext(), "Функция выбора альбомов в разработке", Toast.LENGTH_SHORT).show()
             // TODO: Реализовать позже
-            navigateToAlbumsSelection(SelectionType.ALBUM)
+            navigateToAlbumsSelection()
         }
 
         binding.artistsOption.setOnClickListener {
-            Toast.makeText(requireContext(), "Функция выбора артистов в разработке", Toast.LENGTH_SHORT).show()
+            //Toast.makeText(requireContext(), "Функция выбора артистов в разработке", Toast.LENGTH_SHORT).show()
             // TODO: Реализовать позже
-            //navigateToArtistsSelection()
+            navigateToArtistsSelection()
         }
 
         binding.foldersOption.setOnClickListener {
-            Toast.makeText(requireContext(), "Функция выбора папок в разработке", Toast.LENGTH_SHORT).show()
+            //Toast.makeText(requireContext(), "Функция выбора папок в разработке", Toast.LENGTH_SHORT).show()
             // TODO: Реализовать позже
-            //navigateToFoldersSelection()
+            navigateToFoldersSelection()
         }
 
         binding.favoritesOption.setOnClickListener {
@@ -74,24 +75,26 @@ class AddSongsSourceFragment : Fragment() {
         findNavController().navigate(action)
     }
 
-    private fun navigateToAlbumsSelection(selectionType: SelectionType) {
+    private fun navigateToAlbumsSelection() {
         val action = AddSongsSourceFragmentDirections.actionAddSongsSourceToAlbumsSelection(
             playlistId = playlistId,
-            selectionType = selectionType
+            selectionType = SelectionType.ALBUM
         )
         findNavController().navigate(action)
     }
 
     private fun navigateToArtistsSelection() {
         val action = AddSongsSourceFragmentDirections.actionAddSongsSourceToArtistsSelection(
-            playlistId = playlistId
+            playlistId = playlistId,
+            selectionType = SelectionType.ARTIST
         )
         findNavController().navigate(action)
     }
 
     private fun navigateToFoldersSelection() {
         val action = AddSongsSourceFragmentDirections.actionAddSongsSourceToFoldersSelection(
-            playlistId = playlistId
+            playlistId = playlistId,
+            selectionType = SelectionType.FOLDER
         )
         findNavController().navigate(action)
     }

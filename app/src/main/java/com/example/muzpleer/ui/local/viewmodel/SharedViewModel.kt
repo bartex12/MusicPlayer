@@ -1082,4 +1082,17 @@ class SharedViewModel(
             _listAlbumSong.value = albumRepository.getAlbumSongList(albumId)
         }
     }
+
+    fun loadArtistSongsForAdding(artistId:Long){
+        viewModelScope.launch {
+            _listArtistSong.value = artistsRepository.getArtistSongList(artistId)
+        }
+    }
+
+    fun loadFolderSongsForAdding(folderPath: String){
+        viewModelScope.launch {
+            _listFolderSong.value = folderRepository.getFolderSongList(folderPath)
+        }
+    }
+
 }

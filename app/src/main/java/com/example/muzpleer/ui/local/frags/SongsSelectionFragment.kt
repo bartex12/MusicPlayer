@@ -48,7 +48,14 @@ class SongsSelectionFragment : Fragment() {
                 val albumId = arguments?.getLong("albumId") ?: -1
                 viewModel.loadAlbumSongsForAdding(albumId)
             }
-            else -> {}
+            SelectionType.ARTIST ->{
+                val artistId = arguments?.getLong("artistId") ?: -1
+                viewModel.loadArtistSongsForAdding(artistId)
+            }
+            SelectionType.FOLDER ->{
+                val folderPath = arguments?.getString("folderPath") ?: ""
+                viewModel.loadFolderSongsForAdding(folderPath)
+            }
         }
 
         setupRecyclerView()
@@ -61,7 +68,6 @@ class SongsSelectionFragment : Fragment() {
             updateSelectionCount(selectedSongs.size)
             updateAddButtonState(selectedSongs.isNotEmpty())
         }
-
         binding.songsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.songsRecyclerView.adapter = adapter
     }
@@ -86,7 +92,18 @@ class SongsSelectionFragment : Fragment() {
                     updateSelectionCount(0)
                 }
             }
-            else -> {}
+            SelectionType.ARTIST ->{
+                viewModel.listArtistSong.observe(viewLifecycleOwner) { songs ->
+                    adapter.submitList(songs)
+                    updateSelectionCount(0)
+                }
+            }
+            SelectionType.FOLDER ->{
+                viewModel.listFolderSong.observe(viewLifecycleOwner) { folders ->
+                    adapter.submitList(folders)
+                    updateSelectionCount(0)
+                }
+            }
         }
     }
 
@@ -112,10 +129,9 @@ class SongsSelectionFragment : Fragment() {
         val selectedSongs = adapter.getSelectedSongs()
         if (selectedSongs.isNotEmpty()) {
             viewModel.addSongsToPlaylistWhithSongs(playlistId, selectedSongs)
-//            // Показать сообщение об успехе и вернуться к выбору источника
-//            Toast.makeText(requireContext(), "Песни добавлены", Toast.LENGTH_SHORT).show()
-            findNavController().navigateUp() // Вернуться к выбору источника
-            if(selectionType == SelectionType.ALBUM){
+            findNavController().navigateUp() // Вернуться к выбору источника, если песни или избранное
+            if(selectionType == SelectionType.ALBUM || selectionType == SelectionType.ARTIST ||
+                selectionType == SelectionType.FOLDER){
                 findNavController().navigateUp()
             }
         }else {

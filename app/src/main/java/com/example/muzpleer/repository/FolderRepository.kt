@@ -60,10 +60,11 @@ class FolderRepository (private val folderDao: FolderDao,
             val songFiles  = songDao.getFilesByFolderPath(folder.folderPath)
             val songs = fromSongFileListToSongList(songFiles)
             Folder(
-                        path = folder.folderPath,
-                        name = folder.folderName,
-                        songs = songs,
-                        artworkUri =folder.coverPath?.toUri(),
+                id = folder.id,
+                path = folder.folderPath,
+                name = folder.folderName,
+                songs = songs,
+                artworkUri =folder.coverPath?.toUri(),
             )
         }
     }
@@ -90,7 +91,6 @@ class FolderRepository (private val folderDao: FolderDao,
     }
 
     suspend fun getFolderSongList(folderPath: String): List<Song> {
-        //val folder = folderDao.getFolderByPath(folderPath) ?: throw Exception("Папка не найдена")
         val songFiles = songDao.getFilesByFolderPath(folderPath)
        return fromSongFileListToSongList(songFiles)
     }
