@@ -58,6 +58,11 @@ class ArtistSelectionAdapter(
             //binding.albumArtistSelection.text = artist.albums
             binding.tracksCountSelection.text = getTracksCountString( artist.songs.size)
 
+            // Загружаем обложку, если есть
+            val albumArtUri = ContentUris.withAppendedId(
+                "content://media/external/audio/albumart".toUri(),
+                artist.albums.firstOrNull()?.albumId ?: -1
+            )
 //            // Загружаем обложку, если есть
 //            val albumArtUri = ContentUris.withAppendedId(
 //                "content://media/external/audio/albumart".toUri(),
@@ -65,7 +70,7 @@ class ArtistSelectionAdapter(
 
             // Загрузка обложки альбома
             Glide.with(binding.root.context)
-                .load(artist.artworkUri)
+                .load(albumArtUri)
                 .placeholder(R.drawable.muz_player5)
                 .error(R.drawable.muz_player5)
                 .diskCacheStrategy(DiskCacheStrategy.ALL)

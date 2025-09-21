@@ -163,53 +163,6 @@ class PlaylistAdapter(
         dialog.show()
     }
 
-//    fun showRenameDialog (context:Context, playlist: Playlist) {
-//        val dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_rename_playlist, null)
-//        val editText = dialogView.findViewById<EditText>(R.id.rename_edit_text)
-//
-//        // Устанавливаем текущее имя плейлиста
-//        editText.setText(playlist.playlistName)
-//        editText.setSelection(playlist.playlistName.length) // Курсор в конец текста
-//
-//        val dialog = AlertDialog.Builder(context)
-//            .setTitle("Переименовать плейлист")
-//            .setView(dialogView)
-//            .setPositiveButton("Сохранить") { dialog, _ ->
-//                val newName = editText.text.toString().trim()
-//                if (newName.isNotEmpty() && newName != playlist.playlistName) {
-//                    // Обновляем имя плейлиста
-//                    viewModel.renamePlaylist(playlist.id, newName)
-//                }
-//                dialog.dismiss()
-//            }
-//            .setNegativeButton("Отмена") { dialog, _ ->
-//                dialog.dismiss()
-//            }
-//            .create()
-//
-//        // Показываем клавиатуру при открытии диалога
-//        dialog.setOnShowListener {
-//            editText.requestFocus()
-//            val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-//            imm.showSoftInput(editText, InputMethodManager.SHOW_IMPLICIT)
-//        }
-//
-//        dialog.show()
-//
-//        // Обработка нажатия Enter
-//        editText.setOnKeyListener { _, keyCode, event ->
-//            if (keyCode == KeyEvent.KEYCODE_ENTER && event.action == KeyEvent.ACTION_DOWN) {
-//                val newName = editText.text.toString().trim()
-//                if (newName.isNotEmpty()) {
-//                    viewModel.renamePlaylist(playlist.id, newName)
-//                    dialog.dismiss()
-//                    return@setOnKeyListener true
-//                }
-//            }
-//            false
-//        }
-//    }
-
     private fun navigateToAddSongsSource(view: View,  playlist: Playlist) {
         val action =TabLocalFragmentDirections.actionTabLocalFragmentToAddSongsSourceFragment(
             playlistId = playlist.id

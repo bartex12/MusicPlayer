@@ -14,6 +14,7 @@ import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentSongsSelectionBinding
 import com.example.muzpleer.ui.local.adapters.SongSelectionAdapter
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
+import com.example.muzpleer.util.getSortedDataSong
 
 class SongsSelectionFragment : Fragment() {
     private lateinit var binding: FragmentSongsSelectionBinding
@@ -76,31 +77,31 @@ class SongsSelectionFragment : Fragment() {
         when (selectionType) {
             SelectionType.ALL_SONGS -> {
                 viewModel.songs.observe(viewLifecycleOwner) { songs ->
-                    adapter.submitList(songs)
+                    adapter.data = getSortedDataSong(songs)
                     updateSelectionCount(0)
                 }
             }
             SelectionType.FAVORITES -> {
                 viewModel.favoriteSongs.observe(viewLifecycleOwner) { songs ->
-                    adapter.submitList(songs)
+                    adapter.data = songs  //не сортируем, чтобы менять порядок
                     updateSelectionCount(0)
                 }
             }
             SelectionType.ALBUM ->{
                 viewModel.listAlbumSong.observe(viewLifecycleOwner) { songs ->
-                    adapter.submitList(songs)
+                    adapter.data = getSortedDataSong(songs)
                     updateSelectionCount(0)
                 }
             }
             SelectionType.ARTIST ->{
                 viewModel.listArtistSong.observe(viewLifecycleOwner) { songs ->
-                    adapter.submitList(songs)
+                    adapter.data = getSortedDataSong(songs)
                     updateSelectionCount(0)
                 }
             }
             SelectionType.FOLDER ->{
-                viewModel.listFolderSong.observe(viewLifecycleOwner) { folders ->
-                    adapter.submitList(folders)
+                viewModel.listFolderSong.observe(viewLifecycleOwner) { folderSongs ->
+                    adapter.data = getSortedDataSong(folderSongs)
                     updateSelectionCount(0)
                 }
             }

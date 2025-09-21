@@ -117,6 +117,8 @@ class SongsAdapter(
                 showImageWithGlide(binding.root.context, albumArtUri, binding.trackArtwork)
             }else {
                 // Загрузка обложки, если заменили её на другую
+                Log.d(TAG, "### SongAdapter ViewHolder bind: " +
+                        "song artUri = ${track.artUri}  song title = ${track.title}")
                 track.artUri?. let{
                     val uri =  it.toUri()
                     showImageWithGlide(binding.root.context, uri, binding.trackArtwork)
