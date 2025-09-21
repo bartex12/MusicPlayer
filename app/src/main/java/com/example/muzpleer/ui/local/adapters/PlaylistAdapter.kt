@@ -3,7 +3,6 @@ package com.example.muzpleer.ui.local.adapters
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
-import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,7 +11,6 @@ import android.widget.EditText
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.PopupMenu
 import androidx.lifecycle.LifecycleOwner
-import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -21,7 +19,6 @@ import com.example.muzpleer.R
 import com.example.muzpleer.databinding.ItemPlaylistBinding
 import com.example.muzpleer.model.Playlist
 import com.example.muzpleer.ui.local.TabLocalFragmentDirections
-import com.example.muzpleer.ui.local.frags.CoverChangeLevelFragment
 import com.example.muzpleer.ui.local.frags.CoverChangeLevelFragment.LevelType
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 import com.example.muzpleer.util.getTracksCountString

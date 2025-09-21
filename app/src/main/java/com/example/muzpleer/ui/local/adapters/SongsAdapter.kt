@@ -25,7 +25,6 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.ItemMusicBinding
-import com.example.muzpleer.di.App
 import com.example.muzpleer.model.Song
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 import com.example.muzpleer.util.formatAsTime

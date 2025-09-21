@@ -20,10 +20,8 @@ import androidx.transition.TransitionSet
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.example.muzpleer.R
-import com.example.muzpleer.databinding.FragmentCoverChangeBinding
 import com.example.muzpleer.databinding.FragmentCoverChangeLevelBinding
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
-import kotlin.getValue
 
 class CoverChangeLevelFragment: Fragment() {
     private var _binding: FragmentCoverChangeLevelBinding? = null

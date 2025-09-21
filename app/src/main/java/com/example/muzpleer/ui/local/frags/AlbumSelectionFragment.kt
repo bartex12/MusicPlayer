@@ -15,7 +15,6 @@ import com.example.muzpleer.ui.local.adapters.AlbumsSelectionAdapter
 import com.example.muzpleer.ui.local.frags.AlbumFragment.Companion.TAG
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 import com.example.muzpleer.util.getSortedDataAlbum
-import com.example.muzpleer.util.getSortedDataSong
 
 class AlbumSelectionFragment: Fragment() {
     private lateinit var binding: FragmentAlbumSelectionBinding

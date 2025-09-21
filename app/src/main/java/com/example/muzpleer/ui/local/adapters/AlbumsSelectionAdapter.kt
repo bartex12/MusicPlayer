@@ -10,7 +10,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.example.muzpleer.R
-import com.example.muzpleer.databinding.ItemAlbumBinding
 import com.example.muzpleer.databinding.ItemAlbumSelectionBinding
 import com.example.muzpleer.model.Album
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel

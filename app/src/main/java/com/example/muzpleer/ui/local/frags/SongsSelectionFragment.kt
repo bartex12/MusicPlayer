@@ -2,7 +2,6 @@ package com.example.muzpleer.ui.local.frags
 
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
@@ -10,7 +9,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentSongsSelectionBinding
 import com.example.muzpleer.ui.local.adapters.SongSelectionAdapter
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel

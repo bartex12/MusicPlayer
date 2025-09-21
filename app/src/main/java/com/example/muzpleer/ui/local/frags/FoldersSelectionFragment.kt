@@ -10,16 +10,11 @@ import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.muzpleer.R
-import com.example.muzpleer.databinding.FragmentAlbumSelectionBinding
 import com.example.muzpleer.databinding.FragmentFoldersSelectionBinding
-import com.example.muzpleer.ui.local.adapters.AlbumsSelectionAdapter
 import com.example.muzpleer.ui.local.adapters.FoldersSelectionAdapter
 import com.example.muzpleer.ui.local.frags.AlbumFragment.Companion.TAG
-import com.example.muzpleer.ui.local.frags.AlbumSelectionFragment
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
-import com.example.muzpleer.util.getSortedDataAlbum
 import com.example.muzpleer.util.getSortedDataFolder
-import kotlin.getValue
 
 class FoldersSelectionFragment: Fragment() {
     private lateinit var binding: FragmentFoldersSelectionBinding
