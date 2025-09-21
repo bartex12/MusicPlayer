@@ -43,20 +43,14 @@ class AddSongsSourceFragment : Fragment() {
         }
 
         binding.albumsOption.setOnClickListener {
-            //Toast.makeText(requireContext(), "Функция выбора альбомов в разработке", Toast.LENGTH_SHORT).show()
-            // TODO: Реализовать позже
             navigateToAlbumsSelection()
         }
 
         binding.artistsOption.setOnClickListener {
-            //Toast.makeText(requireContext(), "Функция выбора артистов в разработке", Toast.LENGTH_SHORT).show()
-            // TODO: Реализовать позже
             navigateToArtistsSelection()
         }
 
         binding.foldersOption.setOnClickListener {
-            //Toast.makeText(requireContext(), "Функция выбора папок в разработке", Toast.LENGTH_SHORT).show()
-            // TODO: Реализовать позже
             navigateToFoldersSelection()
         }
 
