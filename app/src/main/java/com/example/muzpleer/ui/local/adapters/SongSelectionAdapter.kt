@@ -17,6 +17,9 @@ import com.example.muzpleer.model.Song
 import com.example.muzpleer.util.formatDuration
 import java.io.File
 
+//адаптер для песен, из которых будут выбираться песни для добавления в плейлист
+//так как не все обложки отображаются как надо, использован сложный вариант
+// загрузки обложек через showImageWithGlide
 class SongSelectionAdapter (
     private val onSelectionChanged: (List<Song>) -> Unit
 ) : RecyclerView.Adapter<SongSelectionAdapter.SongSelectionViewHolder>() {

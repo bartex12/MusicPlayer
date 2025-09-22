@@ -19,13 +19,13 @@ interface ArtistDao {
     @Query("SELECT * FROM artists ORDER BY name COLLATE NOCASE")
     suspend fun getAllArtists(): List<ArtistFile>
 
-    @Query("SELECT * FROM artists WHERE artistId = :artistId LIMIT 1")
+    @Query("SELECT * FROM artists WHERE id = :artistId LIMIT 1")
     suspend fun getArtistById(artistId: Long): ArtistFile?
 
     @Query("SELECT * FROM artists WHERE name = :artistName LIMIT 1")
     suspend fun getArtistByName(artistName: String): ArtistFile?
 
-    @Query("DELETE FROM artists WHERE artistId = :artistId")
+    @Query("DELETE FROM artists WHERE id = :artistId")
     suspend fun deleteByArtistId(artistId: Long)
 
     @Query("DELETE FROM artists")
@@ -34,6 +34,9 @@ interface ArtistDao {
     @Query("SELECT COUNT(*) FROM artists")
     suspend fun getCount(): Int
 
-    @Query("SELECT artistId FROM artists")
+    @Query("SELECT id FROM artists")
     suspend fun getAllArtistIds(): List<Long>
+
+    @Query("UPDATE artists SET coverPath = :artUri WHERE id = :artistId")
+    suspend fun updateArtistArtUri(artistId: Long, artUri: String?)
 }

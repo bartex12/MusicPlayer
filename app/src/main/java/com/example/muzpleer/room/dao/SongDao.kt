@@ -71,5 +71,8 @@ interface SongDao {
     // метод для получения всех полей
     @Query("SELECT * FROM media_files WHERE mediaStoreId = :id")
     suspend fun getSongWithDetails(id: Long): SongFile?
+
+    @Query("SELECT * FROM media_files WHERE artist = :artistName ORDER BY title ASC")
+    suspend fun getSongsByArtist(artistName: String): List<SongFile>
 }
 

@@ -17,7 +17,18 @@ class FolderRepository (private val folderDao: FolderDao,
     suspend fun syncFoldersFromMediaFiles() {
         Log.d(TAG, "# FolderRepository Начало синхронизации папок...")
 
-        // ОЧИСТКА ПЕРЕД СИНХРОНИЗАЦИЕЙ!
+        // СОХРАНЯЕМ КАСТОМНЫЕ ОБЛОЖКИ ПЕРЕД ОЧИСТКОЙ
+        val existingFolders = folderDao.getAllFolders()
+        val customCoversMap = mutableMapOf<String, String>() // path -> coverPath
+
+        existingFolders.forEach { folder ->
+            if (!folder.coverPath.isNullOrEmpty()) {
+                customCoversMap[folder.folderPath] = folder.coverPath
+            }
+        }
+        Log.d(TAG, "# Сохранено ${customCoversMap.size} кастомных обложек")
+
+        // Очищаем папки
         folderDao.deleteAll()
 
         val mediaFiles = songDao.getAllFiles()
@@ -28,13 +39,16 @@ class FolderRepository (private val folderDao: FolderDao,
             .groupBy { it.folderPath ?: "Unknown" }
             .mapValues { (folderPath, songs) ->
 
+                //получаем имя из пути
                 val folderName = getFolderNameFromPath(folderPath)
+                //получаем обложку - её могли изменить - но мы уже всё стёрли
+                val folderCoverPath = customCoversMap[folderPath] ?: getFolderCoverByPath(folderPath)
 
                 FolderFile(
                     folderPath = folderPath,
                     folderName = folderName,
                     songCount = songs.size,
-                    coverPath = songs.firstOrNull { it.artUri != null }?.artUri
+                    coverPath = folderCoverPath
                 )
             }
 
@@ -69,18 +83,31 @@ class FolderRepository (private val folderDao: FolderDao,
         }
     }
 
-//    suspend fun getFolderWithSongs(folderPath: String): Folder {
-//        val folder = folderDao.getFolderByPath(folderPath) ?: throw Exception("Папка не найдена")
-//        val songFiles = songDao.getFilesByFolderPath(folderPath)
-//        val songs = fromSongFileListToSongList(songFiles)
-//
-//        return Folder(
-//            path = folder.folderPath,
-//            name = folder.folderName,
-//            songs = songs,
-//            artworkUri =folder.coverPath?.toUri(),
-//        )
-//    }
+    suspend fun getFolderByPath(folderPath:String):Folder{
+
+        val folderFile = folderDao.getFolderByPath(folderPath) ?: throw Exception("Папка не найдена")
+        val songFiles = songDao.getFilesByFolderPath(folderPath)
+        val songs = fromSongFileListToSongList(songFiles)
+        return Folder(
+            id = folderFile.id,
+            path = folderFile.folderPath,
+            name = folderFile.folderName,
+            songs = songs,
+            artworkUri =folderFile.coverPath?.toUri()
+        )
+    }
+
+    suspend fun getFolderCoverByPath(folderPath:String):String?{
+        return folderDao.getFolderCoverByPath(folderPath)
+    }
+
+    suspend fun updateFolderArtUri(folderId: Long, artUri: String?) {
+        folderDao.updateFolderArtUri(folderId, artUri)
+    }
+
+    suspend fun getFolderFileById(folderId: Long):FolderFile?{
+        return folderDao.getFolderById(folderId)
+    }
 
     private fun getFolderNameFromPath(path: String): String {
         return if (path.isBlank()) {

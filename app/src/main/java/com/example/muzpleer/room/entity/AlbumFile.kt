@@ -15,7 +15,7 @@ data class AlbumFile(
     val artist: String,
     val allArtists: String, // JSON или разделенный список
     val songCount: Int,
-    val coverPath: String?,
+    val coverPath: String?,  //путь к обложке
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis()
 )

@@ -1,9 +1,11 @@
 package com.example.muzpleer.repository
 
+import android.net.Uri
 import android.util.Log
 import androidx.core.net.toUri
 import com.example.muzpleer.model.Album
 import com.example.muzpleer.model.Artist
+import com.example.muzpleer.model.Folder
 import com.example.muzpleer.model.Song
 import com.example.muzpleer.room.dao.AlbumDao
 import com.example.muzpleer.room.dao.ArtistDao
@@ -21,10 +23,24 @@ class ArtistRepository (private val artistDao: ArtistDao,
     // Первый запуск - группировка и сохранение
     suspend fun syncArtistsFromMediaFiles() {
         Log.d(TAG, "# ArtistsRepository Начало синхронизации артистов...")
-        // ОЧИСТКА ПЕРЕД ДОБАВЛЕНИЕМ!
+
+    // СОХРАНЯЕМ КАСТОМНЫЕ ОБЛОЖКИ ПЕРЕД ОЧИСТКОЙ
+        val existingArtists = artistDao.getAllArtists()
+        val customCoversMap = mutableMapOf<String, String>() // artistName -> coverPath
+
+        existingArtists.forEach { artist ->
+            if (!artist.coverPath.isNullOrEmpty()) {
+                customCoversMap[artist.name] = artist.coverPath
+            }
+        }
+        Log.d(TAG, "# Сохранено ${customCoversMap.size} кастомных обложек артистов")
+
+        // Очищаем артистов
         artistDao.deleteAll()
+
         val mediaFiles = songDao.getAllFiles()
         Log.d(TAG, "# ArtistsRepository syncArtistsFromMediaFiles Получено ${mediaFiles.size} медиафайлов")
+
         // Группируем по артистам
         val artistsMap = mediaFiles
             .groupBy { it.artist ?: "Unknown Artist" }
@@ -32,12 +48,15 @@ class ArtistRepository (private val artistDao: ArtistDao,
                 val artistId = generateArtistId(artistName)
                 val albumIds = songs.map { it.albumId }.distinct()
 
+                // ВОССТАНАВЛИВАЕМ КАСТОМНУЮ ОБЛОЖКУ
+                val artistCoverPath = customCoversMap[artistName] ?: "" //todo
+
                 ArtistFile(
-                    artistId = artistId,
+                    artistId = artistId,  // это хэш-код  не путать с id!!!
                     name = artistName,
                     allAlbumIds = albumIds.joinToString(";"),
                     songCount = songs.size,
-                    coverPath = songs.firstOrNull { it.artUri != null }?.artUri
+                    coverPath = artistCoverPath
                 )
             }
 
@@ -90,7 +109,7 @@ class ArtistRepository (private val artistDao: ArtistDao,
             }
 
             Artist(
-                id = artistFile.artistId,
+                id = artistFile.id,
                 name = artistFile.name,
                 songs = songList,
                 artworkUri = artistFile.coverPath?.toUri(),
@@ -114,6 +133,16 @@ class ArtistRepository (private val artistDao: ArtistDao,
         return fromSongFileListToSongList(songFileList)
     }
 
+    //один из вариантов получения Artist из списка ArtistsFile
+//    suspend fun getArtistById(id: Long):Artist?{
+//        val listOfArtists = getAllArtistsWithSongsAndAlbums()
+//        val artist =  listOfArtists.first { artist->
+//            artist.id == id
+//        }
+//        Log.d(TAG, "# ArtistsRepository getArtistById artist name = ${artist.name}")
+//        return artist
+//    }
+
     private fun generateArtistId(artistName: String): Long {
         return artistName.hashCode().toLong()
     }
@@ -122,5 +151,7 @@ class ArtistRepository (private val artistDao: ArtistDao,
         const val TAG = "33333"
     }
 
-
+    suspend fun updateArtistArtUri(artistId: Long, artUri: String?) {
+        artistDao.updateArtistArtUri(artistId, artUri)
+    }
 }

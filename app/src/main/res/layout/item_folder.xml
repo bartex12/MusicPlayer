@@ -1,8 +1,8 @@
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="72dp"
+    xmlns:tools="http://schemas.android.com/tools"
     android:padding="8dp">
 
     <ImageView
@@ -11,39 +11,82 @@
         android:layout_height="56dp"
         android:src="@drawable/placeholder2"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"/>
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/tvFolderName"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
         android:textSize="16sp"
         android:textStyle="bold"
         android:textColor="@color/album_text_color"
         android:text="Название папки"
         app:layout_constraintStart_toEndOf="@id/ivFolderIcon"
-        app:layout_constraintTop_toTopOf="parent"/>
+        app:layout_constraintEnd_toStartOf="@id/tvTracksCount"
+        app:layout_constraintTop_toTopOf="@+id/ivFolderIcon"/>
 
     <TextView
         android:id="@+id/tvFolderPath"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginTop="4dp"
         android:textSize="12sp"
         android:text="Путь к папке"
         android:textColor="@color/background"
         app:layout_constraintStart_toEndOf="@id/ivFolderIcon"
+        app:layout_constraintEnd_toStartOf="@id/folder_dragHandle"
         app:layout_constraintTop_toBottomOf="@id/tvFolderName"/>
 
     <TextView
         android:id="@+id/tvTracksCount"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
+        android:textSize="12sp"
         android:text="12 песен"
         android:textColor="?attr/colorPrimary"
+       app:layout_constraintEnd_toStartOf="@id/folder_dragHandle"
+        app:layout_constraintTop_toTopOf="@+id/tvFolderName"
+        app:layout_constraintBottom_toBottomOf="@+id/tvFolderName"/>
+
+    <ImageView
+        android:id="@+id/folder_menu_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:scaleType="centerCrop"
+        android:layout_marginEnd="4dp"
+        android:src="@drawable/overflow_vertical_menu_icon_24"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"/>
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/folder_dragHandle"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_marginEnd="8dp"
+        android:visibility="gone"
+        android:src="@drawable/up_down4"
+        app:layout_constraintBottom_toBottomOf="@id/ivFolderIcon"
+        app:layout_constraintEnd_toStartOf="@id/folder_menu_button"
+        app:layout_constraintTop_toTopOf="@id/ivFolderIcon"
+        app:tint="@color/green"
+        tools:visibility="visible"/>
+
+    <!-- Divider -->
+    <View
+        android:layout_width="0dp"
+        android:layout_height="2dp"
+        android:background="@color/background"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

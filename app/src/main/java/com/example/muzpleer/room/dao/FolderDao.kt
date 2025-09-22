@@ -4,7 +4,6 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import com.example.muzpleer.room.entity.ArtistFile
 import com.example.muzpleer.room.entity.FolderFile
 
 @Dao
@@ -21,6 +20,12 @@ interface FolderDao {
     @Query("SELECT * FROM folders WHERE folderPath = :folderPath LIMIT 1")
     suspend fun getFolderByPath(folderPath: String): FolderFile?
 
+    @Query("SELECT coverPath FROM folders WHERE folderPath = :folderPath LIMIT 1")
+    suspend fun getFolderCoverByPath(folderPath: String): String?
+
+    @Query("SELECT * FROM folders WHERE id = :folderId LIMIT 1")
+    suspend fun getFolderById(folderId: Long): FolderFile?
+
     @Query("SELECT * FROM folders WHERE folderName = :folderName")
     suspend fun getFolderByName(folderName: String): FolderFile?
 
@@ -32,5 +37,8 @@ interface FolderDao {
 
     @Query("SELECT COUNT(*) FROM folders")
     suspend fun getCount(): Int
+
+    @Query("UPDATE folders SET coverPath = :artUri WHERE id = :folderId")
+    suspend fun updateFolderArtUri(folderId: Long, artUri: String?)
 
 }

@@ -100,6 +100,7 @@ class MusicRepository(
                 val dateAdded = cursor.getLong(addedColumn) * 1000
                 val folderPath = File(path).parent ?: ""
 
+                //берём id существующих в базе файлов
                 songDao.getById(id)?.let { existingFile ->
                     // Файл существует в базе
                     dbIds.remove(id)  //удаляем запись с этой id из списка всех id
@@ -110,8 +111,11 @@ class MusicRepository(
                     val isTitleChanged = existingFile.title != title
                     val isArtistChanged = existingFile.artist != artist
                     val isAlbumChanged = existingFile.album != album
+                    //чтобы обложка не пропадала после изменения другой информации,
+                    // её нужно всё время обновлять, если она != null
+                    val isCoverNotNull = existingFile.artUri != null
 
-                    if (isModified || isMoved || isTitleChanged || isArtistChanged || isAlbumChanged) {
+                    if (isModified || isMoved || isTitleChanged || isArtistChanged || isAlbumChanged || isCoverNotNull) {
                         filesToUpdate.add(
                             SongFile(
                                 mediaStoreId = id,
@@ -127,14 +131,14 @@ class MusicRepository(
                                 size = sizeFile,
                                 dateAdded = dateAdded,
                                 folderPath = folderPath,
-                                artUri = null,
+                                artUri = existingFile.artUri,
                                 // Новые поля - сохраняем существующие значения, если они есть
                                 author = existingFile.author ?: getAuthorFromMetadata(context, path),
                                 genre = existingFile.genre ?: getGenreFromMetadata(context, path),
                                 year = existingFile.year ?: getYearFromMetadata(context, path)
                             )
                         )
-                        Log.d(TAG, "File updated: $path (changes: modified=$isModified, moved=$isMoved, title=$isTitleChanged, artist=$isArtistChanged, album=$isAlbumChanged)")
+                        //Log.d(TAG, "#%# File updated: $path (changes: modified=$isModified, moved=$isMoved, title=$isTitleChanged, artist=$isArtistChanged, album=$isAlbumChanged)")
                     }
                 } ?: run {
                     // Новый файл
@@ -165,9 +169,7 @@ class MusicRepository(
         }
 
         // файлы, которые есть в базе, но нет в MediaStore
-        //берем список всех id и для каждого id пробуем получить запись в базе
-        //если запись есть, помещаем ее в список для удаления, так как до этого
-        //все записи просмотрели?
+        //из списка id уже выкинуты все id кроме этих
         dbIds.forEach { id ->
             songDao.getById(id)?.let {
                 filesToDelete.add(it)

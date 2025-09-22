@@ -1,14 +1,25 @@
 package com.example.muzpleer.util
 
+import android.content.Context
 import android.net.Uri
+import android.util.Log
+import android.widget.ImageView
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.example.muzpleer.R
 import com.example.muzpleer.model.Album
 import com.example.muzpleer.model.Artist
 import com.example.muzpleer.model.Folder
 import com.example.muzpleer.model.Playlist
 import com.example.muzpleer.model.Song
+import com.example.muzpleer.ui.local.adapters.SongSelectionAdapter.Companion.TAG
+import com.example.muzpleer.ui.local.adapters.getFilePathFromUri
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+
+const val TAG = "33333"
 
 fun getTracksCountString(count: Int): String {
     return when {
@@ -117,5 +128,69 @@ fun getNormalizedPath(uriString: String): String {
         Uri.decode(uriString.substring(7))
     } else {
         uriString
+    }
+}
+
+fun showCoverImageWithGlide(context: Context, artUri: Uri?, imageView: ImageView){
+    when {
+        artUri == null -> {
+            Log.d(TAG, "1 Additionally showCoverImageWithGlide: artUri == null ")
+            // Загрузка стандартной обложки
+            Glide.with(context)
+                .load(R.drawable.muz_player3)
+                .into(imageView)
+        }
+        artUri.scheme == "content" && artUri.authority == "com.android.providers.downloads.documents" -> {
+            Log.d(TAG, "2 Additionally showCoverImageWithGlide: artUri.scheme == \"content\"")
+            // Обработка специальных content URI
+            loadDownloadDocumentUri(context, artUri, imageView)
+        }
+        artUri.toString().contains("albumart") -> {
+            Log.d(TAG, "3 Additionally showCoverImageWithGlide: artUri.toString().contains(\"albumart\")")
+            // Стандартные album art URI
+            Glide.with(context)
+                .load(artUri)
+                .placeholder(R.drawable.muz_player3)
+                .error(R.drawable.muz_player3)
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                .into(imageView)
+        }
+        else -> {
+            // Все остальные URI
+            Log.d(TAG, "4 Additionally showCoverImageWithGlide: Все остальные URI")
+            Glide.with(context)
+                .load(artUri)
+                .placeholder(R.drawable.muz_player3)
+                .error(R.drawable.muz_player3)
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                .into(imageView)
+        }
+    }
+}
+private fun loadDownloadDocumentUri(context: Context, uri: Uri, imageView: ImageView) {
+    try {
+        // Пытаемся получить реальный путь файла
+        val filePath = getFilePathFromUri(context, uri)
+        if (filePath != null) {
+            Glide.with(context)
+                .load(File(filePath))
+                .placeholder(R.drawable.muz_player3)
+                .error(R.drawable.muz_player3)
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                .into(imageView)
+        } else {
+            // Fallback: пытаемся загрузить через ContentResolver
+            Glide.with(context)
+                .load(uri)
+                .placeholder(R.drawable.muz_player3)
+                .error(R.drawable.muz_player3)
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                .into(imageView)
+        }
+    } catch (e: Exception) {
+        Log.e(TAG, "Error loading download document URI: ${e.message}")
+        Glide.with(context)
+            .load(R.drawable.muz_player3)
+            .into(imageView)
     }
 }

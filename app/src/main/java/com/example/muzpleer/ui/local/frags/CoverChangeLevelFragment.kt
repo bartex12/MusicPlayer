@@ -67,14 +67,12 @@ class CoverChangeLevelFragment: Fragment() {
         //обеспечивает установку обложки при открытии CoverChangeFragment и замене обложки через pickImage
         viewModel.coverImageUriLevel.observe(viewLifecycleOwner) { uri ->
             Log.d(TAG, "3--- CoverChangeLevelFragment coverImageUriLevel.observe: uri = $uri ")
-            uri?.let {
-                Glide.with(binding.root.context)
-                    .load(it)
-                    .placeholder(R.drawable.muz_player3)
-                    .error(R.drawable.muz_player3)
-                    .diskCacheStrategy(DiskCacheStrategy.ALL)
-                    .into(binding.coverImageViewLevel)
-            }
+            Glide.with(binding.root.context)
+                .load(uri)
+                .placeholder(R.drawable.muz_player3)
+                .error(R.drawable.muz_player3)
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                .into(binding.coverImageViewLevel)
         }
 
         binding.usePhonePhotosLevel.setOnClickListener {
@@ -93,10 +91,10 @@ class CoverChangeLevelFragment: Fragment() {
             viewModel.getCoverImageUriLevel()?. let{curUri->
                 Log.d(TAG, "4--- CoverChangeLevelFragment saveButtonLevel: curUri = $curUri")
                 when (levelType) {
-                    LevelType.PLAYLIST -> viewModel.updateCoverImageLevelAndSave(curUri, levelId)
+                    LevelType.PLAYLIST -> viewModel.updateCoverImageLevelAndSave(curUri, levelId) //+
                     LevelType.ALBUM -> { /* TODO */ }
-                    LevelType.ARTIST -> { /* TODO */ }
-                    LevelType.FOLDER -> { /* TODO */ }
+                    LevelType.ARTIST -> { viewModel.updateCoverImageArtistsAndSave(curUri, levelId) }
+                    LevelType.FOLDER -> { viewModel.updateCoverImageFolderAndSave(curUri, levelId) } //+
                     LevelType.SONG -> { /* TODO */ }
                 }
 
@@ -140,14 +138,4 @@ class CoverChangeLevelFragment: Fragment() {
     companion object{
         const val  TAG = "33333"
     }
-
-//    private fun loadCurrentCover() {
-//        when (levelType) {
-//            LevelType.PLAYLIST -> loadPlaylistCover()
-//            LevelType.ALBUM -> loadAlbumCover()
-//            LevelType.ARTIST -> loadArtistCover()
-//            LevelType.FOLDER -> loadFolderCover()
-//            LevelType.SONG -> loadSongCover()
-//        }
-//    }
 }
