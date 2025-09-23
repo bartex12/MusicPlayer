@@ -26,6 +26,7 @@ import com.example.muzpleer.repository.FavoriteRepository
 import com.example.muzpleer.repository.FolderRepository
 import com.example.muzpleer.repository.MusicRepository
 import com.example.muzpleer.repository.PlaylistRepository
+import com.example.muzpleer.room.entity.AlbumFile
 import com.example.muzpleer.room.entity.FavoriteSong
 import com.example.muzpleer.room.entity.SongFile
 import com.example.muzpleer.service.MusicServiceHandler
@@ -75,19 +76,19 @@ class SharedViewModel(
     private val _songAndPlaylist = MutableLiveData<SongAndPlaylist>()
     val songAndPlaylist: LiveData<SongAndPlaylist> = _songAndPlaylist
 
-    private val _albums = MutableLiveData<List<Album>>()
+    private val _albums = MutableLiveData<List<Album>>()  //альбомы
     val albums: LiveData<List<Album>> = _albums
 
-    private val _currentAlbum = MutableLiveData<Album?>()
+    private val _currentAlbum = MutableLiveData<Album?>() //текущий альбом
     val currentAlbum: LiveData<Album?> = _currentAlbum
 
-    private val _filteredAlbums = MutableLiveData<List<Album>>()
+    private val _filteredAlbums = MutableLiveData<List<Album>>()  //альбомы в ходе фильтрации при поиске
     val filteredAlbums: LiveData<List<Album>> = _filteredAlbums
 
-    private val _listAlbumSong = MutableLiveData<List<Song>>()
+    private val _listAlbumSong = MutableLiveData<List<Song>>()  //список песен конкретного альбома
     val listAlbumSong: LiveData<List<Song>> = _listAlbumSong
 
-    private val _filteredListAlbumSong = MutableLiveData<List<Song>>()
+    private val _filteredListAlbumSong = MutableLiveData<List<Song>>()  //фильтрованный поиском список песен конкретного альбома
     val filteredListAlbumSong: LiveData<List<Song>> = _filteredListAlbumSong
 
     private val _artists = MutableLiveData<List<Artist>>()
@@ -1051,6 +1052,26 @@ class SharedViewModel(
             // Обновляем LiveData
             _favoriteSongs.value = orderedSongs
             _filteredFavoriteSongs.value = orderedSongs
+        }
+    }
+
+    fun updateAlbumsOrder(orderedAlbums: List<Album>) {
+        viewModelScope.launch {
+            val albums:List<AlbumFile> = albumRepository.getAllAlbumSongs()
+            val updatedAlbums: MutableList<AlbumFile> = mutableListOf<AlbumFile>()
+
+            orderedAlbums.forEachIndexed { index, album ->
+                val album1 = albums.find { it.albumId == album.albumId }
+                album1?.let {
+                    updatedAlbums.add(it.copy(sortOrder = index))
+                }
+            }
+            Log.d(TAG,"--#**# SharedViewModel updateAlbumsOrder updatedAlbums size = ${updatedAlbums.size} updatedAlbums = $updatedAlbums")
+            albumRepository.updateAlbumsOrder(updatedAlbums)
+
+            // Обновляем LiveData
+            _albums.value = orderedAlbums
+            _filteredAlbums.value = orderedAlbums
         }
     }
 

@@ -8,6 +8,7 @@ import com.example.muzpleer.room.dao.AlbumDao
 import com.example.muzpleer.room.dao.SongDao
 import com.example.muzpleer.room.entity.AlbumFile
 import com.example.muzpleer.room.entity.ArtistFile
+import com.example.muzpleer.room.entity.FavoriteSong
 import com.example.muzpleer.room.entity.SongFile
 import com.example.muzpleer.room.utils.fromSongFileListToSongList
 import com.example.muzpleer.room.utils.toArtistList
@@ -81,6 +82,16 @@ class AlbumRepository(
                 albumId = albumFile.albumId,
                 songs = fromSongFileListToSongList (songFileList)
             )
+        }
+    }
+
+    suspend fun getAllAlbumSongs(): List<AlbumFile> {
+        return albumDao.getAllAlbums()
+    }
+
+    suspend fun updateAlbumsOrder(albums: List<AlbumFile>) {
+        albums.forEachIndexed { index, album ->
+            albumDao.updateAlbumsSortOrder(album.id, index)
         }
     }
 

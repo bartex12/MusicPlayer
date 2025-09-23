@@ -6,6 +6,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import com.example.muzpleer.room.entity.AlbumFile
+import com.example.muzpleer.room.entity.FavoriteSong
 
 @Dao
 interface AlbumDao {
@@ -42,4 +43,10 @@ interface AlbumDao {
 
     @Query("UPDATE albums SET coverPath = :artUri WHERE id = :albumId")
     suspend fun updateAlbumArtUri(albumId: Long, artUri: String?)
+
+    @Query("UPDATE albums SET sortOrder = :newOrder WHERE id = :id")
+    suspend fun updateAlbumsSortOrder(id: Long, newOrder: Int)
+
+    @Query("SELECT * FROM albums ORDER BY sortOrder ASC")
+    suspend fun getAllOrderedAlbums(): List<AlbumFile>
 }

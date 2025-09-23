@@ -17,5 +17,6 @@ data class AlbumFile(
     val songCount: Int,
     val coverPath: String?,  //путь к обложке
     val createdAt: Long = System.currentTimeMillis(),
-    val updatedAt: Long = System.currentTimeMillis()
+    val updatedAt: Long = System.currentTimeMillis(),
+    var sortOrder: Int = 0 // Новое поле для порядка сортировки
 )

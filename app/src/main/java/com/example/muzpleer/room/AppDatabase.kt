@@ -24,7 +24,7 @@ import com.example.muzpleer.room.entity.SongFile
 @Database(
     entities = [SongFile::class, AlbumFile::class, ArtistFile::class,
         FolderFile::class, FavoriteSong::class, PlaylistFile::class, PlaylistSongCrossRef::class],
-    version = 5,
+    version = 6,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {

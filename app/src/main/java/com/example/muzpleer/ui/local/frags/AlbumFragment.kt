@@ -9,19 +9,23 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.SearchView
+import androidx.core.content.ContextCompat
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.viewpager.widget.ViewPager
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentAlbumBinding
 import com.example.muzpleer.ui.local.adapters.AlbumsAdapter
+import com.example.muzpleer.ui.local.adapters.touch.ItemTouchHelperCallback
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 import com.example.muzpleer.util.getSortedDataAlbum
 import com.example.muzpleer.util.getSortedDataSong
+import com.google.android.material.snackbar.Snackbar
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 
 
@@ -30,6 +34,9 @@ class AlbumFragment: Fragment() {
     private val binding get() = _binding!!
     private val viewModel: SharedViewModel by activityViewModel()
     private lateinit var adapter: AlbumsAdapter
+
+    private lateinit var itemTouchHelper: ItemTouchHelper
+    private var isEditMode = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -56,10 +63,19 @@ class AlbumFragment: Fragment() {
             findNavController().navigate( R.id.alltracksFragment, bundle)
         }
 
+        // Настраиваем ItemTouchHelper
+        val callback = ItemTouchHelperCallback(adapter)
+        itemTouchHelper = ItemTouchHelper(callback)
+        // Передаем ItemTouchHelper в адаптер
+        adapter.setItemTouchHelper(itemTouchHelper)
+        itemTouchHelper.attachToRecyclerView(binding.albumRecyclerView)
+
         binding.albumRecyclerView.apply {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = this@AlbumFragment.adapter
         }
+
+        viewModel.loadAlbums()
 
         viewModel.filteredAlbums.observe(viewLifecycleOwner) { filteredAlbums ->
             Log.d(TAG,"33 AlbumFragment onViewCreated filteredAlbums.observe: filteredAlbums.size= ${filteredAlbums.size} ")
@@ -83,6 +99,7 @@ class AlbumFragment: Fragment() {
         val firstPosition = manager.findFirstVisibleItemPosition()
         Log.d(TAG, "AlbumFragment onPause firstPosition = $firstPosition")
         viewModel.savePositionAlbum(firstPosition)
+        isEditMode = false  ///чтобы не оставался режим редактирования
     }
 
     override fun onDestroyView() {
@@ -124,14 +141,59 @@ class AlbumFragment: Fragment() {
                         return true
                     }
                 })
+                // Показываем/скрываем пункт в зависимости от режима
+                val editItem = menu.findItem(R.id.action_edit_order)
+                editItem.title = if (isEditMode) "Готово" else "Редактировать порядок"
             }
             override fun onPrepareMenu(menu: Menu) {
+                super.onPrepareMenu(menu)
+
                 menu.findItem(R.id.action_go_to_song).isVisible =false
-                menu.findItem(R.id.action_edit_order).isVisible =false
+
+                val editItem = menu.findItem(R.id.action_edit_order)
+                // Меняем цвет в зависимости от режима
+                val color = if (isEditMode) {
+                    ContextCompat.getColor(requireContext(), R.color.green)
+                } else {
+                    ContextCompat.getColor(requireContext(), R.color.white)
+                }
+                editItem?.icon?.setTint(color)
             }
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                when(menuItem.itemId){
+                    R.id.action_edit_order -> {
+                        toggleEditMode()
+                        true
+                    }
+                }
                 return false
             }
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
+    }
+
+    private fun toggleEditMode() {
+        isEditMode = !isEditMode
+        adapter.setEditMode(isEditMode)
+
+        // Включаем/выключаем возможность перетаскивания
+        if (isEditMode) {
+            itemTouchHelper.attachToRecyclerView(binding.albumRecyclerView)
+        } else {
+            itemTouchHelper.attachToRecyclerView(null) // Отключаем перетаскивание
+        }
+
+        // Обновляем меню
+        activity?.invalidateOptionsMenu()
+
+        // Показываем/скрываем подсказку
+        if (isEditMode) {
+            showEditModeHint()
+        }
+    }
+    private fun showEditModeHint() {
+        Snackbar.make(binding.root, "Перетаскивайте песни для изменения порядка",
+            Snackbar.LENGTH_LONG)
+            .setAction("OK") {toggleEditMode() }
+            .show()
     }
 }
