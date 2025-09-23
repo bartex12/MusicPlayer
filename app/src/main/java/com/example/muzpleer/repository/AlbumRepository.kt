@@ -22,37 +22,62 @@ class AlbumRepository(
 
     suspend fun syncAlbumsFromMediaFiles() {
 
-        // СОХРАНЯЕМ КАСТОМНЫЕ ОБЛОЖКИ ПЕРЕД ОЧИСТКОЙ
-        val existingAlbum = albumDao.getAllAlbums()
-        val customCoversMap = mutableMapOf<String, String>() // // albumKey -> coverPath
+//        // СОХРАНЯЕМ КАСТОМНЫЕ ОБЛОЖКИ ПЕРЕД ОЧИСТКОЙ
+//        val existingAlbum = albumDao.getAllAlbums()
+//        val customCoversMap = mutableMapOf<String, String>() // // albumKey -> coverPath
+//
+//        existingAlbum.forEach { album ->
+//            if (!album.coverPath.isNullOrEmpty()) {
+//                customCoversMap[album.title] = album.coverPath
+//            }
+//        }
+//        Log.d(TAG, "# Сохранено ${customCoversMap.size} кастомных обложек альбомов ")
+//
+//        // Очищаем альбомы
+//        albumDao.deleteAll()
+//
+//        // Получаем все медиафайлы
+//        val mediaFiles = mediaDao.getAllFiles()
+//
+//        // Группируем по альбомам albumId + album
+//        val albumsMap = mediaFiles
+//            .groupBy { it.albumId to it.album }
+//            .mapValues { (key, songs) ->
+//                    val (albumId, albumName) = key
+//                    val artists = songs.map { it.artist ?: "Unknown" }.distinct()
+//
+//                // ВОССТАНАВЛИВАЕМ КАСТОМНУЮ ОБЛОЖКУ
+//                val albumCoverPath = customCoversMap[albumName] ?: "" //todo
 
-        existingAlbum.forEach { album ->
+        // СОХРАНЯЕМ КАСТОМНЫЕ ОБЛОЖКИ ПЕРЕД ОЧИСТКОЙ
+        val existingAlbums = albumDao.getAllAlbums()
+        val customCoversMap = mutableMapOf<Long, String>() // albumId -> coverPath
+
+        existingAlbums.forEach { album ->
             if (!album.coverPath.isNullOrEmpty()) {
-                customCoversMap[album.title] = album.coverPath
+                customCoversMap[album.albumId] = album.coverPath
             }
         }
         Log.d(TAG, "# Сохранено ${customCoversMap.size} кастомных обложек альбомов ")
-
-        // Очищаем альбомы
+        // Очищаем и пересоздаем альбомы
         albumDao.deleteAll()
 
-        // Получаем все медиафайлы
         val mediaFiles = mediaDao.getAllFiles()
 
-        // Группируем по альбомам
         val albumsMap = mediaFiles
-            .groupBy { it.albumId to it.album }
-            .mapValues { (key, songs) ->
-                    val (albumId, albumName) = key
-                    val artists = songs.map { it.artist ?: "Unknown" }.distinct()
+            .groupBy { it.albumId } // только по ID! альбома
+            .mapValues { (albumId, songs) ->
+                val albumName = songs.firstOrNull()?.album ?: "Неизвестный альбом"
+                val artists = songs.map { it.artist ?: "Unknown" }.distinct()
+                val mainArtist = if (artists.size > 1) "Разные исполнители" else artists.first()
 
-                // ВОССТАНАВЛИВАЕМ КАСТОМНУЮ ОБЛОЖКУ
-                val albumCoverPath = customCoversMap[albumName] ?: "" //todo
+               // val albumCoverPath = customCoversMap[albumId] ?: getDefaultAlbumCover(albumId)
+                val albumCoverPath = customCoversMap[albumId] ?: ""  //todo заменить на getDefaultAlbumCover(albumId)
 
                 AlbumFile(
                     albumId = albumId,
-                    title = albumName ?: "Неизвестный альбом",
-                    artist = if (artists.size > 1) "Разные исполнители" else artists.first(),
+                    title =albumName,
+                    artist = mainArtist,
                     allArtists = artists.joinToString(";"),
                     songCount = songs.size,
                     coverPath = albumCoverPath
