@@ -71,18 +71,6 @@ class ArtistsAdapter(
                 append("${getAlbumsCountString(artist.albums.size)}, ")
                 append(getTracksCountString(artist.songs.size))
             }
-//            // Загружаем обложку, если есть
-//            val albumArtUri = ContentUris.withAppendedId(
-//                "content://media/external/audio/albumart".toUri(),
-//                artist.albums.firstOrNull()?.albumId ?: -1
-//            )
-//
-//            // Загрузка обложки
-//            Glide.with(binding.root.context)
-//                .load(albumArtUri)
-//                .placeholder(R.drawable.muz_player2)
-//                .error(R.drawable.muz_player2)
-//                .into(binding.ivArtistArtwork)
 
             //из-за того, что обложки не отображаются, как во вкладках, приходится использовать более сложный код
             showCoverImageWithGlide(binding.root.context, artist.artworkUri, binding.ivArtistArtwork)

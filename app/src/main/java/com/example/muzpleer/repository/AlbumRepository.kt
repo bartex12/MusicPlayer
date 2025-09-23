@@ -22,33 +22,6 @@ class AlbumRepository(
 
     suspend fun syncAlbumsFromMediaFiles() {
 
-//        // СОХРАНЯЕМ КАСТОМНЫЕ ОБЛОЖКИ ПЕРЕД ОЧИСТКОЙ
-//        val existingAlbum = albumDao.getAllAlbums()
-//        val customCoversMap = mutableMapOf<String, String>() // // albumKey -> coverPath
-//
-//        existingAlbum.forEach { album ->
-//            if (!album.coverPath.isNullOrEmpty()) {
-//                customCoversMap[album.title] = album.coverPath
-//            }
-//        }
-//        Log.d(TAG, "# Сохранено ${customCoversMap.size} кастомных обложек альбомов ")
-//
-//        // Очищаем альбомы
-//        albumDao.deleteAll()
-//
-//        // Получаем все медиафайлы
-//        val mediaFiles = mediaDao.getAllFiles()
-//
-//        // Группируем по альбомам albumId + album
-//        val albumsMap = mediaFiles
-//            .groupBy { it.albumId to it.album }
-//            .mapValues { (key, songs) ->
-//                    val (albumId, albumName) = key
-//                    val artists = songs.map { it.artist ?: "Unknown" }.distinct()
-//
-//                // ВОССТАНАВЛИВАЕМ КАСТОМНУЮ ОБЛОЖКУ
-//                val albumCoverPath = customCoversMap[albumName] ?: "" //todo
-
         // СОХРАНЯЕМ КАСТОМНЫЕ ОБЛОЖКИ ПЕРЕД ОЧИСТКОЙ
         val existingAlbums = albumDao.getAllAlbums()
         val customCoversMap = mutableMapOf<Long, String>() // albumId -> coverPath
@@ -71,7 +44,6 @@ class AlbumRepository(
                 val artists = songs.map { it.artist ?: "Unknown" }.distinct()
                 val mainArtist = if (artists.size > 1) "Разные исполнители" else artists.first()
 
-               // val albumCoverPath = customCoversMap[albumId] ?: getDefaultAlbumCover(albumId)
                 val albumCoverPath = customCoversMap[albumId] ?: ""  //todo заменить на getDefaultAlbumCover(albumId)
 
                 AlbumFile(

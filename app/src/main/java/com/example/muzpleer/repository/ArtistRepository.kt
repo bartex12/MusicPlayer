@@ -1,11 +1,9 @@
 package com.example.muzpleer.repository
 
-import android.net.Uri
 import android.util.Log
 import androidx.core.net.toUri
 import com.example.muzpleer.model.Album
 import com.example.muzpleer.model.Artist
-import com.example.muzpleer.model.Folder
 import com.example.muzpleer.model.Song
 import com.example.muzpleer.room.dao.AlbumDao
 import com.example.muzpleer.room.dao.ArtistDao
@@ -132,16 +130,6 @@ class ArtistRepository (private val artistDao: ArtistDao,
         }
         return fromSongFileListToSongList(songFileList)
     }
-
-    //один из вариантов получения Artist из списка ArtistsFile
-//    suspend fun getArtistById(id: Long):Artist?{
-//        val listOfArtists = getAllArtistsWithSongsAndAlbums()
-//        val artist =  listOfArtists.first { artist->
-//            artist.id == id
-//        }
-//        Log.d(TAG, "# ArtistsRepository getArtistById artist name = ${artist.name}")
-//        return artist
-//    }
 
     private fun generateArtistId(artistName: String): Long {
         return artistName.hashCode().toLong()
