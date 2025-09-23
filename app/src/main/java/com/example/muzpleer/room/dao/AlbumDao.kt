@@ -37,9 +37,9 @@ interface AlbumDao {
     @Query("SELECT COUNT(*) FROM albums")
     suspend fun getCount(): Int
 
-//    @Query("SELECT * FROM media_files WHERE albumId = :albumId ORDER BY trackNumber, title")
-//    suspend fun getFilesByAlbumId(albumId: Long): List<SongFile>
-
     @Query("SELECT DISTINCT albumId FROM media_files WHERE albumId IS NOT NULL")
     suspend fun getAllAlbumIds(): List<Long>
+
+    @Query("UPDATE albums SET coverPath = :artUri WHERE id = :albumId")
+    suspend fun updateAlbumArtUri(albumId: Long, artUri: String?)
 }

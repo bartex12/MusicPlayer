@@ -76,6 +76,9 @@ class SharedViewModel(
     private val _albums = MutableLiveData<List<Album>>()
     val albums: LiveData<List<Album>> = _albums
 
+    private val _currentAlbum = MutableLiveData<Album?>()
+    val currentAlbum: LiveData<Album?> = _currentAlbum
+
     private val _filteredAlbums = MutableLiveData<List<Album>>()
     val filteredAlbums: LiveData<List<Album>> = _filteredAlbums
 
@@ -656,6 +659,13 @@ class SharedViewModel(
         saveCoverLevelToDatabase(uri, levelId)
     }
 
+    //для альбомов
+    fun updateCoverImageAlbumAndSave(uri: Uri, albumId:Long) {
+        Log.d(TAG, "5--- SharedViewModel updateCoverImageAlbumAndSave uri = $uri albumId =$albumId")
+        _coverImageUriLevel.value = uri
+        saveCoverAlbumToDatabase(uri, albumId)
+    }
+
     //для артистов
     fun updateCoverImageArtistsAndSave(uri: Uri, artistId:Long) {
         Log.d(TAG, "5--- SharedViewModel updateCoverImageArtistsAndSave uri = $uri artistId =$artistId")
@@ -724,15 +734,25 @@ class SharedViewModel(
        }
    }
 
+    fun  saveCoverAlbumToDatabase(uri: Uri, albumId:Long){
+        Log.d(TAG, "6--- SharedViewModel saveCoverAlbumToDatabase uri = $uri albumId = $albumId")
+        viewModelScope.launch {
+            albumRepository.updateAlbumArtUri(albumId, uri.toString())
+            loadAlbums() // Обновляем список альбомов
+
+            //проверка
+            val albumFile = albumRepository.getAlbumById(albumId)
+            Log.d(TAG, "6-1--- проверка SharedViewModel saveCoverFolderToDatabase " +
+                    " albumFile title = ${albumFile?.title} albumFile id = ${albumFile?.id} " +
+                    "albumFile albumId = ${albumFile?.albumId} albumFile coverPath = ${albumFile?.coverPath}")
+        }
+    }
+
     fun  saveCoverArtistToDatabase(uri: Uri, artistId:Long){
         Log.d(TAG, "6--- SharedViewModel saveCoverArtistToDatabase uri = $uri artistId = $artistId")
         viewModelScope.launch {
             artistsRepository.updateArtistArtUri(artistId, uri.toString())
             loadArtists() // Обновляем список артистов
-//            //проверка
-//            val folderFile = folderRepository.getFolderFileById(folderId)
-//            Log.d(TAG, "6-1---SharedViewModel saveCoverFolderToDatabase " +
-//                    "folderFile folderName = ${folderFile?.folderName}  coverPath =${folderFile?.coverPath}")
         }
     }
 
@@ -743,7 +763,7 @@ class SharedViewModel(
             loadFolders() // Обновляем список папок
             //проверка
             val folderFile = folderRepository.getFolderFileById(folderId)
-            Log.d(TAG, "6-1---SharedViewModel saveCoverFolderToDatabase " +
+            Log.d(TAG, "6-1--- проверка SharedViewModel saveCoverFolderToDatabase " +
                     "folderFile folderName = ${folderFile?.folderName}  coverPath =${folderFile?.coverPath}")
         }
     }
@@ -1102,6 +1122,17 @@ class SharedViewModel(
         }
     }
 
+    fun setCurrentAlbum(album: Album){
+        viewModelScope.launch {
+            try {
+                _currentAlbum.value = album  //todo не нужно?
+                _coverImageUriLevel.value = album.artworkUri
+            } catch (e: Exception) {
+                Log.d(TAG,"SharedViewModel setCurrentAlbum Error loading playlist error = ${e.message}")
+            }
+        }
+    }
+
     fun setCurrentArtist(artist: Artist){
         viewModelScope.launch {
             try {
@@ -1112,7 +1143,6 @@ class SharedViewModel(
             }
         }
     }
-
 
     fun setCurrentFolderByFolderPath(folderPath:String){
         viewModelScope.launch {

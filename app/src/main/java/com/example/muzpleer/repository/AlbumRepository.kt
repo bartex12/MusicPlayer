@@ -7,6 +7,7 @@ import com.example.muzpleer.model.Song
 import com.example.muzpleer.room.dao.AlbumDao
 import com.example.muzpleer.room.dao.SongDao
 import com.example.muzpleer.room.entity.AlbumFile
+import com.example.muzpleer.room.entity.ArtistFile
 import com.example.muzpleer.room.entity.SongFile
 import com.example.muzpleer.room.utils.fromSongFileListToSongList
 import com.example.muzpleer.room.utils.toArtistList
@@ -20,31 +21,52 @@ class AlbumRepository(
     }
 
     suspend fun syncAlbumsFromMediaFiles() {
-        // Очищаем перед синхронизацией!
+
+        // СОХРАНЯЕМ КАСТОМНЫЕ ОБЛОЖКИ ПЕРЕД ОЧИСТКОЙ
+        val existingAlbum = albumDao.getAllAlbums()
+        val customCoversMap = mutableMapOf<String, String>() // // albumKey -> coverPath
+
+        existingAlbum.forEach { album ->
+            if (!album.coverPath.isNullOrEmpty()) {
+                customCoversMap[album.title] = album.coverPath
+            }
+        }
+        Log.d(TAG, "# Сохранено ${customCoversMap.size} кастомных обложек альбомов ")
+
+        // Очищаем альбомы
         albumDao.deleteAll()
+
         // Получаем все медиафайлы
         val mediaFiles = mediaDao.getAllFiles()
+
         // Группируем по альбомам
-        val albumsMap =
-            mediaFiles.groupBy { it.albumId to it.album }
-                .mapValues { (key, songs) ->
+        val albumsMap = mediaFiles
+            .groupBy { it.albumId to it.album }
+            .mapValues { (key, songs) ->
                     val (albumId, albumName) = key
                     val artists = songs.map { it.artist ?: "Unknown" }.distinct()
+
+                // ВОССТАНАВЛИВАЕМ КАСТОМНУЮ ОБЛОЖКУ
+                val albumCoverPath = customCoversMap[albumName] ?: "" //todo
+
                 AlbumFile(
                     albumId = albumId,
                     title = albumName ?: "Неизвестный альбом",
                     artist = if (artists.size > 1) "Разные исполнители" else artists.first(),
                     allArtists = artists.joinToString(";"),
                     songCount = songs.size,
-                    coverPath = songs.firstOrNull()?.artUri
+                    coverPath = albumCoverPath
                 )
             }
+
+        Log.d(TAG, "# AlbumRepository Создано ${albumsMap.size} альбомов")
 
         try {
             // Сохраняем в базу
             albumDao.insertAll(albumsMap.values.toList())
+            Log.d(TAG, "# AlbumRepository Альбомы успешно сохранены в базу")
         }catch (e: Exception){
-            Log.d(TAG, "*AlbumRepository syncAlbumsFromMediaFiles Exception = ${e.message}")
+            Log.d(TAG, "# AlbumRepository syncAlbumsFromMediaFiles Exception = ${e.message}")
         }
     }
 
@@ -54,7 +76,7 @@ class AlbumRepository(
             val songFileList = mediaDao.getFilesByAlbumId(albumFile.albumId)
             //Log.d(TAG, "*AlbumRepository getAllAlbumsWithSongs songFileList size = ${songFileList.size}")
             Album(
-                id =albumFile.albumId,
+                id =albumFile.id,
                 title = albumFile.title,
                 artist =albumFile.artist ,
                 artists = albumFile.allArtists.toArtistList(),
@@ -78,5 +100,13 @@ class AlbumRepository(
             Log.d(TAG, "*AlbumRepository getAlbumSongList songFileList size = ${songFileList.size}")
         }
         return fromSongFileListToSongList(songFileList)
+    }
+
+    suspend fun updateAlbumArtUri(albumId: Long, artUri: String?) {
+        albumDao.updateAlbumArtUri(albumId, artUri)
+    }
+
+    suspend fun getAlbumById(albumId:Long): AlbumFile?{
+        return albumDao.getAlbumById(albumId)
     }
 }

@@ -33,7 +33,7 @@ class CoverChangeLevelFragment: Fragment() {
     private var levelType: LevelType = LevelType.PLAYLIST
 
     enum class LevelType {
-        PLAYLIST, ALBUM, ARTIST, FOLDER, SONG
+        PLAYLIST, ALBUM, ARTIST, FOLDER
     }
 
     private val pickImage =
@@ -70,7 +70,7 @@ class CoverChangeLevelFragment: Fragment() {
             Glide.with(binding.root.context)
                 .load(uri)
                 .placeholder(R.drawable.muz_player3)
-                .error(R.drawable.muz_player3)
+                .error(R.drawable.muz_player2)
                 .diskCacheStrategy(DiskCacheStrategy.ALL)
                 .into(binding.coverImageViewLevel)
         }
@@ -92,12 +92,10 @@ class CoverChangeLevelFragment: Fragment() {
                 Log.d(TAG, "4--- CoverChangeLevelFragment saveButtonLevel: curUri = $curUri")
                 when (levelType) {
                     LevelType.PLAYLIST -> viewModel.updateCoverImageLevelAndSave(curUri, levelId) //+
-                    LevelType.ALBUM -> { /* TODO */ }
-                    LevelType.ARTIST -> { viewModel.updateCoverImageArtistsAndSave(curUri, levelId) }
+                    LevelType.ALBUM -> { viewModel.updateCoverImageAlbumAndSave(curUri, levelId) }
+                    LevelType.ARTIST -> { viewModel.updateCoverImageArtistsAndSave(curUri, levelId) } //+
                     LevelType.FOLDER -> { viewModel.updateCoverImageFolderAndSave(curUri, levelId) } //+
-                    LevelType.SONG -> { /* TODO */ }
                 }
-
             }
             findNavController().navigateUp()
         }

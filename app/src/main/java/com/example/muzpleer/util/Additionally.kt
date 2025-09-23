@@ -137,7 +137,7 @@ fun showCoverImageWithGlide(context: Context, artUri: Uri?, imageView: ImageView
             Log.d(TAG, "1 Additionally showCoverImageWithGlide: artUri == null ")
             // Загрузка стандартной обложки
             Glide.with(context)
-                .load(R.drawable.muz_player3)
+                .load(R.drawable.muz_player5)
                 .into(imageView)
         }
         artUri.scheme == "content" && artUri.authority == "com.android.providers.downloads.documents" -> {
@@ -151,7 +151,7 @@ fun showCoverImageWithGlide(context: Context, artUri: Uri?, imageView: ImageView
             Glide.with(context)
                 .load(artUri)
                 .placeholder(R.drawable.muz_player3)
-                .error(R.drawable.muz_player3)
+                .error(R.drawable.muz_player2)
                 .diskCacheStrategy(DiskCacheStrategy.ALL)
                 .into(imageView)
         }
@@ -161,7 +161,7 @@ fun showCoverImageWithGlide(context: Context, artUri: Uri?, imageView: ImageView
             Glide.with(context)
                 .load(artUri)
                 .placeholder(R.drawable.muz_player3)
-                .error(R.drawable.muz_player3)
+                .error(R.drawable.muz_player2)
                 .diskCacheStrategy(DiskCacheStrategy.ALL)
                 .into(imageView)
         }
