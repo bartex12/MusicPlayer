@@ -46,77 +46,68 @@ class SongListFragment:Fragment() {
 
         initMenu()
 
-        val from:Int? = arguments?.getInt("from")
-        Log.d(TAG, " !@# SongListFragment onViewCreated from =  $from")
-        if (from != null){
-            when (from){
-                2->{
-                    if (arguments?.getLong("albumId") != null)  {
-                        val albumId = arguments?.getLong("albumId")!!
-                        Log.d(TAG, "40!@# SongListFragment arguments albumId  $albumId")
+        if (arguments?.getLong("albumId") != null)  {
+            val albumId = arguments?.getLong("albumId")!!
+            Log.d(TAG, "40!@# SongListFragment arguments albumId  $albumId")
 
-                        viewModel.getSongsByAlbum(albumId)
+            viewModel.getSongsByAlbum(albumId)
 
-                        viewModel.filteredListAlbumSong.observe(viewLifecycleOwner) { albumSongs ->
-                            Log.d(TAG, "41!@# SongListFragment arguments filteredListAlbumSong size ${albumSongs.size}")
-                            adapter.data = getSortedDataSong(albumSongs)
-                        }
-                        //обновление обложки при её замене
-                        viewModel.coverImageUri.observe(viewLifecycleOwner) { uri ->
-                            val selectedSong = viewModel.getSelectedSong()
-                            selectedSong?. let{selectedSong->
-                                selectedSong.artUri = uri.toString()
-                                Log.d(TAG,"42!@# SongListFragment coverImageUri.observe uri = $uri ")
-                            }
-                            adapter.notifyDataSetChanged()
-                        }
-                    }
+            viewModel.filteredListAlbumSong.observe(viewLifecycleOwner) { albumSongs ->
+                Log.d(TAG, "41!@# SongListFragment arguments filteredListAlbumSong size ${albumSongs.size}")
+                adapter.data = getSortedDataSong(albumSongs)
+            }
+            //обновление обложки при её замене
+            viewModel.coverImageUri.observe(viewLifecycleOwner) { uri ->
+                val selectedSong = viewModel.getSelectedSong()
+                selectedSong?. let{selectedSong->
+                    selectedSong.artUri = uri.toString()
+                    Log.d(TAG,"42!@# SongListFragment coverImageUri.observe uri = $uri ")
                 }
-                3->{
-                    if(arguments?.getLong("artistId") != null) {
-                        val artistId = arguments?.getLong("artistId")!!
-                        Log.d(TAG, "43!@# SongListFragment arguments artistId  $artistId")
-
-                        viewModel.getSongsByArtist(artistId)
-
-                        viewModel.filteredListArtistSong.observe(viewLifecycleOwner) { artistSongs ->
-                            Log.d(TAG, "44!@# SongListFragment filteredListArtistSong.observe filteredListArtistSong size ${artistSongs.size}")
-                            adapter.data = getSortedDataSong(artistSongs)
-                        }
-                        //обновление обложки при её замене
-                        viewModel.coverImageUri.observe(viewLifecycleOwner) { uri ->
-                            val selectedSong = viewModel.getSelectedSong()
-                            selectedSong?. let{selectedSong->
-                                selectedSong.artUri = uri.toString()
-                                Log.d(TAG,"45!@# SongListFragment coverImageUri.observe uri = $uri ")
-                            }
-                            adapter.notifyDataSetChanged()
-                        }
-                    }
-                }
-                4->{
-                    if(arguments?.getString("folderPath") != null) {
-                        val folderPath = arguments?.getString("folderPath")!!
-                        Log.d(TAG, "46!@# SongListFragment arguments folderPath  $folderPath")
-                        viewModel.getSongsByFolder(folderPath)
-
-                        viewModel.filteredListFolderSong.observe(viewLifecycleOwner) { folderSongs ->
-                            Log.d(TAG, "47!@# SongListFragment filteredListFolderSong.observe folderSongs size ${folderSongs.size}")
-                            adapter.data = getSortedDataSong(folderSongs)
-                        }
-                        //обновление обложки при её замене
-                        viewModel.coverImageUri.observe(viewLifecycleOwner) { uri ->
-                            val selectedSong = viewModel.getSelectedSong()
-                            selectedSong?. let{selectedSong->
-                                selectedSong.artUri = uri.toString()
-                                Log.d(TAG,"48!@# SongListFragment coverImageUri.observe uri = $uri ")
-                            }
-                            adapter.notifyDataSetChanged()
-                        }
-                    }
-                }
+                adapter.notifyDataSetChanged()
             }
         }
+
+        if(arguments?.getLong("artistId") != null) {
+            val artistId = arguments?.getLong("artistId")!!
+            Log.d(TAG, "43!@# SongListFragment arguments artistId  $artistId")
+
+            viewModel.getSongsByArtist(artistId)
+
+            viewModel.filteredListArtistSong.observe(viewLifecycleOwner) { artistSongs ->
+                Log.d(TAG, "44!@# SongListFragment filteredListArtistSong.observe filteredListArtistSong size ${artistSongs.size}")
+                adapter.data = getSortedDataSong(artistSongs)
+            }
+            //обновление обложки при её замене
+            viewModel.coverImageUri.observe(viewLifecycleOwner) { uri ->
+                val selectedSong = viewModel.getSelectedSong()
+                selectedSong?. let{selectedSong->
+                    selectedSong.artUri = uri.toString()
+                    Log.d(TAG,"45!@# SongListFragment coverImageUri.observe uri = $uri ")
+                }
+                adapter.notifyDataSetChanged()
+            }
+        }
+
+        if(arguments?.getString("folderPath") != null) {
+            val folderPath = arguments?.getString("folderPath")!!
+            Log.d(TAG, "46!@# SongListFragment arguments folderPath  $folderPath")
+            viewModel.getSongsByFolder(folderPath)
+
+            viewModel.filteredListFolderSong.observe(viewLifecycleOwner) { folderSongs ->
+                Log.d(TAG, "47!@# SongListFragment filteredListFolderSong.observe folderSongs size ${folderSongs.size}")
+                adapter.data = getSortedDataSong(folderSongs)
+            }
+            //обновление обложки при её замене
+            viewModel.coverImageUri.observe(viewLifecycleOwner) { uri ->
+                val selectedSong = viewModel.getSelectedSong()
+                selectedSong?. let{selectedSong->
+                    selectedSong.artUri = uri.toString()
+                    Log.d(TAG,"48!@# SongListFragment coverImageUri.observe uri = $uri ")
+                }
+                adapter.notifyDataSetChanged()
+            }
+        }
+
         adapter = SongsAdapter(viewModel,  { song ->
             val playlist = viewModel.getPlaylist()
 

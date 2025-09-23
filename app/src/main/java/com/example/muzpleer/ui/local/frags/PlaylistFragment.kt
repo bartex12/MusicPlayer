@@ -59,7 +59,6 @@ class PlaylistFragment():Fragment() {
 
             // Навигация через Bundle
             val bundle = Bundle().apply {
-                putInt("from", 5)
                 putLong("playlistId", playlist.id)
                 Log.d(TAG,"33 PlaylistFragment onViewCreated bundle: playlist = ${playlist.id} from = 5 ")
             }

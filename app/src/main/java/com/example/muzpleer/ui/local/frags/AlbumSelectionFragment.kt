@@ -43,7 +43,7 @@ class AlbumSelectionFragment: Fragment() {
             // Навигация через Bundle
             val bundle = Bundle().apply {
                 putLong("playlistId", playlistId)
-                putLong("albumId", album.id)
+                putLong("albumId", album.albumId)
                 putSerializable("selectionType", selectionType)
                 Log.d(TAG,"AlbumSelectionFragment onViewCreated bundle: selectionType =$selectionType " +
                         "albumId = ${album.id} playlistId = $playlistId ")

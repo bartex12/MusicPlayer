@@ -37,16 +37,9 @@ class SongPlaylistFragment:Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val from:Int? = arguments?.getInt("from")
-        if (from != null){
-            when (from){
-                5->{
-                    if(arguments?.getLong("playlistId") != null) {
-                        playlistId = requireArguments().getLong("playlistId")
-                        Log.d(TAG, "!@#@ SongPlaylistFragment onCreate from = $from playlistId  $playlistId")
-                    }
-                }
-            }
+        if(arguments?.getLong("playlistId") != null) {
+            playlistId = requireArguments().getLong("playlistId")
+            Log.d(TAG, "!@#@ SongPlaylistFragment onCreate playlistId  $playlistId")
         }
     }
 
