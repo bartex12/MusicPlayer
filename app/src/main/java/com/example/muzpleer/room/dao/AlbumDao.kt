@@ -22,7 +22,6 @@ interface AlbumDao {
     @Query("SELECT * FROM albums ORDER BY title COLLATE NOCASE")
     suspend fun getAllAlbums(): List<AlbumFile>
 
-
     @Query("SELECT * FROM albums WHERE albumId = :id LIMIT 1")
     suspend fun getAlbumById(id: Long): AlbumFile?
 

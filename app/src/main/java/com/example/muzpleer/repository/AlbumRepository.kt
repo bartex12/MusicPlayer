@@ -24,15 +24,24 @@ class AlbumRepository(
     suspend fun syncAlbumsFromMediaFiles() {
 
         // СОХРАНЯЕМ КАСТОМНЫЕ ОБЛОЖКИ ПЕРЕД ОЧИСТКОЙ
-        val existingAlbums = albumDao.getAllAlbums()
+        val existingAlbums = albumDao.getAllOrderedAlbums()
         val customCoversMap = mutableMapOf<Long, String>() // albumId -> coverPath
+        val customMovedMap = mutableMapOf<Long, Int>()  //albumId -> sortOrder
 
+        //сохраняем обложки
         existingAlbums.forEach { album ->
             if (!album.coverPath.isNullOrEmpty()) {
                 customCoversMap[album.albumId] = album.coverPath
             }
         }
+        //сохраняем порядок следования альбомов в списке
+        existingAlbums.forEach { album ->
+            if (album.sortOrder >= 0) {
+                customMovedMap[album.albumId] = album.sortOrder
+            }
+        }
         Log.d(TAG, "# Сохранено ${customCoversMap.size} кастомных обложек альбомов ")
+
         // Очищаем и пересоздаем альбомы
         albumDao.deleteAll()
 
@@ -46,6 +55,7 @@ class AlbumRepository(
                 val mainArtist = if (artists.size > 1) "Разные исполнители" else artists.first()
 
                 val albumCoverPath = customCoversMap[albumId] ?: ""  //todo заменить на getDefaultAlbumCover(albumId)
+                val albumMovedMap = customMovedMap[albumId] ?: 0
 
                 AlbumFile(
                     albumId = albumId,
@@ -53,7 +63,8 @@ class AlbumRepository(
                     artist = mainArtist,
                     allArtists = artists.joinToString(";"),
                     songCount = songs.size,
-                    coverPath = albumCoverPath
+                    coverPath = albumCoverPath,
+                    sortOrder = albumMovedMap
                 )
             }
 
@@ -69,7 +80,7 @@ class AlbumRepository(
     }
 
     suspend fun getAllAlbumsWithSongs(): List<Album> {
-        val albums = albumDao.getAllAlbums() //получаем список альбомов из базы
+        val albums = albumDao.getAllOrderedAlbums() //получаем упорядоченный список альбомов из базы
         return albums.map { albumFile ->
             val songFileList = mediaDao.getFilesByAlbumId(albumFile.albumId)
             //Log.d(TAG, "*AlbumRepository getAllAlbumsWithSongs songFileList size = ${songFileList.size}")
@@ -86,7 +97,7 @@ class AlbumRepository(
     }
 
     suspend fun getAllAlbumSongs(): List<AlbumFile> {
-        return albumDao.getAllAlbums()
+        return albumDao.getAllOrderedAlbums()
     }
 
     suspend fun updateAlbumsOrder(albums: List<AlbumFile>) {
@@ -97,7 +108,7 @@ class AlbumRepository(
 
     suspend fun getAlbumSongList(albumId: Long): List<Song> {
         var songFileList: List<SongFile> = listOf()
-        val allAlbums = albumDao.getAllAlbums()
+        val allAlbums = albumDao.getAllOrderedAlbums()
         Log.d(TAG, "*AlbumRepository getAlbumSongList allAlbums size   = ${allAlbums.size} ")
         val allIds = albumDao. getAllIds()
         Log.d(TAG, "*AlbumRepository getAlbumSongList getAllIds = $allIds ")

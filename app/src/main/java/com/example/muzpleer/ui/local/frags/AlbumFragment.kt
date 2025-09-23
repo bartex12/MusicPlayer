@@ -75,16 +75,15 @@ class AlbumFragment: Fragment() {
             adapter = this@AlbumFragment.adapter
         }
 
-        viewModel.loadAlbums()
+        //viewModel.loadAlbums()  виснет приложение
 
         viewModel.filteredAlbums.observe(viewLifecycleOwner) { filteredAlbums ->
             Log.d(TAG,"33 AlbumFragment onViewCreated filteredAlbums.observe: filteredAlbums.size= ${filteredAlbums.size} ")
             if (viewModel.getSongs().isEmpty()) binding.progressBarAlbum.visibility = View.VISIBLE else binding.progressBarAlbum.visibility = View.GONE
             if (filteredAlbums.isEmpty()) binding.imageHolder3Album.visibility = View.VISIBLE else binding.imageHolder3Album.visibility = View.GONE
-            val sortedData =getSortedDataAlbum(filteredAlbums)
-            adapter.albums = sortedData  //передаём данные в адаптер
+            //здесь нельзя делать сортировку, иначе собьётся перемещение папок
+            adapter.albums = filteredAlbums  //передаём данные в адаптер
         }
-
         //восстанавливаем позицию списка после поворота или возвращения на экран
         binding.albumRecyclerView.layoutManager?.scrollToPosition(viewModel.getPositionAlbum())
 
@@ -99,7 +98,7 @@ class AlbumFragment: Fragment() {
         val firstPosition = manager.findFirstVisibleItemPosition()
         Log.d(TAG, "AlbumFragment onPause firstPosition = $firstPosition")
         viewModel.savePositionAlbum(firstPosition)
-        isEditMode = false  ///чтобы не оставался режим редактирования
+       // isEditMode = false  ///чтобы не оставался режим редактирования - но видимость остаётся :)
     }
 
     override fun onDestroyView() {

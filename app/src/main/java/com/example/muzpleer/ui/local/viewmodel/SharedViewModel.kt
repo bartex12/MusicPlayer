@@ -834,8 +834,8 @@ class SharedViewModel(
             try {
                 val albumsWithSongs = albumRepository.getAllAlbumsWithSongs()
                 Log.d(TAG, " * SharedViewModel loadAlbums albumsWithSongs size = ${albumsWithSongs.size}")
-                _albums.value = albumsWithSongs
-                _filteredAlbums.value = albumsWithSongs  //todo убрать?
+                _albums.value = albumsWithSongs  //todo убрать?
+                _filteredAlbums.value = albumsWithSongs
             } catch (e: Exception) {
                 Log.d(TAG, " SharedViewModel loadAlbums Error loading albums ${e.message}")
             } finally {
@@ -1066,7 +1066,11 @@ class SharedViewModel(
                     updatedAlbums.add(it.copy(sortOrder = index))
                 }
             }
-            Log.d(TAG,"--#**# SharedViewModel updateAlbumsOrder updatedAlbums size = ${updatedAlbums.size} updatedAlbums = $updatedAlbums")
+            Log.d(TAG,"--#**# SharedViewModel updateAlbumsOrder orderedAlbums size = ${orderedAlbums.size} " +
+                    "orderedAlbums ids = ${updatedAlbums.map{it.id}} orderedAlbums albumIds= ${updatedAlbums.map{it.albumId}}")
+            Log.d(TAG,"--#**# SharedViewModel updateAlbumsOrder updatedAlbums size = ${updatedAlbums.size} " +
+                    "updatedAlbums sortOrder = ${updatedAlbums.map{it.sortOrder}  }")
+
             albumRepository.updateAlbumsOrder(updatedAlbums)
 
             // Обновляем LiveData
