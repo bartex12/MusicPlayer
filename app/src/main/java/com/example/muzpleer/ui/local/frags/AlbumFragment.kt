@@ -140,13 +140,13 @@ class AlbumFragment: Fragment() {
                         return true
                     }
                 })
+
                 // Показываем/скрываем пункт в зависимости от режима
                 val editItem = menu.findItem(R.id.action_edit_order)
                 editItem.title = if (isEditMode) "Готово" else "Редактировать порядок"
             }
             override fun onPrepareMenu(menu: Menu) {
                 super.onPrepareMenu(menu)
-
                 menu.findItem(R.id.action_go_to_song).isVisible =false
 
                 val editItem = menu.findItem(R.id.action_edit_order)
@@ -158,6 +158,7 @@ class AlbumFragment: Fragment() {
                 }
                 editItem?.icon?.setTint(color)
             }
+
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
                 when(menuItem.itemId){
                     R.id.action_edit_order -> {

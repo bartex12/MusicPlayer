@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
@@ -12,22 +13,32 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.PopupMenu
 import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.findNavController
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.ItemPlaylistBinding
+import com.example.muzpleer.model.Album
 import com.example.muzpleer.model.Playlist
 import com.example.muzpleer.ui.local.TabLocalFragmentDirections
+import com.example.muzpleer.ui.local.adapters.touch.ItemTouchHelperAdapter
 import com.example.muzpleer.ui.local.frags.CoverChangeLevelFragment.LevelType
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 import com.example.muzpleer.util.getTracksCountString
 import com.google.android.material.textfield.TextInputLayout
+import java.util.Collections
 
 class PlaylistAdapter(
     private val viewModel: SharedViewModel,
     private val onPlaylistClick: (Playlist) -> Unit
-) : RecyclerView.Adapter<PlaylistAdapter.PlaylistViewHolder>() {
+) : RecyclerView.Adapter<PlaylistAdapter.PlaylistViewHolder>(),
+    ItemTouchHelperAdapter  {
+
+    private var isEditMode = false
+    private lateinit var itemTouchHelper: ItemTouchHelper // Добавляем ссылку
+    // Временный список для перетаскивания
+    private val dragData = mutableListOf<Playlist>()
 
     @SuppressLint("NotifyDataSetChanged")
     var playlist: List<Playlist> = listOf()
@@ -59,6 +70,7 @@ class PlaylistAdapter(
     inner class PlaylistViewHolder(private val binding: ItemPlaylistBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
+        @SuppressLint("ClickableViewAccessibility")
         fun bind(playlist: Playlist) {
             binding.playlistTitle.text=playlist.playlistName
             //todo время треков
@@ -79,6 +91,24 @@ class PlaylistAdapter(
             itemView.setOnClickListener {
                 viewModel.setSelectedPlaylistPosition(absoluteAdapterPosition)
                 onPlaylistClick(playlist)
+            }
+
+            // Показываем/скрываем иконку перетаскивания в режиме редактирования
+            if (isEditMode) {
+                binding.playlistDragHandle.visibility = View.VISIBLE
+                binding.playlistMenuButton.visibility = View.GONE
+                // Добавляем слушатель касаний для иконки перетаскивания
+                binding.playlistDragHandle.setOnTouchListener { v, event ->
+                    if (event.action == MotionEvent.ACTION_DOWN) {
+                        // Запускаем перетаскивание при нажатии на иконку
+                        itemTouchHelper.startDrag(this)
+                    }
+                    false
+                }
+            } else {
+                binding.playlistDragHandle.visibility = View.GONE
+                binding.playlistMenuButton.visibility = View.VISIBLE
+                binding.playlistDragHandle.setOnTouchListener(null) // Убираем слушатель
             }
         }
     }
@@ -187,6 +217,52 @@ class PlaylistAdapter(
             putSerializable("levelType", LevelType.PLAYLIST)
         }
         view.findNavController().navigate(R.id.coverChangeLevelFragment, bundle)
+    }
+
+    fun setEditMode(enable: Boolean) {
+        isEditMode = enable
+        if (enable) {
+            // Инициализируем временный список
+            dragData.clear()
+            dragData.addAll(playlist)
+        }
+        notifyDataSetChanged() // Перерисовываем для показа/скрытия иконки перетаскивания
+    }
+
+    // Метод для установки ItemTouchHelper
+    fun setItemTouchHelper(helper: ItemTouchHelper) {
+        itemTouchHelper = helper
+    }
+
+    //пошли методы от интерфейса ItemTouchHelperAdapter
+    override fun onItemMove(fromPosition: Int, toPosition: Int): Boolean {
+        // Работаем с временным списком
+        if (fromPosition < toPosition) {
+            for (i in fromPosition until toPosition) {
+                Collections.swap(dragData, i, i + 1)
+            }
+        } else {
+            for (i in fromPosition downTo toPosition + 1) {
+                Collections.swap(dragData, i, i - 1)
+            }
+        }
+        notifyItemMoved(fromPosition, toPosition)
+
+        return true
+    }
+
+    override fun onDrop() {
+        // Сохраняем окончательный порядок
+        playlist = dragData.toList()
+        viewModel.updatePlaylistOrder(playlist)
+    }
+
+    override fun onItemDismiss(position: Int) {
+        // Не используется, но должен быть реализован
+    }
+
+    companion object{
+        const val TAG = "33333"
     }
 }
 

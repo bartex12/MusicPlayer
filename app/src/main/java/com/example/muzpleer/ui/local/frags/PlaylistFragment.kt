@@ -15,6 +15,7 @@ import android.view.WindowManager
 import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.widget.SearchView
+import androidx.core.content.ContextCompat
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
@@ -26,6 +27,7 @@ import androidx.viewpager.widget.ViewPager
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentPlaylistBinding
 import com.example.muzpleer.ui.local.adapters.PlaylistAdapter
+import com.example.muzpleer.ui.local.adapters.touch.ItemTouchHelperCallback
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 import com.example.muzpleer.util.getSortedDataPlaylists
 import com.google.android.material.snackbar.Snackbar
@@ -64,6 +66,13 @@ class PlaylistFragment():Fragment() {
             findNavController().navigate( R.id.songPlaylistFragment, bundle)
         }
 
+        // Настраиваем ItemTouchHelper
+        val callback = ItemTouchHelperCallback(adapter)
+        itemTouchHelper = ItemTouchHelper(callback)
+        // Передаем ItemTouchHelper в адаптер
+        adapter.setItemTouchHelper(itemTouchHelper)
+        itemTouchHelper.attachToRecyclerView(binding.playlistRecyclerView)
+
         binding.playlistRecyclerView.apply {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = this@PlaylistFragment.adapter
@@ -77,8 +86,8 @@ class PlaylistFragment():Fragment() {
             Log.d(TAG,"53 PlaylistFragment onViewCreated filteredPlaylists.observe: filteredPlaylists.size= ${filteredPlaylists.size} ")
             if (viewModel.getSongs().isEmpty()) binding.progressBarPlaylist.visibility = View.VISIBLE else binding.progressBarPlaylist.visibility = View.GONE
             if (filteredPlaylists.isEmpty()) binding.imageHolder3Playlist.visibility = View.VISIBLE else binding.imageHolder3Playlist.visibility = View.GONE
-            val sortedData =getSortedDataPlaylists(filteredPlaylists)
-            adapter.playlist = sortedData  //передаём данные в адаптер
+            //val sortedData =getSortedDataPlaylists(filteredPlaylists)
+            adapter.playlist = filteredPlaylists  //передаём данные в адаптер
         }
 
         //восстанавливаем позицию списка после поворота или возвращения на экран
@@ -135,43 +144,56 @@ class PlaylistFragment():Fragment() {
                         return true
                     }
                 })
+
+                // Показываем/скрываем пункт в зависимости от режима
+                val editItem = menu.findItem(R.id.action_edit_order)
+                editItem.title = if (isEditMode) "Готово" else "Редактировать порядок"
             }
             override fun onPrepareMenu(menu: Menu) {
+                super.onPrepareMenu(menu)
                 menu.findItem(R.id.action_go_to_song).isVisible =false
-                menu.findItem(R.id.action_edit_order).isVisible =false //todo потом убрать
+
+                val editItem = menu.findItem(R.id.action_edit_order)
+                // Меняем цвет в зависимости от режима
+                val color = if (isEditMode) {
+                    ContextCompat.getColor(requireContext(), R.color.green)
+                } else {
+                    ContextCompat.getColor(requireContext(), R.color.white)
+                }
+                editItem?.icon?.setTint(color)
             }
+
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-                //todo потом восстановить
-//                when(menuItem.itemId) {
-//                    R.id.action_edit_order -> {
-//                        toggleEditMode()
-//                        true
-//                    }
-//                }
+                when(menuItem.itemId) {
+                    R.id.action_edit_order -> {
+                        toggleEditMode()
+                        true
+                    }
+                }
                 return false
             }
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
     }
 
     private fun toggleEditMode() {
-        //todo восстановить перетаскивание
-//        isEditMode = !isEditMode
-//        adapter.setEditMode(isEditMode)
-//
-//        // Включаем/выключаем возможность перетаскивания
-//        if (isEditMode) {
-//            itemTouchHelper.attachToRecyclerView(binding.favoriteRecyclerView)
-//        } else {
-//            itemTouchHelper.attachToRecyclerView(null) // Отключаем перетаскивание
-//        }
-//
-//        // Обновляем меню
-//        activity?.invalidateOptionsMenu()
-//
-//        // Показываем/скрываем подсказку
-//        if (isEditMode) {
-//            showEditModeHint()
-//        }
+
+        isEditMode = !isEditMode
+        adapter.setEditMode(isEditMode)
+
+        // Включаем/выключаем возможность перетаскивания
+        if (isEditMode) {
+            itemTouchHelper.attachToRecyclerView(binding.playlistRecyclerView)
+        } else {
+            itemTouchHelper.attachToRecyclerView(null) // Отключаем перетаскивание
+        }
+
+        // Обновляем меню
+        activity?.invalidateOptionsMenu()
+
+        // Показываем/скрываем подсказку
+        if (isEditMode) {
+            showEditModeHint()
+        }
     }
 
     private fun showEditModeHint() {

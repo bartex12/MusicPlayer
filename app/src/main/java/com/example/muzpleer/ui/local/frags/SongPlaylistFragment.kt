@@ -70,15 +70,6 @@ class SongPlaylistFragment:Fragment() {
             Log.d(TAG, "!@#@ SongPlaylistFragment currentFilteredPlaylistSongs.observe currentFilteredPlaylistSongs size ${currentPlaylistSongs?.size}")
             adapter.data = getSortedDataSong(currentPlaylistSongs?: listOf())
         }
-//                        //обновление обложки при её замене
-//                        viewModel.coverImageUri.observe(viewLifecycleOwner) { uri ->
-//                            val selectedSong = viewModel.getSelectedSong()
-//                            selectedSong?. let{selectedSong->
-//                                selectedSong.artUri = uri.toString()
-//                                Log.d(TAG,"48!@# SongListFragment coverImageUri.observe uri = $uri ")
-//                            }
-//                            adapter.notifyDataSetChanged()
-//                        }
         adapter = SongsAdapter(viewModel,  { song ->
             val playlistSongs  = getSortedDataSong(viewModel.getCurrentPlaylist()?.playlistSongs ?: listOf()) //можно было взять и из currentFilteredPlaylistSongs
             Log.d(TAG,"!@#@ SongPlaylistFragment размер плейлиста = ${playlistSongs.size} имя первой песни плейлиста " +
