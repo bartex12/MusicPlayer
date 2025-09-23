@@ -150,8 +150,8 @@ fun showCoverImageWithGlide(context: Context, artUri: Uri?, imageView: ImageView
             // Стандартные album art URI
             Glide.with(context)
                 .load(artUri)
-                .placeholder(R.drawable.muz_player3)
-                .error(R.drawable.muz_player2)
+                .placeholder(R.drawable.muz_player5)
+                .error(R.drawable.muz_player5)
                 .diskCacheStrategy(DiskCacheStrategy.ALL)
                 .into(imageView)
         }
@@ -160,8 +160,8 @@ fun showCoverImageWithGlide(context: Context, artUri: Uri?, imageView: ImageView
             Log.d(TAG, "4 Additionally showCoverImageWithGlide: Все остальные URI")
             Glide.with(context)
                 .load(artUri)
-                .placeholder(R.drawable.muz_player3)
-                .error(R.drawable.muz_player2)
+                .placeholder(R.drawable.muz_player5)
+                .error(R.drawable.muz_player5)
                 .diskCacheStrategy(DiskCacheStrategy.ALL)
                 .into(imageView)
         }

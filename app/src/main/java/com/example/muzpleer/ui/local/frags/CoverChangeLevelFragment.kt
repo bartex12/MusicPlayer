@@ -1,6 +1,7 @@
 package com.example.muzpleer.ui.local.frags
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -84,7 +85,13 @@ class CoverChangeLevelFragment: Fragment() {
         }
 
         binding.restoreDefaultLevel.setOnClickListener {
-            viewModel.restoreDefaultCover()
+            val uri:Uri = "android.resource://${context?.packageName}/${R.drawable.muz_player5}".toUri()
+           when(levelType){
+                LevelType.PLAYLIST ->{ viewModel.updateCoverImageLevelAndSave(uri, levelId)}
+                LevelType.ALBUM ->{viewModel.updateCoverImageAlbumAndSave(uri, levelId)}
+                LevelType.ARTIST ->{viewModel.updateCoverImageArtistsAndSave(uri, levelId)}
+                LevelType.FOLDER ->{viewModel.updateCoverImageFolderAndSave(uri, levelId)}
+            }
         }
 
         binding.saveButtonLevel.setOnClickListener {
