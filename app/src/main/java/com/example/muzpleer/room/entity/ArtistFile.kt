@@ -10,11 +10,12 @@ import androidx.room.PrimaryKey
 )
 data class ArtistFile(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
-    val artistId: Long, //  ID артиста (из MediaFile.artistId или хэш имени)
+    val artistId: Long, //   хэш имени
     val name: String,
     val allAlbumIds: String, // Список ID альбомов через ";"
     val songCount: Int,
     val coverPath: String?,
     val createdAt: Long = System.currentTimeMillis(),
-    val updatedAt: Long = System.currentTimeMillis()
+    val updatedAt: Long = System.currentTimeMillis(),
+    var sortOrder: Int = 0 // Новое поле для порядка сортировки
 )

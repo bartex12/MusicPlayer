@@ -9,19 +9,24 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.SearchView
+import androidx.core.content.ContextCompat
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.viewpager.widget.ViewPager
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentSingersBinding
 import com.example.muzpleer.ui.local.adapters.ArtistsAdapter
+import com.example.muzpleer.ui.local.adapters.touch.ItemTouchHelperCallback
+import com.example.muzpleer.ui.local.frags.AlbumFragment
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 import com.example.muzpleer.util.getSortedDataArtist
 import com.example.muzpleer.util.getSortedDataSong
+import com.google.android.material.snackbar.Snackbar
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 
 class ArtistsFragment:Fragment() {
@@ -29,6 +34,9 @@ class ArtistsFragment:Fragment() {
     private val binding get() = _binding!!
     private val viewModel: SharedViewModel by activityViewModel()
     private lateinit var adapter: ArtistsAdapter
+
+    private lateinit var itemTouchHelper: ItemTouchHelper
+    private var isEditMode = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -48,6 +56,7 @@ class ArtistsFragment:Fragment() {
 
             // Навигация через Bundle
             val bundle = Bundle().apply {
+                putInt("from", 3)
                 putLong("artistId", artist.id)
                 Log.d(TAG,"33 ArtistsFragment onViewCreated bundle: artistId = ${artist.id}  from = 3")
             }
@@ -59,12 +68,24 @@ class ArtistsFragment:Fragment() {
             adapter = this@ArtistsFragment.adapter
         }
 
+        // Настраиваем ItemTouchHelper
+        val callback = ItemTouchHelperCallback(adapter)
+        itemTouchHelper = ItemTouchHelper(callback)
+        // Передаем ItemTouchHelper в адаптер
+        adapter.setItemTouchHelper(itemTouchHelper)
+        itemTouchHelper.attachToRecyclerView(binding.singersRecyclerView) // ? это же в toggleEditMode
+
+        binding.singersRecyclerView.apply {
+            layoutManager = LinearLayoutManager(requireContext())
+            adapter = this@ArtistsFragment.adapter
+        }
+
         viewModel.filteredArtists.observe(viewLifecycleOwner) { filteredArtists ->
             Log.d(TAG,"34 ArtistsFragment onViewCreated filteredArtists.observe: filteredArtists.size= ${filteredArtists.size} ")
             if (viewModel.getSongs().isEmpty()) binding.progressBarSingers.visibility = View.VISIBLE else binding.progressBarSingers.visibility = View.GONE
             if (filteredArtists.isEmpty()) binding.imageHolder3Singers.visibility = View.VISIBLE else binding.imageHolder3Singers.visibility = View.GONE
-            val sortedData =getSortedDataArtist(filteredArtists)
-            adapter.data = sortedData  //передаём данные в адаптер
+            //здесь нельзя делать сортировку, иначе собьётся перемещение папок
+            adapter.artists = filteredArtists  //передаём данные в адаптер
         }
         //восстанавливаем позицию списка после поворота или возвращения на экран
         binding.singersRecyclerView.layoutManager?.scrollToPosition(viewModel.getPositionArtist())
@@ -120,14 +141,56 @@ class ArtistsFragment:Fragment() {
                         return true
                     }
                 })
+                // Показываем/скрываем пункт в зависимости от режима
+                val editItem = menu.findItem(R.id.action_edit_order)
+                editItem.title = if (isEditMode) "Готово" else "Редактировать порядок"
             }
             override fun onPrepareMenu(menu: Menu) {
                 menu.findItem(R.id.action_go_to_song).isVisible =false
-                menu.findItem(R.id.action_edit_order).isVisible =false
+
+                val editItem = menu.findItem(R.id.action_edit_order)
+                // Меняем цвет в зависимости от режима
+                val color = if (isEditMode) {
+                    ContextCompat.getColor(requireContext(), R.color.green)
+                } else {
+                    ContextCompat.getColor(requireContext(), R.color.white)
+                }
+                editItem?.icon?.setTint(color)
             }
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                when(menuItem.itemId){
+                    R.id.action_edit_order -> {
+                        toggleEditMode()
+                        true
+                    }
+                }
                 return false
             }
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
+    }
+    private fun toggleEditMode() {
+        isEditMode = !isEditMode
+        adapter.setEditMode(isEditMode)
+
+        // Включаем/выключаем возможность перетаскивания
+        if (isEditMode) {
+            itemTouchHelper.attachToRecyclerView(binding.singersRecyclerView)
+        } else {
+            itemTouchHelper.attachToRecyclerView(null) // Отключаем перетаскивание
+        }
+
+        // Обновляем меню
+        activity?.invalidateOptionsMenu()
+
+        // Показываем/скрываем подсказку
+        if (isEditMode) {
+            showEditModeHint()
+        }
+    }
+    private fun showEditModeHint() {
+        Snackbar.make(binding.root, "Перетаскивайте песни для изменения порядка",
+            Snackbar.LENGTH_LONG)
+            .setAction("OK") {toggleEditMode() }
+            .show()
     }
 }

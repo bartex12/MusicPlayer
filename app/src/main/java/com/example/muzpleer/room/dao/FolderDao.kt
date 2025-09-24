@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import com.example.muzpleer.room.entity.ArtistFile
 import com.example.muzpleer.room.entity.FolderFile
 
 @Dao
@@ -40,5 +41,11 @@ interface FolderDao {
 
     @Query("UPDATE folders SET coverPath = :artUri WHERE id = :folderId")
     suspend fun updateFolderArtUri(folderId: Long, artUri: String?)
+
+    @Query("SELECT * FROM folders ORDER BY sortOrder ASC")
+    suspend fun getAllOrderedFolders(): List<FolderFile>
+
+    @Query("UPDATE folders SET sortOrder = :newOrder WHERE id = :id")
+    suspend fun updateFoldersSortOrder(id: Long, newOrder: Int)
 
 }

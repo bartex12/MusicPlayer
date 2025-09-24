@@ -8,6 +8,7 @@ import com.example.muzpleer.model.Song
 import com.example.muzpleer.room.dao.AlbumDao
 import com.example.muzpleer.room.dao.ArtistDao
 import com.example.muzpleer.room.dao.SongDao
+import com.example.muzpleer.room.entity.AlbumFile
 import com.example.muzpleer.room.entity.ArtistFile
 import com.example.muzpleer.room.entity.SongFile
 import com.example.muzpleer.room.utils.fromSongFileListToSongList
@@ -22,16 +23,25 @@ class ArtistRepository (private val artistDao: ArtistDao,
     suspend fun syncArtistsFromMediaFiles() {
         Log.d(TAG, "# ArtistsRepository Начало синхронизации артистов...")
 
-    // СОХРАНЯЕМ КАСТОМНЫЕ ОБЛОЖКИ ПЕРЕД ОЧИСТКОЙ
-        val existingArtists = artistDao.getAllArtists()
+    // СОХРАНЯЕМ КАСТОМНЫЕ ОБЛОЖКИ и порядок следования ПЕРЕД ОЧИСТКОЙ
+        val existingArtists = artistDao.getAllOrderedArtists()
         val customCoversMap = mutableMapOf<String, String>() // artistName -> coverPath
+        val customMovedMap = mutableMapOf<String, Int>()  //artistId -> sortOrder
 
+        //сохраняем обложки
         existingArtists.forEach { artist ->
             if (!artist.coverPath.isNullOrEmpty()) {
                 customCoversMap[artist.name] = artist.coverPath
             }
         }
         Log.d(TAG, "# Сохранено ${customCoversMap.size} кастомных обложек артистов")
+
+        //сохраняем порядок следования артистов в списке
+        existingArtists.forEach { artist ->
+            if (artist.sortOrder >= 0) {
+                customMovedMap[artist.name] = artist.sortOrder
+            }
+        }
 
         // Очищаем артистов
         artistDao.deleteAll()
@@ -48,13 +58,15 @@ class ArtistRepository (private val artistDao: ArtistDao,
 
                 // ВОССТАНАВЛИВАЕМ КАСТОМНУЮ ОБЛОЖКУ
                 val artistCoverPath = customCoversMap[artistName] ?: "" //todo
+                val artistMovedMap = customMovedMap[artistName] ?: 0
 
                 ArtistFile(
                     artistId = artistId,  // это хэш-код  не путать с id!!!
                     name = artistName,
                     allAlbumIds = albumIds.joinToString(";"),
                     songCount = songs.size,
-                    coverPath = artistCoverPath
+                    coverPath = artistCoverPath,
+                    sortOrder = artistMovedMap
                 )
             }
 
@@ -63,7 +75,7 @@ class ArtistRepository (private val artistDao: ArtistDao,
         try {
             artistDao.insertAll(artistsMap.values.toList())
             Log.d(TAG, "# ArtistsRepository syncArtistsFromMediaFiles Артисты успешно сохранены в базу")
-            val artistSize = artistDao.getAllArtists().size
+            val artistSize = artistDao.getAllOrderedArtists().size
             Log.d(TAG, "# ArtistsRepository syncArtistsFromMediaFiles из базы artistSize size = $artistSize" )
         } catch (e: Exception) {
             Log.d(TAG, "# ArtistsRepository syncArtistsFromMediaFiles Ошибка сохранения артистов: ${e.message}")
@@ -72,7 +84,7 @@ class ArtistRepository (private val artistDao: ArtistDao,
 
     suspend fun getAllArtistsWithSongsAndAlbums(): List<Artist> {
         // Получаем всех артистов из базы
-        val artistFiles = artistDao.getAllArtists()
+        val artistFiles = artistDao.getAllOrderedArtists()
 
         return artistFiles.map { artistFile ->
             // Получаем все песни этого артиста
@@ -116,9 +128,13 @@ class ArtistRepository (private val artistDao: ArtistDao,
         }
     }
 
+    suspend fun getAllArtistsSongs(): List<ArtistFile> {
+        return artistDao.getAllOrderedArtists()
+    }
+
     suspend fun getArtistSongList(artistId: Long): List<Song> {
         var songFileList: List<SongFile> = listOf()
-        val allArtists = artistDao.getAllArtists()
+        val allArtists = artistDao.getAllOrderedArtists()
         Log.d(TAG, "# ArtistsRepository getAlbumSongList allArtists size   = ${allArtists.size} ")
         val allArtistIds = artistDao. getAllArtistIds()
         Log.d(TAG, "# ArtistsRepository getArtistSongList allArtistIds = $allArtistIds ")
@@ -142,4 +158,11 @@ class ArtistRepository (private val artistDao: ArtistDao,
     suspend fun updateArtistArtUri(artistId: Long, artUri: String?) {
         artistDao.updateArtistArtUri(artistId, artUri)
     }
+
+    suspend fun updateArtistsOrder(artists: List<ArtistFile>) {
+        artists.forEachIndexed { index, artist ->
+            artistDao.updateArtistsSortOrder(artist.id, index)
+        }
+    }
+
 }

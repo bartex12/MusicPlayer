@@ -4,33 +4,43 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.PopupMenu
 import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.findNavController
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.ItemArtistBinding
+import com.example.muzpleer.model.Album
 import com.example.muzpleer.model.Artist
+import com.example.muzpleer.ui.local.adapters.touch.ItemTouchHelperAdapter
 import com.example.muzpleer.ui.local.frags.CoverChangeLevelFragment.LevelType
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 import com.example.muzpleer.util.getAlbumsCountString
 import com.example.muzpleer.util.getTracksCountString
 import com.example.muzpleer.util.showCoverImageWithGlide
+import java.util.Collections
 
 class ArtistsAdapter(
     private val viewModel: SharedViewModel,
     private val onItemClick: (Artist) -> Unit
-) : RecyclerView.Adapter<ArtistsAdapter.ArtistViewHolder>() {
+) : RecyclerView.Adapter<ArtistsAdapter.ArtistViewHolder>(),
+    ItemTouchHelperAdapter {
 
-    var data:List<Artist> = listOf()
+    var artists:List<Artist> = listOf()
         @SuppressLint("NotifyDataSetChanged")
         set(value){
             field = value
             notifyDataSetChanged()
         }
 
+    private var isEditMode = false
+    private lateinit var itemTouchHelper: ItemTouchHelper // Добавляем ссылку
+    // Временный список для перетаскивания
+    private val dragData = mutableListOf<Artist>()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ArtistViewHolder {
         val binding = ItemArtistBinding.inflate(
@@ -45,7 +55,7 @@ class ArtistsAdapter(
         holder: ArtistViewHolder,
         position: Int
     ) {
-        holder.bind(data[position])
+        holder.bind(artists[position])
 
         // Следим за изменениями выбранной позиции
         viewModel.selectedArtistPosition
@@ -55,12 +65,13 @@ class ArtistsAdapter(
     }
 
     override fun getItemCount(): Int {
-        return data.size
+        return artists.size
     }
 
     inner class ArtistViewHolder(private val binding: ItemArtistBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
+        @SuppressLint("ClickableViewAccessibility")
         fun bind(artist: Artist) {
             binding.tvArtistName.text = artist.name
             binding.tvTracksCount.text =buildString {
@@ -78,6 +89,24 @@ class ArtistsAdapter(
             binding.root.setOnClickListener {
                 viewModel.setSelectedArtistPosition(absoluteAdapterPosition)
                 onItemClick(artist)
+            }
+
+            // Показываем/скрываем иконку перетаскивания в режиме редактирования
+            if (isEditMode) {
+                binding.artistDragHandle.visibility = View.VISIBLE
+                binding.artistMenuButton.visibility = View.GONE
+                // Добавляем слушатель касаний для иконки перетаскивания
+                binding.artistDragHandle.setOnTouchListener { v, event ->
+                    if (event.action == MotionEvent.ACTION_DOWN) {
+                        // Запускаем перетаскивание при нажатии на иконку
+                        itemTouchHelper.startDrag(this)
+                    }
+                    false
+                }
+            } else {
+                binding.artistDragHandle.visibility = View.GONE
+                binding.artistMenuButton.visibility = View.VISIBLE
+                binding.artistDragHandle.setOnTouchListener(null) // Убираем слушатель
             }
         }
     }
@@ -109,6 +138,48 @@ class ArtistsAdapter(
         }
         view.findNavController().navigate(R.id.coverChangeLevelFragment, bundle)
     }
+    fun setEditMode(enable: Boolean) {
+        isEditMode = enable
+        if (enable) {
+            // Инициализируем временный список
+            dragData.clear()
+            dragData.addAll(artists)
+        }
+        notifyDataSetChanged() // Перерисовываем для показа/скрытия иконки перетаскивания
+    }
+
+    // Метод для установки ItemTouchHelper
+    fun setItemTouchHelper(helper: ItemTouchHelper) {
+        itemTouchHelper = helper
+    }
+
+    //пошли методы от интерфейса ItemTouchHelperAdapter
+    override fun onItemMove(fromPosition: Int, toPosition: Int): Boolean {
+        // Работаем с временным списком
+        if (fromPosition < toPosition) {
+            for (i in fromPosition until toPosition) {
+                Collections.swap(dragData, i, i + 1)
+            }
+        } else {
+            for (i in fromPosition downTo toPosition + 1) {
+                Collections.swap(dragData, i, i - 1)
+            }
+        }
+        notifyItemMoved(fromPosition, toPosition)
+
+        return true
+    }
+
+    override fun onDrop() {
+        // Сохраняем окончательный порядок
+        artists = dragData.toList()
+        viewModel.updateArtistsOrder(artists)
+    }
+
+    override fun onItemDismiss(position: Int) {
+        // Не используется, но должен быть реализован
+    }
+
     companion object{
         const val TAG = "33333"
     }

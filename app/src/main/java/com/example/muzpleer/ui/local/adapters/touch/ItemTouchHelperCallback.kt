@@ -44,7 +44,7 @@ class ItemTouchHelperCallback(private val adapter: ItemTouchHelperAdapter) :
         // Изменяем внешний вид при перетаскивании
         if (actionState == ItemTouchHelper.ACTION_STATE_DRAG) {
             viewHolder?.itemView?.apply {
-                alpha = 0.7f
+                alpha = 0.5f
                 elevation = 8f
             }
         }

@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import com.example.muzpleer.room.entity.AlbumFile
 import com.example.muzpleer.room.entity.ArtistFile
 
 @Dao
@@ -37,4 +38,10 @@ interface ArtistDao {
 
     @Query("UPDATE artists SET coverPath = :artUri WHERE id = :artistId")
     suspend fun updateArtistArtUri(artistId: Long, artUri: String?)
+
+    @Query("UPDATE artists SET sortOrder = :newOrder WHERE id = :id")
+    suspend fun updateArtistsSortOrder(id: Long, newOrder: Int)
+
+    @Query("SELECT * FROM artists ORDER BY sortOrder ASC")
+    suspend fun getAllOrderedArtists(): List<ArtistFile>
 }

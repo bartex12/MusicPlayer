@@ -134,19 +134,19 @@ fun getNormalizedPath(uriString: String): String {
 fun showCoverImageWithGlide(context: Context, artUri: Uri?, imageView: ImageView){
     when {
         artUri == null -> {
-            Log.d(TAG, "1 Additionally showCoverImageWithGlide: artUri == null ")
+           // Log.d(TAG, "1 Additionally showCoverImageWithGlide: artUri == null ")
             // Загрузка стандартной обложки
             Glide.with(context)
                 .load(R.drawable.muz_player5)
                 .into(imageView)
         }
         artUri.scheme == "content" && artUri.authority == "com.android.providers.downloads.documents" -> {
-            Log.d(TAG, "2 Additionally showCoverImageWithGlide: artUri.scheme == \"content\"")
+         //   Log.d(TAG, "2 Additionally showCoverImageWithGlide: artUri.scheme == \"content\"")
             // Обработка специальных content URI
             loadDownloadDocumentUri(context, artUri, imageView)
         }
         artUri.toString().contains("albumart") -> {
-            Log.d(TAG, "3 Additionally showCoverImageWithGlide: artUri.toString().contains(\"albumart\")")
+          //  Log.d(TAG, "3 Additionally showCoverImageWithGlide: artUri.toString().contains(\"albumart\")")
             // Стандартные album art URI
             Glide.with(context)
                 .load(artUri)
@@ -157,7 +157,7 @@ fun showCoverImageWithGlide(context: Context, artUri: Uri?, imageView: ImageView
         }
         else -> {
             // Все остальные URI
-            Log.d(TAG, "4 Additionally showCoverImageWithGlide: Все остальные URI")
+          //  Log.d(TAG, "4 Additionally showCoverImageWithGlide: Все остальные URI")
             Glide.with(context)
                 .load(artUri)
                 .placeholder(R.drawable.muz_player5)

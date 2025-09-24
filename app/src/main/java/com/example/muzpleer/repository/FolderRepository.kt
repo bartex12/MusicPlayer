@@ -6,6 +6,7 @@ import com.example.muzpleer.model.Folder
 import com.example.muzpleer.model.Song
 import com.example.muzpleer.room.dao.FolderDao
 import com.example.muzpleer.room.dao.SongDao
+import com.example.muzpleer.room.entity.AlbumFile
 import com.example.muzpleer.room.entity.FolderFile
 import com.example.muzpleer.room.utils.fromSongFileListToSongList
 import java.io.File
@@ -17,9 +18,10 @@ class FolderRepository (private val folderDao: FolderDao,
     suspend fun syncFoldersFromMediaFiles() {
         Log.d(TAG, "# FolderRepository Начало синхронизации папок...")
 
-        // СОХРАНЯЕМ КАСТОМНЫЕ ОБЛОЖКИ ПЕРЕД ОЧИСТКОЙ
-        val existingFolders = folderDao.getAllFolders()
+        // СОХРАНЯЕМ КАСТОМНЫЕ ОБЛОЖКИ и порядок следования ПЕРЕД ОЧИСТКОЙ
+        val existingFolders = folderDao.getAllOrderedFolders()
         val customCoversMap = mutableMapOf<String, String>() // path -> coverPath
+        val customMovedMap = mutableMapOf<String, Int>()  //folderId -> sortOrder
 
         existingFolders.forEach { folder ->
             if (!folder.coverPath.isNullOrEmpty()) {
@@ -27,6 +29,13 @@ class FolderRepository (private val folderDao: FolderDao,
             }
         }
         Log.d(TAG, "# Сохранено ${customCoversMap.size} кастомных обложек")
+
+        //сохраняем порядок следования папок  в списке
+        existingFolders.forEach { folder ->
+            if (folder.sortOrder >= 0) {
+                customMovedMap[folder.folderPath] = folder.sortOrder
+            }
+        }
 
         // Очищаем папки
         folderDao.deleteAll()
@@ -43,21 +52,22 @@ class FolderRepository (private val folderDao: FolderDao,
                 val folderName = getFolderNameFromPath(folderPath)
                 //получаем обложку - её могли изменить - но мы уже всё стёрли
                 val folderCoverPath = customCoversMap[folderPath] ?: getFolderCoverByPath(folderPath)
+                val folderMovedMap = customMovedMap[folderPath] ?: 0
 
                 FolderFile(
                     folderPath = folderPath,
                     folderName = folderName,
                     songCount = songs.size,
-                    coverPath = folderCoverPath
+                    coverPath = folderCoverPath,
+                    sortOrder = folderMovedMap
                 )
             }
-
         Log.d(TAG, "# FolderRepository syncFolderFromMediaFiles Создано ${foldersMap.size} папок")
 
         try {
             folderDao.insertAll(foldersMap.values.toList())
             Log.d(TAG, "# FolderRepository syncFolderFromMediaFiles  Папки успешно сохранены в базу")
-            val folderSize = folderDao.getAllFolders().size
+            val folderSize = folderDao.getAllOrderedFolders().size
             Log.d(TAG, "# FolderRepository syncFolderFromMediaFiles из базы folderSize = $folderSize" )
         } catch (e: Exception) {
             Log.d(TAG, "# FolderRepository syncFolderFromMediaFiles Ошибка сохранения папок: ${e.message}")
@@ -67,7 +77,7 @@ class FolderRepository (private val folderDao: FolderDao,
     // Последующие запуски - получение из базы
     suspend fun getAllFoldersWithSongs(): List<Folder> {
         // Получаем все папки  из базы
-        val folders = folderDao.getAllFolders()
+        val folders = folderDao.getAllOrderedFolders()
 
         return folders.map { folder ->
             // Получаем все песни в папке
@@ -120,6 +130,16 @@ class FolderRepository (private val folderDao: FolderDao,
     suspend fun getFolderSongList(folderPath: String): List<Song> {
         val songFiles = songDao.getFilesByFolderPath(folderPath)
        return fromSongFileListToSongList(songFiles)
+    }
+
+    suspend fun getAllFolderSongs(): List<FolderFile> {
+        return folderDao.getAllOrderedFolders()
+    }
+
+    suspend fun updateFoldersOrder(folders: List<FolderFile>) {
+        folders.forEachIndexed { index, folder ->
+            folderDao.updateFoldersSortOrder(folder.id, index)
+        }
     }
 
     companion object{

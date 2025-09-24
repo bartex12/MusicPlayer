@@ -26,7 +26,9 @@ import com.example.muzpleer.repository.FolderRepository
 import com.example.muzpleer.repository.MusicRepository
 import com.example.muzpleer.repository.PlaylistRepository
 import com.example.muzpleer.room.entity.AlbumFile
+import com.example.muzpleer.room.entity.ArtistFile
 import com.example.muzpleer.room.entity.FavoriteSong
+import com.example.muzpleer.room.entity.FolderFile
 import com.example.muzpleer.room.entity.SongFile
 import com.example.muzpleer.service.MusicServiceHandler
 import com.example.muzpleer.ui.local.helper.IPreferenceHelper
@@ -1053,6 +1055,30 @@ class SharedViewModel(
         }
     }
 
+    fun updateFoldersOrder(orderedFolders: List<Folder>) {
+        viewModelScope.launch {
+            val folders:List<FolderFile> = folderRepository.getAllFolderSongs()
+            val updatedFolders: MutableList<FolderFile> = mutableListOf<FolderFile>()
+
+            orderedFolders.forEachIndexed { index, folder ->
+                val folder1 = folders.find { it.folderPath == folder.path }
+                folder1?.let {
+                    updatedFolders.add(it.copy(sortOrder = index))
+                }
+            }
+            Log.d(TAG,"--#**# SharedViewModel updateFoldersOrder orderedFolders size = ${orderedFolders.size} " +
+                    "orderedFolders ids = ${orderedFolders.map{it.id}} orderedFolders paths= ${orderedFolders.map{it.path}}")
+            Log.d(TAG,"--#**# SharedViewModel updateFoldersOrder updatedFolders size = ${updatedFolders.size} " +
+                    "updatedFolders sortOrder = ${updatedFolders.map{it.sortOrder}  }")
+
+            folderRepository.updateFoldersOrder(updatedFolders)
+
+            // Обновляем LiveData
+            _folders.value = orderedFolders
+            _filteredFolders.value = orderedFolders
+        }
+    }
+
     fun updateAlbumsOrder(orderedAlbums: List<Album>) {
         viewModelScope.launch {
             val albums:List<AlbumFile> = albumRepository.getAllAlbumSongs()
@@ -1074,6 +1100,35 @@ class SharedViewModel(
             // Обновляем LiveData
             _albums.value = orderedAlbums
             _filteredAlbums.value = orderedAlbums
+        }
+    }
+
+    fun updateArtistsOrder(orderedArtist: List<Artist>) {
+        viewModelScope.launch {
+            val artists:List<ArtistFile> = artistsRepository.getAllArtistsSongs()
+            val updatedArtists: MutableList<ArtistFile> = mutableListOf<ArtistFile>()
+
+            orderedArtist.forEachIndexed { index, artist ->
+                val artist1 = artists.find { it.id == artist.id }
+                artist1?.let {
+                    updatedArtists.add(it.copy(sortOrder = index))
+                }
+            }
+            val artistIds = artists.map{ it.id}
+            val artistArtistIds = artists.map{ it.artistId}
+
+            Log.d(TAG,"--#**# SharedViewModel updateArtistsOrder artistIds = $artistIds " +
+                    "хэш имени artistArtistIds = $artistArtistIds ")
+            Log.d(TAG,"--#**# SharedViewModel updateArtistsOrder orderedArtist size = ${orderedArtist.size} " +
+                    "orderedArtist ids = ${orderedArtist.map{it.id}} ")
+            Log.d(TAG,"--#**# SharedViewModel updateArtistsOrder updatedArtists size = ${updatedArtists.size} " +
+                    "updatedArtists sortOrder = ${updatedArtists.map{it.sortOrder}  }")
+
+            artistsRepository.updateArtistsOrder(updatedArtists)
+
+            // Обновляем LiveData
+            _artists.value = orderedArtist
+            _filteredArtists.value = orderedArtist
         }
     }
 

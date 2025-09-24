@@ -3,24 +3,35 @@ package com.example.muzpleer.ui.local.adapters
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.PopupMenu
 import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.findNavController
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.ItemFolderBinding
+import com.example.muzpleer.model.Album
 import com.example.muzpleer.model.Folder
+import com.example.muzpleer.ui.local.adapters.touch.ItemTouchHelperAdapter
 import com.example.muzpleer.ui.local.frags.CoverChangeLevelFragment.LevelType
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 import com.example.muzpleer.util.getTracksCountString
 import com.example.muzpleer.util.showCoverImageWithGlide
+import java.util.Collections
 
 class FoldersAdapter(
     private val viewModel: SharedViewModel,
     private val onFolderClick: (Folder) -> Unit
-) : RecyclerView.Adapter<FoldersAdapter.FolderViewHolder>() {
+) : RecyclerView.Adapter<FoldersAdapter.FolderViewHolder>(),
+    ItemTouchHelperAdapter {
+
+    private var isEditMode = false
+    private lateinit var itemTouchHelper: ItemTouchHelper // Добавляем ссылку
+    // Временный список для перетаскивания
+    private val dragData = mutableListOf<Folder>()
 
     var folders:List<Folder> = listOf()
         @SuppressLint("NotifyDataSetChanged")
@@ -53,6 +64,7 @@ class FoldersAdapter(
     inner class FolderViewHolder(private val binding: ItemFolderBinding)
         : RecyclerView.ViewHolder(binding.root) {
 
+        @SuppressLint("ClickableViewAccessibility")
         fun bind(folder: Folder) {
             binding.tvFolderName.text = folder.name
             binding.tvFolderPath.text = folder.path
@@ -69,11 +81,24 @@ class FoldersAdapter(
                 viewModel.setSelectedFolderPosition(absoluteAdapterPosition)
                 onFolderClick(folder)
             }
-
+            // Показываем/скрываем иконку перетаскивания в режиме редактирования
+            if (isEditMode) {
+                binding.folderDragHandle.visibility = View.VISIBLE
+                binding.folderMenuButton.visibility = View.GONE
+                // Добавляем слушатель касаний для иконки перетаскивания
+                binding.folderDragHandle.setOnTouchListener { v, event ->
+                    if (event.action == MotionEvent.ACTION_DOWN) {
+                        // Запускаем перетаскивание при нажатии на иконку
+                        itemTouchHelper.startDrag(this)
+                    }
+                    false
+                }
+            } else {
+                binding.folderDragHandle.visibility = View.GONE
+                binding.folderMenuButton.visibility = View.VISIBLE
+                binding.folderDragHandle.setOnTouchListener(null) // Убираем слушатель
+            }
         }
-    }
-    companion object{
-        const val TAG = "33333"
     }
 
     private fun showPopupMenu(view: View, folder: Folder) {
@@ -100,5 +125,51 @@ class FoldersAdapter(
             putSerializable("levelType", LevelType.FOLDER)
         }
         view.findNavController().navigate(R.id.coverChangeLevelFragment, bundle)
+    }
+
+    fun setEditMode(enable: Boolean) {
+        isEditMode = enable
+        if (enable) {
+            // Инициализируем временный список
+            dragData.clear()
+            dragData.addAll(folders)
+        }
+        notifyDataSetChanged() // Перерисовываем для показа/скрытия иконки перетаскивания
+    }
+
+    // Метод для установки ItemTouchHelper
+    fun setItemTouchHelper(helper: ItemTouchHelper) {
+        itemTouchHelper = helper
+    }
+
+    //пошли методы от интерфейса ItemTouchHelperAdapter
+    override fun onItemMove(fromPosition: Int, toPosition: Int): Boolean {
+        // Работаем с временным списком
+        if (fromPosition < toPosition) {
+            for (i in fromPosition until toPosition) {
+                Collections.swap(dragData, i, i + 1)
+            }
+        } else {
+            for (i in fromPosition downTo toPosition + 1) {
+                Collections.swap(dragData, i, i - 1)
+            }
+        }
+        notifyItemMoved(fromPosition, toPosition)
+
+        return true
+    }
+
+    override fun onDrop() {
+        // Сохраняем окончательный порядок
+        folders = dragData.toList()
+        viewModel.updateFoldersOrder(folders)
+    }
+
+    override fun onItemDismiss(position: Int) {
+        // Не используется, но должен быть реализован
+    }
+
+    companion object{
+        const val TAG = "33333"
     }
 }

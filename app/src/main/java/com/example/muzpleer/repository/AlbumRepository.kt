@@ -32,13 +32,14 @@ class AlbumRepository(
                 customCoversMap[album.albumId] = album.coverPath
             }
         }
+        Log.d(TAG, "# Сохранено ${customCoversMap.size} кастомных обложек альбомов ")
+
         //сохраняем порядок следования альбомов в списке
         existingAlbums.forEach { album ->
             if (album.sortOrder >= 0) {
                 customMovedMap[album.albumId] = album.sortOrder
             }
         }
-        Log.d(TAG, "# Сохранено ${customCoversMap.size} кастомных обложек альбомов ")
 
         // Очищаем и пересоздаем альбомы
         albumDao.deleteAll()

@@ -55,6 +55,7 @@ class AlbumFragment: Fragment() {
 
             // Навигация через Bundle
             val bundle = Bundle().apply {
+                putInt("from", 2)
                 putLong("albumId", album.albumId)
                 Log.d(TAG,"33 AlbumFragment onViewCreated bundle: albumId = ${album.albumId} from = 2 ")
             }
@@ -138,7 +139,6 @@ class AlbumFragment: Fragment() {
                         return true
                     }
                 })
-
                 // Показываем/скрываем пункт в зависимости от режима
                 val editItem = menu.findItem(R.id.action_edit_order)
                 editItem.title = if (isEditMode) "Готово" else "Редактировать порядок"
