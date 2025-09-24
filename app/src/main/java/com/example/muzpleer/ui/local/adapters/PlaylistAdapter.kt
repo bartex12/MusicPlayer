@@ -19,7 +19,6 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.ItemPlaylistBinding
-import com.example.muzpleer.model.Album
 import com.example.muzpleer.model.Playlist
 import com.example.muzpleer.ui.local.TabLocalFragmentDirections
 import com.example.muzpleer.ui.local.adapters.touch.ItemTouchHelperAdapter
