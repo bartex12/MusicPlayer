@@ -38,5 +38,6 @@
     <color name="whisper2Purple">#156200EE</color>
     <color name="whisper2Black">#15424242</color>
     <color name="colorAccent40Alfa">#662962FF</color>
+    <color name="colorBack">#FFE0B6</color>
 
 </resources>

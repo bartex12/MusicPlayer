@@ -75,11 +75,11 @@ class SongFragment : Fragment() {
 
         viewModel.filteredSongs.observe(viewLifecycleOwner) { filteredSongs ->
             Log.d( TAG,"32 SongsFragment onViewCreated filteredSongs.observe: filteredSongs.size= ${filteredSongs.size} ")
-            if (viewModel.getSongs().isEmpty()) binding.progressBar.visibility = View.VISIBLE else binding.progressBar.visibility = View.GONE
-            if (filteredSongs.isEmpty()) binding.imageHolder3.visibility = View.VISIBLE else binding.imageHolder3.visibility = View.GONE
             val sortedData = getSortedDataSong(filteredSongs)
             adapter.data = sortedData  //передаём данные в адаптер
             Log.d( TAG,"32 SongsFragment onViewCreated sortedData = ${sortedData.map{it.title}} ")
+            if (viewModel.getSongs().isEmpty()) binding.progressBar.visibility = View.VISIBLE else binding.progressBar.visibility = View.GONE
+            if (filteredSongs.isEmpty()) binding.imageHolder3.visibility = View.VISIBLE else binding.imageHolder3.visibility = View.GONE
         }
 
         //обновление обложки при её замене

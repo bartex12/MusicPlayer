@@ -57,12 +57,6 @@ class SongPlaylistFragment:Fragment() {
 
         initMenu()
 
-        viewModel.loadCurrentPlaylistForSongs(playlistId)  //грузим текущий плейлист ради песен для адаптера
-
-        viewModel.currentFilteredPlaylistSongs.observe(viewLifecycleOwner) { currentPlaylistSongs ->
-            Log.d(TAG, "!@#@ SongPlaylistFragment currentFilteredPlaylistSongs.observe currentFilteredPlaylistSongs size ${currentPlaylistSongs?.size}")
-            adapter.data = getSortedDataSong(currentPlaylistSongs?: listOf())
-        }
         adapter = SongsAdapter(viewModel,  { song ->
             val playlistSongs  = getSortedDataSong(viewModel.getCurrentPlaylist()?.playlistSongs ?: listOf()) //можно было взять и из currentFilteredPlaylistSongs
             Log.d(TAG,"!@#@ SongPlaylistFragment размер плейлиста = ${playlistSongs.size} имя первой песни плейлиста " +
@@ -85,6 +79,16 @@ class SongPlaylistFragment:Fragment() {
             viewModel.setCurrentSong(song)
             findNavController().navigate(R.id.action_songPlaylistFragment_to_playerFragment)
         })
+
+        viewModel.loadCurrentPlaylistForSongs(playlistId)  //грузим текущий плейлист ради песен для адаптера
+
+        viewModel.currentFilteredPlaylistSongs.observe(viewLifecycleOwner) { currentPlaylistSongs ->
+            Log.d(TAG, "!@#@ SongPlaylistFragment currentFilteredPlaylistSongs.observe currentFilteredPlaylistSongs size ${currentPlaylistSongs?.size}")
+            val currentSongs = currentPlaylistSongs?: listOf()
+            adapter.data = getSortedDataSong(currentSongs)
+            binding.tvEmptyPlaylistSong.visibility = if (currentSongs.isEmpty()) View.VISIBLE else View.GONE
+            binding.emptyImageView.visibility = if (currentSongs.isEmpty()) View.VISIBLE else View.GONE
+        }
 
         binding.alltracksPlaylistRecyclerView.apply {
             layoutManager = LinearLayoutManager(requireContext())

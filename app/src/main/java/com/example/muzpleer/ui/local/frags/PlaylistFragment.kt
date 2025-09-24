@@ -53,6 +53,8 @@ class PlaylistFragment():Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        initMenu()
+
         adapter = PlaylistAdapter (viewModel){ playlist ->
             //здесь setPlaylist и setSongAndPlaylist не делаем, так как здесь нет песен
 
@@ -82,16 +84,11 @@ class PlaylistFragment():Fragment() {
 
         viewModel.filteredPlaylists.observe(viewLifecycleOwner) { filteredPlaylists ->
             Log.d(TAG,"53 PlaylistFragment onViewCreated filteredPlaylists.observe: filteredPlaylists.size= ${filteredPlaylists.size} ")
-            if (viewModel.getSongs().isEmpty()) binding.progressBarPlaylist.visibility = View.VISIBLE else binding.progressBarPlaylist.visibility = View.GONE
-            if (filteredPlaylists.isEmpty()) binding.imageHolder3Playlist.visibility = View.VISIBLE else binding.imageHolder3Playlist.visibility = View.GONE
-            //val sortedData =getSortedDataPlaylists(filteredPlaylists)
+            //здесь нельзя делать сортировку, иначе собьётся перемещение папок
             adapter.playlist = filteredPlaylists  //передаём данные в адаптер
+            if (filteredPlaylists.isEmpty()) binding.emptyImageViewPlaylists.visibility = View.VISIBLE else  View.GONE
+            if (filteredPlaylists.isEmpty()) binding.tvEmptyPlaylists.visibility = View.VISIBLE else View.GONE
         }
-
-        //восстанавливаем позицию списка после поворота или возвращения на экран
-        binding.playlistRecyclerView.layoutManager?.scrollToPosition(viewModel.getPositionPlaylist())
-
-        initMenu()
     }
 
     //запоминаем  позицию списка, на которой сделан клик - на случай поворота экрана
@@ -228,7 +225,10 @@ class PlaylistFragment():Fragment() {
         btnCreate.setOnClickListener {
             val name=editText.text.toString().trim()
             if (name.isNotEmpty()) {
-                viewModel.createPlaylist(name)
+                viewModel.createPlaylist(name){
+                    binding.emptyImageViewPlaylists.visibility =  View.GONE
+                    binding.tvEmptyPlaylists.visibility = View.GONE
+                }
                 dialog.dismiss()
             } else {
                 editText.error="Введите название плейлиста"

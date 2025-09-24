@@ -80,6 +80,7 @@ class FavoritesFragment: Fragment() {
            // adapter.data = sortedData  //передаём данные в адаптер
             adapter.data = filteredFavorites  //передаём данные в адаптер
             binding.favoriteEmpty.visibility = if (filteredFavorites.isEmpty()) View.VISIBLE else View.GONE
+            binding.emptyImageViewFavorite.visibility = if (filteredFavorites.isEmpty()) View.VISIBLE else View.GONE
         }
 
         //восстанавливаем позицию списка после поворота или возвращения на экран и при новой загрузке
