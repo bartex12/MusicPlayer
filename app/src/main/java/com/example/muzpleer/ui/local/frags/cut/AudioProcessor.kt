@@ -83,36 +83,6 @@ class AudioProcessor {
             Log.d(TAG, "@@AudioProcessor extractAmplitudesWithMediaExtractor " +
                     "Sample rate: $sampleRate, Channels: $channelCount, Duration: $durationSeconds sec")
 
-//            // Рассчитываем параметры дискретизации
-//            val stepSamples = (sampleRate * stepMs / 1000.0).toInt()
-//            val samplesPerWindow = max(1, stepSamples / 10) // окон для усреднения
-//
-//            val bufferSize = sampleRate * channelCount * 2 // 2 секунды буфер
-//            val buffer = ByteBuffer.allocateDirect(bufferSize)
-//            buffer.order(ByteOrder.LITTLE_ENDIAN)
-//
-//            val bufferInfo = android.media.MediaCodec.BufferInfo()
-//            var currentTime = 0.0
-//
-//            while (currentTime < durationSeconds) {
-//                extractor.seekTo((currentTime * 1_000_000).toLong(), MediaExtractor.SEEK_TO_CLOSEST_SYNC)
-//
-//                buffer.clear()
-//                val bytesRead = extractor.readSampleData(buffer, 0)
-//
-//                if (bytesRead > 0) {
-//                    val amplitude = calculateAmplitudeFromBuffer(buffer, bytesRead, channelCount)
-//                    amplitudes.add(AmplitudePoint(currentTime.toFloat(), amplitude))
-//                } else {
-//                    amplitudes.add(AmplitudePoint(currentTime.toFloat(), 0f))
-//                }
-//
-//                currentTime += stepMs / 1000.0
-//
-//                if (!extractor.advance()) {
-//                    break
-//                }
-//            }
             // Извлекаем сырые амплитуды
             val rawAmplitudes = extractRawAmplitudes(extractor, sampleRate, channelCount, durationSeconds, stepMs)
 
