@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp"
+    android:background="@android:color/white">
+
+    <!-- Заголовок файла -->
+    <TextView
+        android:id="@+id/tvFileName"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Название файла"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="@android:color/black"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Информация о файле -->
+    <TextView
+        android:id="@+id/tvFileInfo"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Длительность: 0:00 | Размер: 0 MB"
+        android:textSize="12sp"
+        android:textColor="@android:color/darker_gray"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvFileName" />
+
+    <!-- График амплитуд - ЗАНИМАЕТ БОЛЬШУЮ ЧАСТЬ ЭКРАНА -->
+    <com.github.mikephil.charting.charts.LineChart
+        android:id="@+id/lineChart"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp"
+        android:background="@color/light_gray"
+        app:layout_constraintBottom_toTopOf="@+id/selectionInfoLayout"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvFileInfo" />
+
+    <!-- Информация о выделении -->
+    <LinearLayout
+        android:id="@+id/selectionInfoLayout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        android:orientation="horizontal"
+        android:gravity="center"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/lineChart"
+        app:layout_constraintBottom_toTopOf="@id/selectionControlsLayout">
+
+        <TextView
+            android:id="@+id/tvSelectionStart"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Начало: 0:00"
+            android:textSize="12sp"
+            android:textColor="?attr/colorPrimary"
+            android:layout_marginEnd="16dp" />
+
+        <TextView
+            android:id="@+id/tvSelectionEnd"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Конец: 0:00"
+            android:textSize="12sp"
+            android:textColor="?attr/colorPrimary"
+            android:layout_marginEnd="16dp" />
+
+        <TextView
+            android:id="@+id/tvSelectionDuration"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Длительность: 0:00"
+            android:textSize="12sp"
+            android:textColor="?attr/colorPrimaryDark" />
+
+    </LinearLayout>
+
+    <!-- Панель управления выделением -->
+    <LinearLayout
+        android:id="@+id/selectionControlsLayout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:orientation="horizontal"
+        android:gravity="center"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/selectionInfoLayout"
+        app:layout_constraintBottom_toTopOf="@id/playbackControlsLayout">
+
+        <Button
+            android:id="@+id/btnSelectStart"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginEnd="4dp"
+            android:text="Начало"
+            android:textSize="12sp"
+            android:textColor="@android:color/white"
+            android:backgroundTint="?attr/colorPrimary" />
+
+        <Button
+            android:id="@+id/btnSelectEnd"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="4dp"
+            android:text="Конец"
+            android:textSize="12sp"
+            android:textColor="@android:color/white"
+            android:backgroundTint="?attr/colorPrimary" />
+
+    </LinearLayout>
+
+    <!-- Панель управления воспроизведением -->
+    <LinearLayout
+        android:id="@+id/playbackControlsLayout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/selectionControlsLayout"
+        app:layout_constraintBottom_toTopOf="@id/actionButtonsLayout">
+
+        <!-- Кнопка воспроизведения -->
+        <ImageButton
+            android:id="@+id/btnPlayPause"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginEnd="8dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_play_arrow"
+            app:tint="?attr/colorPrimary" />
+
+        <!-- SeekBar -->
+        <SeekBar
+            android:id="@+id/seekBar"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp" />
+
+        <!-- Время -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvCurrentTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0:00"
+                android:textSize="10sp"
+                android:textColor="@android:color/black" />
+
+            <TextView
+                android:id="@+id/tvTotalTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0:00"
+                android:textSize="10sp"
+                android:textColor="@android:color/darker_gray" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <!-- Кнопки действий -->
+    <LinearLayout
+        android:id="@+id/actionButtonsLayout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/playbackControlsLayout"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <Button
+            android:id="@+id/btnPlaySelection"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginEnd="8dp"
+            android:text="Прослушать выделение"
+            android:textSize="12sp"
+            android:textColor="@android:color/white"
+            android:backgroundTint="?attr/colorPrimary"
+            android:enabled="false" />
+
+        <Button
+            android:id="@+id/btnTrim"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:text="Обрезать"
+            android:textSize="12sp"
+            android:textColor="@android:color/white"
+            android:backgroundTint="?attr/colorPrimaryDark"
+            android:enabled="false" />
+
+    </LinearLayout>
+
+    <!-- Прогресс загрузки -->
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@id/lineChart"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/lineChart"
+        tools:visibility="visible"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

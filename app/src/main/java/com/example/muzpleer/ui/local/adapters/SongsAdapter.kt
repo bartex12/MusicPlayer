@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -25,7 +26,9 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.ItemMusicBinding
+import com.example.muzpleer.model.Playlist
 import com.example.muzpleer.model.Song
+import com.example.muzpleer.ui.local.frags.CoverChangeLevelFragment.LevelType
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 import com.example.muzpleer.util.formatAsTime
 import com.example.muzpleer.util.formatDate
@@ -192,10 +195,22 @@ class SongsAdapter(
                     showSongInfoDialog(context, song)
                     true
                 }
+                R.id.  action_edit_song -> {
+                    navigateToEditSongCut(view, song)
+                    true
+                }
                 else -> false
             }
         }
         popup.show()
+    }
+
+    private fun navigateToEditSongCut(view: View,  song:Song) {
+        viewModel.setSelectedSong(song)
+        val bundle: Bundle  = Bundle().apply{
+            putString("audioPath", song.mediaUri)
+        }
+        view.findNavController().navigate(R.id.audioWaveformFragment, bundle)
     }
 
     private fun showSongInfoDialog(context:Context,song: Song) {

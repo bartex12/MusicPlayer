@@ -188,4 +188,8 @@
         android:name="com.example.muzpleer.ui.local.frags.CoverChangeLevelFragment"
         android:label="Изменение обложки"
         tools:layout="@layout/fragment_cover_change_level"/>
+    <fragment
+        android:id="@+id/audioWaveformFragment"
+        android:name="com.example.muzpleer.ui.local.frags.cut.AudioWaveformFragment"
+        android:label="AudioWaveformFragment" />
 </navigation>

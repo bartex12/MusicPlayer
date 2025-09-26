@@ -40,4 +40,8 @@
     <color name="colorAccent40Alfa">#662962FF</color>
     <color name="colorBack">#FFE0B6</color>
 
+    //панель редактирования/обрезки
+    <color name="light_gray">#F5F5F5</color>
+    <color name="selection_background">#E3F2FD</color>
+
 </resources>

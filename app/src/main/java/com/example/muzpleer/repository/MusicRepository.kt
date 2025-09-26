@@ -347,4 +347,8 @@ class MusicRepository(
     suspend fun getSongFileById(songId:Long):SongFile?{
         return songDao.getById(songId)
     }
+
+    suspend fun editSongCut(mediaUri:String){
+
+    }
 }

@@ -98,6 +98,17 @@ dependencies {
     //gson
     implementation ("com.google.code.gson:gson:2.11.0")
 
+    // Визуализация waveform
+    implementation ("com.github.massoudss:waveformSeekBar:5.0.1")
+    // Графики амплитуд
+    implementation ("com.github.PhilJay:MPAndroidChart:v3.1.0")
+    // Аудио обработка
+    //implementation ("com.arthenica:ffmpeg-kit-full:5.1")
+    //implementation ("com.arthenica:mobile-ffmpeg-full:4.4")
+    //implementation ("com.arthenica:ffmpeg-kit-full-gpl:6.0-2")
+    // Декодирование аудио
+    implementation ("com.googlecode.mp4parser:isoparser:1.1.22")
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

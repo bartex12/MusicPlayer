@@ -29,6 +29,13 @@
         android:title="Поделиться"
         android:icon="@drawable/baseline_share_24"
         app:showAsAction="never"/>
+
+    <item
+        android:id="@+id/action_edit_song"
+        android:title="Обрезать песню"
+        android:icon="@drawable/outline_content_cut_24"
+        app:showAsAction="never"/>
+
     <item
         android:id="@+id/action_song_info"
         android:title="О песне"

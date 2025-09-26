@@ -10,6 +10,7 @@ import com.example.muzpleer.room.dao.FavoriteDao
 import com.example.muzpleer.room.dao.FolderDao
 import com.example.muzpleer.room.dao.PlaylistDao
 import com.example.muzpleer.room.dao.SongDao
+import com.example.muzpleer.room.dao.VariantsDao
 import com.example.muzpleer.room.entity.AlbumFile
 import com.example.muzpleer.room.entity.ArtistFile
 import com.example.muzpleer.room.entity.FavoriteSong

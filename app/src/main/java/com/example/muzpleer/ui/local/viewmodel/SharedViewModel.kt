@@ -19,6 +19,9 @@ import com.example.muzpleer.model.Folder
 import com.example.muzpleer.model.Playlist
 import com.example.muzpleer.model.Song
 import com.example.muzpleer.model.SongAndPlaylist
+import com.example.muzpleer.model.cut.AmplitudePoint
+import com.example.muzpleer.model.cut.AudioInfo
+import com.example.muzpleer.model.cut.ProcessingState
 import com.example.muzpleer.repository.AlbumRepository
 import com.example.muzpleer.repository.ArtistRepository
 import com.example.muzpleer.repository.FavoriteRepository
@@ -31,6 +34,7 @@ import com.example.muzpleer.room.entity.FavoriteSong
 import com.example.muzpleer.room.entity.FolderFile
 import com.example.muzpleer.room.entity.SongFile
 import com.example.muzpleer.service.MusicServiceHandler
+import com.example.muzpleer.ui.local.frags.cut.AudioProcessor
 import com.example.muzpleer.ui.local.helper.IPreferenceHelper
 import com.example.muzpleer.util.getSortedDataSong
 import kotlinx.coroutines.Dispatchers
@@ -194,6 +198,16 @@ class SharedViewModel(
 
     private val _currentFilteredPlaylistSongs = MutableLiveData<List<Song>?>()  //отфильтрованный поиском список песен конкретного плейлиста
     val currentFilteredPlaylistSongs: LiveData<List<Song>?> = _currentFilteredPlaylistSongs
+
+    private val audioProcessor = AudioProcessor()
+    private val _amplitudes = MutableLiveData<List<AmplitudePoint>>()
+    val amplitudes: LiveData<List<AmplitudePoint>> = _amplitudes
+
+    private val _audioInfo = MutableLiveData<AudioInfo?>()
+    val audioInfo: LiveData<AudioInfo?> = _audioInfo
+
+    private val _processingState = MutableLiveData<ProcessingState>()
+    val processingState: LiveData<ProcessingState> = _processingState
 
 //    private val _allSongs = MutableLiveData<List<Song>>()
 //    val allSongs: LiveData<List<Song>> = _allSongs
@@ -1312,22 +1326,67 @@ class SharedViewModel(
         }
     }
 
-    fun setCurrentPlaylist(playlist: Playlist){
-
+    fun editSongCut(mediaUri:String) {
+        viewModelScope.launch {
+            repository.editSongCut(mediaUri)
+        }
     }
-}
 
-//fun setSelectedSong(song: Song) {
-//    _selectedSong.value = song
-//    if(song.artUri == null){
-//        val uri = getDefaultCoverUri(song)
-//        updateCoverImage(uri)
-//        //DefaultCoverUri = content://media/external/audio/albumart/3
-//        Log.d(TAG, "***SharedViewModel setSelectedSong song.artUri == null DefaultCoverUri = $uri")
-//    }else{
-//        val uri = (song.artUri!!).toUri()
-//        //val uri = "content://com.android.providers.media.documents/document/image%3A135257".toUri()
-//        updateCoverImage(uri)
-//        Log.d(TAG, "***SharedViewModel setSelectedSong song.artUri = $uri song = ${song.title}")
-//    }
-//}
+    fun loadAudioData(audioPath: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                _processingState.postValue(ProcessingState.Loading)
+
+                val info = audioProcessor.getAudioInfo(audioPath)
+                _audioInfo.postValue(info)
+
+                val amplitudes = audioProcessor.extractAmplitudes(audioPath, 1000) // шаг 1000мс
+                _amplitudes.postValue(amplitudes)
+
+                _processingState.postValue(ProcessingState.Success("Данные загружены"))
+            } catch (e: Exception) {
+                _processingState.postValue(ProcessingState.Error(e.message ?: "Ошибка загрузки"))
+            }
+        }
+    }
+
+    fun startPlayback(startTime: Float = 0f, endTime: Float = 0f) {
+        viewModelScope.launch(Dispatchers.IO) {
+            audioProcessor.startPlayback(startTime, endTime)
+        }
+    }
+
+    fun pausePlayback() {
+        audioProcessor.pausePlayback()
+    }
+
+    fun playSelection(startTime: Float, endTime: Float) {
+        viewModelScope.launch(Dispatchers.IO) {
+            audioProcessor.playSelection(startTime, endTime)
+        }
+    }
+
+    fun seekTo(time: Float) {
+        audioProcessor.seekTo(time)
+    }
+
+    fun trimAudio(inputPath: String, outputPath: String, startTime: Long, endTime: Long) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                _processingState.postValue(ProcessingState.Loading)
+                Toast.makeText(App.instance, "Пока не работает", Toast.LENGTH_SHORT).show()
+                //todo пока не работает библиотека
+                audioProcessor.trimAudio(inputPath, outputPath, startTime, endTime)
+                _processingState.postValue(ProcessingState.Success("Аудио обрезано"))
+            } catch (e: Exception) {
+                _processingState.postValue(ProcessingState.Error(e.message ?: "Ошибка обрезки"))
+            }
+        }
+    }
+
+    fun release() {
+        audioProcessor.release()
+    }
+
+
+}
