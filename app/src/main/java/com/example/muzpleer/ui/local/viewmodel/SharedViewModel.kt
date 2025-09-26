@@ -1340,8 +1340,9 @@ class SharedViewModel(
                 val info = audioProcessor.getAudioInfo(audioPath)
                 _audioInfo.postValue(info)
 
-                val amplitudes = audioProcessor.extractAmplitudes(audioPath, 1000) // шаг 1000мс
+                val amplitudes = audioProcessor.extractAmplitudes(audioPath, 1000) // шаг 300мс
                 _amplitudes.postValue(amplitudes)
+                //Log.d(TAG,"SharedViewModel loadAudioData amplitudes = ${amplitudes.map{it.amplitude}}")
 
                 _processingState.postValue(ProcessingState.Success("Данные загружены"))
             } catch (e: Exception) {

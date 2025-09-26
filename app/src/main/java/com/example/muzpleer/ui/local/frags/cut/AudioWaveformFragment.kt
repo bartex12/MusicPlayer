@@ -95,16 +95,19 @@ class  AudioWaveformFragment : Fragment() {
             xAxis.setDrawGridLines(true)
             xAxis.gridColor = Color.LTGRAY
 
-            // Настройка оси Y
-            axisLeft.setDrawGridLines(false)
-            axisLeft.textColor = Color.BLACK
+            // Настройка оси Y - от -1 до 1 для симметричного отображения
             axisLeft.axisMinimum = -1f
             axisLeft.axisMaximum = 1f
             axisLeft.granularity = 0.2f
+            axisLeft.setDrawGridLines(true)
+            axisLeft.gridColor = Color.LTGRAY
+            axisLeft.textColor = Color.BLACK
 
             axisRight.isEnabled = false
 
             legend.isEnabled = false
+            // Убираем фон
+            //setDrawGridBackground(false)
         }
     }
 
@@ -203,11 +206,18 @@ class  AudioWaveformFragment : Fragment() {
 
         // Область под кривой
         dataSet.setDrawFilled(true)
-        dataSet.fillColor = Color.argb(50, 0, 0, 255)
-        dataSet.fillAlpha = 100
+//        dataSet.fillColor = Color.argb(50, 0, 0, 255)
+//        dataSet.fillAlpha = 100
+        dataSet.fillColor = Color.BLUE
+        dataSet.fillAlpha = 50
 
         val lineData =LineData(dataSet)
         binding.lineChart.data = lineData
+
+        // Принудительно устанавливаем диапазон Y
+        binding.lineChart.axisLeft.axisMinimum = -1f
+        binding.lineChart.axisLeft.axisMaximum = 1f
+
         binding.lineChart.invalidate()
 
         // Устанавливаем максимальное время для SeekBar

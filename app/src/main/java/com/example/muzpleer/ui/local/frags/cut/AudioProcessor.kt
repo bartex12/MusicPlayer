@@ -18,6 +18,7 @@ import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.sin
+import kotlin.math.sqrt
 
 class AudioProcessor {
     private var mediaPlayer: MediaPlayer? = null
@@ -82,19 +83,13 @@ class AudioProcessor {
             val durationSeconds = durationUs / 1_000_000.0
             Log.d(TAG, "@@AudioProcessor extractAmplitudesWithMediaExtractor " +
                     "Sample rate: $sampleRate, Channels: $channelCount, Duration: $durationSeconds sec")
-
             // Извлекаем сырые амплитуды
             val rawAmplitudes = extractRawAmplitudes(extractor, sampleRate, channelCount, durationSeconds, stepMs)
 
-            // Нормализуем амплитуды для лучшей визуализации
-            amplitudes.addAll(normalizeAmplitudes(rawAmplitudes))
-
-
+            return normalizeAmplitudes(rawAmplitudes) // Улучшенный вариант
         } finally {
             extractor?.release()
         }
-
-        return amplitudes
     }
 
     private fun extractRawAmplitudes(
@@ -133,29 +128,51 @@ class AudioProcessor {
                 break
             }
         }
-
         return amplitudes
     }
+
+//    private fun normalizeAmplitudes(rawAmplitudes: List<AmplitudePoint>): List<AmplitudePoint> {
+//        if (rawAmplitudes.isEmpty()) return emptyList()
+//
+//        // Находим максимальное абсолютное значение амплитуды
+//        val maxAmplitude=rawAmplitudes.maxOf { abs(it.amplitude) }
+//
+//        // Если все амплитуды близки к нулю, используем дефолтное масштабирование
+//        val scale=if (maxAmplitude > 0.01f) {
+//            0.9f / maxAmplitude // растягиваем до 90% шкалы
+//        } else {
+//            10f // усиливаем слабый сигнал
+//        }
+//
+//        // Применяем масштабирование и удаляем постоянную составляющую
+//        return rawAmplitudes.map { point ->
+//            AmplitudePoint(
+//                time=point.time,
+//                amplitude=point.amplitude * scale
+//            )
+//        }
+//    }
 
     private fun normalizeAmplitudes(rawAmplitudes: List<AmplitudePoint>): List<AmplitudePoint> {
         if (rawAmplitudes.isEmpty()) return emptyList()
 
-        // Находим максимальное абсолютное значение амплитуды
-        val maxAmplitude=rawAmplitudes.maxOf { abs(it.amplitude) }
-
-        // Если все амплитуды близки к нулю, используем дефолтное масштабирование
-        val scale=if (maxAmplitude > 0.01f) {
-            0.9f / maxAmplitude // растягиваем до 90% шкалы
-        } else {
-            10f // усиливаем слабый сигнал
+        // 1. Удаляем общее среднее значение
+        val mean = rawAmplitudes.map { it.amplitude }.average().toFloat()
+        val centered = rawAmplitudes.map { point ->
+            AmplitudePoint(point.time, point.amplitude - mean)
         }
 
-        // Применяем масштабирование и удаляем постоянную составляющую
-        return rawAmplitudes.map { point ->
-            AmplitudePoint(
-                time=point.time,
-                amplitude=point.amplitude * scale
-            )
+        // 2. Находим максимальное отклонение от нуля
+        val maxDeviation = centered.maxOf { abs(it.amplitude) }
+
+        // 3. Масштабируем чтобы максимум был ±0.9
+        return if (maxDeviation > 0.001f) {
+            val scale = 0.9f / maxDeviation
+            centered.map { point ->
+                AmplitudePoint(point.time, point.amplitude * scale)
+            }
+        } else {
+            centered // если сигнал очень слабый
         }
     }
 
@@ -175,6 +192,39 @@ class AudioProcessor {
         return -1
     }
 
+//    private fun calculateAmplitudeFromBuffer(buffer: ByteBuffer, bytesRead: Int, channelCount: Int): Float {
+//        buffer.position(0)
+//        buffer.limit(bytesRead)
+//
+//        val samples = bytesRead / 2 // 16-bit samples
+//        val samplesPerChannel = samples / channelCount
+//
+//        var maxAmplitude = 0f
+//
+//        // Для каждого канала вычисляем амплитуду
+//        for (channel in 0 until channelCount) {
+//            var channelAmplitude = 0f
+//            var sampleCount = 0
+//
+//            for (i in channel until samples step channelCount) {
+//                if (i * 2 + 1 < bytesRead) {
+//                    val sample = buffer.getShort(i * 2).toFloat() / Short.MAX_VALUE.toFloat()
+//                    channelAmplitude += abs(sample)
+//                    sampleCount++
+//                }
+//            }
+//
+//            if (sampleCount > 0) {
+//                channelAmplitude /= sampleCount
+//                maxAmplitude = max(maxAmplitude, channelAmplitude)
+//            }
+//        }
+//
+//        return maxAmplitude
+//    }
+
+
+    //Улучшенный расчет амплитуды с RMS
     private fun calculateAmplitudeFromBuffer(buffer: ByteBuffer, bytesRead: Int, channelCount: Int): Float {
         buffer.position(0)
         buffer.limit(bytesRead)
@@ -182,52 +232,22 @@ class AudioProcessor {
         val samples = bytesRead / 2 // 16-bit samples
         val samplesPerChannel = samples / channelCount
 
-        var maxAmplitude = 0f
+        // Используем RMS (Root Mean Square) для более точной амплитуды
+        var sumSquares = 0.0
+        var sampleCount = 0
 
-        // Для каждого канала вычисляем амплитуду
-        for (channel in 0 until channelCount) {
-            var channelAmplitude = 0f
-            var sampleCount = 0
-
-            for (i in channel until samples step channelCount) {
-                if (i * 2 + 1 < bytesRead) {
-                    val sample = buffer.getShort(i * 2).toFloat() / Short.MAX_VALUE.toFloat()
-                    channelAmplitude += abs(sample)
-                    sampleCount++
-                }
-            }
-
-            if (sampleCount > 0) {
-                channelAmplitude /= sampleCount
-                maxAmplitude = max(maxAmplitude, channelAmplitude)
+        for (i in 0 until samples) {
+            if (i * 2 + 1 < bytesRead) {
+                val sample = buffer.getShort(i * 2).toFloat() / Short.MAX_VALUE.toFloat()
+                sumSquares += sample * sample
+                sampleCount++
             }
         }
 
-        return maxAmplitude
-    }
-
-    fun startPlayback(startTime: Float = 0f, endTime: Float = 0f) {
-        currentFilePath?.let { path ->
-            mediaPlayer?.release()
-            mediaPlayer = MediaPlayer().apply {
-                setDataSource(path)
-                prepareAsync()
-
-                setOnPreparedListener {
-                    if (startTime > 0) {
-                        seekTo((startTime * 1000).toInt())
-                    }
-                    start()
-
-                    if (endTime > 0) {
-                        // Остановить воспроизведение в endTime
-                        val delay = ((endTime - startTime) * 1000).toLong()
-                        Handler(Looper.getMainLooper()).postDelayed({
-                            pausePlayback()
-                        }, delay)
-                    }
-                }
-            }
+        return if (sampleCount > 0) {
+            sqrt(sumSquares / sampleCount).toFloat()
+        } else {
+            0f
         }
     }
 
@@ -268,6 +288,31 @@ class AudioProcessor {
 
     private fun randomVariation(): Double {
         return Math.random() * 2 - 1 // случайное число от -1 до 1
+    }
+
+    fun startPlayback(startTime: Float = 0f, endTime: Float = 0f) {
+        currentFilePath?.let { path ->
+            mediaPlayer?.release()
+            mediaPlayer = MediaPlayer().apply {
+                setDataSource(path)
+                prepareAsync()
+
+                setOnPreparedListener {
+                    if (startTime > 0) {
+                        seekTo((startTime * 1000).toInt())
+                    }
+                    start()
+
+                    if (endTime > 0) {
+                        // Остановить воспроизведение в endTime
+                        val delay = ((endTime - startTime) * 1000).toLong()
+                        Handler(Looper.getMainLooper()).postDelayed({
+                            pausePlayback()
+                        }, delay)
+                    }
+                }
+            }
+        }
     }
 
     fun pausePlayback() {
