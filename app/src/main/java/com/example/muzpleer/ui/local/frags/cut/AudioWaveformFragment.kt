@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.SeekBar
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.example.muzpleer.R
@@ -34,6 +35,9 @@ class  AudioWaveformFragment : Fragment() {
     private var audioDuration = 0L
     private var selectionStart = 0f
     private var selectionEnd = 0f
+    private var selectionStartTime = 0f
+    private var selectionEndTime = 0f
+    private var isSelectingStart = true
 
     companion object {
         private const val TAG = "33333"
@@ -116,14 +120,9 @@ class  AudioWaveformFragment : Fragment() {
         binding.btnPlayPause.setOnClickListener {
             togglePlayback()
         }
-        // Кнопки выделения
-        binding.btnSelectStart.setOnClickListener {
-            setSelectionPoint(true)
-        }
 
-        binding.btnSelectEnd.setOnClickListener {
-            setSelectionPoint(false)
-        }
+        // Настройка двух SeekBar
+        setupSeekBars()
 
         // Кнопки действий
         binding.btnPlaySelection.setOnClickListener {
@@ -133,18 +132,67 @@ class  AudioWaveformFragment : Fragment() {
         binding.btnTrim.setOnClickListener {
             trimAudio()
         }
+    }
 
-        binding.seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                if (fromUser) {
-                    val time = progress.toFloat() / 100f * audioDuration
-                    binding.tvCurrentTime.text = formatTime(time.toLong())
-                    seekToPosition(time)
+    private fun setupSeekBars() {
+        // SeekBar для воспроизведения
+        binding.seekBarPlayback.max = 1000
+        binding.seekBarPlayback.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
+                if (fromUser && audioDuration > 0) {
+                    val time = progress * audioDuration / 1000f
+                    // Обновляем позицию воспроизведения
                 }
             }
-            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
-            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStartTrackingTouch(seekBar: SeekBar) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar) {}
         })
+
+        // SeekBar для выделения начала и конца
+        setupSelectionSeekBars()
+    }
+
+    private fun setupSelectionSeekBars() {
+        binding.seekBarStart.max = 1000
+        binding.seekBarEnd.max = 1000
+
+        val seekBarListener = object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
+                if (fromUser && audioDuration > 0) {
+                    val time = progress * audioDuration / 1000f
+
+                    when (seekBar.id) {
+                        R.id.seekBarStart -> {
+                            selectionStartTime = time
+                            binding.tvCurrentTimeStart.text = formatTime(time.toLong())
+                            if (selectionStartTime > selectionEndTime) {
+                                selectionStartTime = selectionEndTime
+                                binding.seekBarStart.progress = (selectionStartTime * 1000 / audioDuration).toInt()
+                            }
+                        }
+                        R.id.seekBarEnd -> {
+                            selectionEndTime = time
+                            binding.tvCurrentTimeEnd.text = formatTime(time.toLong())
+                            if (selectionEndTime < selectionStartTime) {
+                                selectionEndTime = selectionStartTime
+                                binding.seekBarEnd.progress = (selectionEndTime * 1000 / audioDuration).toInt()
+                            }
+                        }
+                    }
+                    updateSelectionInfo()
+                    highlightSelectionOnChart()
+                }
+            }
+            override fun onStartTrackingTouch(seekBar: SeekBar) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar) {}
+        }
+
+        binding.seekBarStart.setOnSeekBarChangeListener(seekBarListener)
+        binding.seekBarEnd.setOnSeekBarChangeListener(seekBarListener)
+
+        // Инициализируем начальные значения времени
+        binding.tvCurrentTimeStart.text = formatTime(0)
+        binding.tvCurrentTimeEnd.text = formatTime(audioDuration)
     }
 
     private fun setupObservers() {
@@ -198,128 +246,167 @@ class  AudioWaveformFragment : Fragment() {
         val entries = amplitudes.map { Entry(it.time, it.amplitude) }
 
         // Основная линия амплитуд
-        val dataSet =LineDataSet(entries, "Амплитуда")
+        val dataSet = LineDataSet(entries, "Амплитуда")
         dataSet.color = Color.BLUE
         dataSet.setDrawCircles(false)
         dataSet.lineWidth = 1.5f
         dataSet.setDrawValues(false)
-
-        // Область под кривой
         dataSet.setDrawFilled(true)
-//        dataSet.fillColor = Color.argb(50, 0, 0, 255)
-//        dataSet.fillAlpha = 100
         dataSet.fillColor = Color.BLUE
         dataSet.fillAlpha = 50
 
-        val lineData =LineData(dataSet)
+        val lineData = LineData(dataSet)
         binding.lineChart.data = lineData
 
-        // Принудительно устанавливаем диапазон Y
         binding.lineChart.axisLeft.axisMinimum = -1f
         binding.lineChart.axisLeft.axisMaximum = 1f
 
         binding.lineChart.invalidate()
 
-        // Устанавливаем максимальное время для SeekBar
-        binding.seekBar.max = 1000
-        binding.tvTotalTime.text = formatTime(audioDuration)
+        // После построения графика обновляем выделение
+        highlightSelectionOnChart()
     }
 
+    // Обновляем метод при загрузке данных аудио
     private fun updateAudioInfo(audioInfo: AudioInfo) {
+        audioDuration = audioInfo.duration
         val file = File(audioInfo.filePath)
         val fileSize = String.format("%.2f MB", file.length().toDouble() / 1024 / 1024)
 
-        binding.tvFileInfo.text = "Длительность: ${formatTime(audioInfo.duration)} | " +
-                "Размер: $fileSize | " +
-                "Частота: ${audioInfo.sampleRate} Hz"
+        binding.tvFileInfo.text = "Длительность: ${formatTime(audioDuration)} | Размер: $fileSize"
+        binding.tvTotalTime.text = formatTime(audioDuration)
+
+        // Устанавливаем конечное время в конечный SeekBar
+        binding.seekBarEnd.progress = 1000
+        selectionEndTime = audioDuration / 1000f
+        binding.tvCurrentTimeEnd.text = formatTime(audioDuration)
+
+        updateSelectionInfo()
     }
     private fun togglePlayback() {
         isPlaying = !isPlaying
 
         if (isPlaying) {
-            binding.btnPlayPause.setImageResource(R.drawable.ic_pause2)
-            viewModel.startPlayback(selectionStart, selectionEnd)
+            binding.btnPlayPause.setImageResource(R.drawable.ic_pause)
+            // Воспроизводим выделенный отрезок или весь трек
+            if (selectionEndTime > selectionStartTime) {
+                viewModel.startPlayback(selectionStartTime, selectionEndTime)
+            } else {
+                viewModel.startPlayback(0f, audioDuration / 1000f)
+            }
         } else {
-            binding.btnPlayPause.setImageResource(R.drawable.ic_play)
+            binding.btnPlayPause.setImageResource(R.drawable.ic_play_arrow)
             viewModel.pausePlayback()
         }
     }
-    private fun setSelectionPoint(isStart: Boolean) {
-        val currentTime = binding.seekBar.progress.toFloat() / 1000f * audioDuration
-
-        if (isStart) {
-            selectionStart = currentTime
-            binding.tvSelectionStart.text = "Начало: ${formatTime(currentTime.toLong())}"
-        } else {
-            selectionEnd = currentTime
-            binding.tvSelectionEnd.text = "Конец: ${formatTime(currentTime.toLong())}"
-        }
-
-        updateSelectionInfo()
-        highlightSelectionOnChart()
-    }
 
     private fun playSelection() {
-        if (selectionStart >= selectionEnd) {
+        if (selectionStartTime >= selectionEndTime) {
             Toast.makeText(requireContext(), "Некорректный интервал", Toast.LENGTH_SHORT).show()
             return
         }
 
-        viewModel.playSelection(selectionStart, selectionEnd)
-        binding.btnPlayPause.setImageResource(R.drawable.ic_pause2)
+        viewModel.playSelection(selectionStartTime, selectionEndTime)
+        binding.btnPlayPause.setImageResource(R.drawable.ic_pause)
         isPlaying = true
     }
 
     private fun trimAudio() {
-        if (selectionStart >= selectionEnd) {
+        if (selectionStartTime >= selectionEndTime) {
             Toast.makeText(requireContext(), "Выделите корректный интервал", Toast.LENGTH_SHORT).show()
             return
         }
 
         val outputPath = "${requireContext().externalCacheDir?.absolutePath}/trimmed_${System.currentTimeMillis()}.mp3"
-        viewModel.trimAudio(audioFilePath!!, outputPath, selectionStart.toLong(), selectionEnd.toLong())
-    }
-
-    private fun seekToPosition(time: Float) {
-        viewModel.seekTo(time)
-        updateCurrentTime(time)
-    }
-
-    private fun updateCurrentTime(time: Float) {
-        binding.tvCurrentTime.text = formatTime(time.toLong())
-        val progress = (time / audioDuration * 1000).toInt()
-        binding.seekBar.progress = progress
+        viewModel.trimAudio(audioFilePath!!, outputPath, selectionStartTime.toDouble(), selectionEndTime.toDouble())
     }
 
     private fun updateSelectionInfo() {
-        val duration = (selectionEnd - selectionStart).toLong()
-        binding.tvSelectionDuration.text = "Длительность: ${formatTime(duration)}"
+        val duration = (selectionEndTime  - selectionStartTime).toLong()
+        binding.tvSelectionDuration.text = "Длительность выделения: ${formatTime(duration)}"
 
-        // Показываем/скрываем панель выделения
-        val hasSelection = selectionStart > 0 || selectionEnd > 0
-        binding.btnPlaySelection.isEnabled = hasSelection && selectionStart < selectionEnd
-        binding.btnTrim.isEnabled = hasSelection && selectionStart < selectionEnd
+        val hasValidSelection = selectionEndTime > selectionStartTime
+        binding.btnPlaySelection.isEnabled = hasValidSelection
+        binding.btnTrim.isEnabled = hasValidSelection
+
+        // Визуальная индикация валидности выделения
+        if (hasValidSelection) {
+            binding.tvSelectionDuration.setBackgroundColor(
+                ContextCompat.getColor(requireContext(), R.color.selection_background)
+            )
+            binding.tvSelectionDuration.setTextColor(
+                ContextCompat.getColor(requireContext(), R.color.colorPrimaryDark)
+            )
+        } else {
+            binding.tvSelectionDuration.setBackgroundColor(Color.TRANSPARENT)
+            binding.tvSelectionDuration.setTextColor(
+                ContextCompat.getColor(requireContext(), android.R.color.darker_gray)
+            )
+        }
     }
 
     private fun highlightSelectionOnChart() {
         // Добавляем маркеры выделения на график
         val chart = binding.lineChart
+
         // Создаем выделения для начальной и конечной точек
         val highlightStart = Highlight(selectionStart, 0f, 0) // xValue, yValue, dataSetIndex
         val highlightEnd = Highlight(selectionEnd, 0f, 0)
 
-        // Устанавливаем выделения
+        // Устанавливаем оба маркера
         chart.highlightValues(arrayOf(highlightStart, highlightEnd))
+
+        // Добавляем визуальное выделение области
+        addSelectionArea(selectionStartTime, selectionEndTime)
 
         // Обновляем график
         chart.invalidate()
     }
 
+    private fun addSelectionArea(startTime: Float, endTime: Float) {
+        val chart = binding.lineChart
+        val data = chart.data ?: return
+
+        // Удаляем старую область выделения если есть
+        removeSelectionArea()
+
+        // Создаем точки для области выделения
+        val areaEntries = listOf(
+            Entry(startTime, -1f),
+            Entry(startTime, 1f),
+            Entry(endTime, 1f),
+            Entry(endTime, -1f),
+            Entry(startTime, -1f) // замыкаем полигон
+        )
+
+        val areaDataSet = LineDataSet(areaEntries, "Selection Area")
+        areaDataSet.color = Color.TRANSPARENT
+        areaDataSet.setDrawCircles(false)
+        areaDataSet.setDrawValues(false)
+        areaDataSet.setDrawFilled(true)
+        areaDataSet.fillColor = Color.argb(50, 255, 0, 0) // полупрозрачный красный
+        areaDataSet.fillAlpha = 80
+
+        data.addDataSet(areaDataSet)
+    }
+
+    private fun removeSelectionArea() {
+        val chart = binding.lineChart
+        val data = chart.data ?: return
+
+        val selectionDataSet = data.getDataSetByLabel("Selection Area", false)
+        if (selectionDataSet != null) {
+            data.removeDataSet(selectionDataSet)
+        }
+    }
+
     private fun formatTime(milliseconds: Long): String {
-        val seconds = milliseconds / 1000
-        val minutes = seconds / 60
-        val remainingSeconds = seconds % 60
-        return String.format("%d:%02d", minutes, remainingSeconds)
+        val totalSeconds = milliseconds / 1000
+        val minutes = totalSeconds / 60
+        val seconds = totalSeconds % 60
+        val ms = (milliseconds % 1000) / 10 // две цифры миллисекунд
+
+        return String.format("%d:%02d.%02d", minutes, seconds, ms)
     }
 
     override fun onDestroy() {

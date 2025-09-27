@@ -1371,13 +1371,16 @@ class SharedViewModel(
         audioProcessor.seekTo(time)
     }
 
-    fun trimAudio(inputPath: String, outputPath: String, startTime: Long, endTime: Long) {
+    fun trimAudio(inputPath: String, outputPath: String, startTime: Double, endTime: Double) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 _processingState.postValue(ProcessingState.Loading)
-                Toast.makeText(App.instance, "Пока не работает", Toast.LENGTH_SHORT).show()
+                // Конвертируем секунды в миллисекунды для MediaExtractor
+                val startTimeMs = (startTime * 1000).toLong()
+                val endTimeMs = (endTime * 1000).toLong()
+
                 //todo пока не работает библиотека
-                audioProcessor.trimAudio(inputPath, outputPath, startTime, endTime)
+                audioProcessor.trimAudio(inputPath, outputPath, startTimeMs, endTimeMs)
                 _processingState.postValue(ProcessingState.Success("Аудио обрезано"))
             } catch (e: Exception) {
                 _processingState.postValue(ProcessingState.Error(e.message ?: "Ошибка обрезки"))

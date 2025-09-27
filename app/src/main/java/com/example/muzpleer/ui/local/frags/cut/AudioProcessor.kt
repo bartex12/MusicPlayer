@@ -62,7 +62,6 @@ class AudioProcessor {
     }
 
     private fun extractAmplitudesWithMediaExtractor(audioPath: String, stepMs: Int): List<AmplitudePoint> {
-        val amplitudes = mutableListOf<AmplitudePoint>()
         var extractor: MediaExtractor? = null
 
         try {
@@ -131,28 +130,6 @@ class AudioProcessor {
         return amplitudes
     }
 
-//    private fun normalizeAmplitudes(rawAmplitudes: List<AmplitudePoint>): List<AmplitudePoint> {
-//        if (rawAmplitudes.isEmpty()) return emptyList()
-//
-//        // Находим максимальное абсолютное значение амплитуды
-//        val maxAmplitude=rawAmplitudes.maxOf { abs(it.amplitude) }
-//
-//        // Если все амплитуды близки к нулю, используем дефолтное масштабирование
-//        val scale=if (maxAmplitude > 0.01f) {
-//            0.9f / maxAmplitude // растягиваем до 90% шкалы
-//        } else {
-//            10f // усиливаем слабый сигнал
-//        }
-//
-//        // Применяем масштабирование и удаляем постоянную составляющую
-//        return rawAmplitudes.map { point ->
-//            AmplitudePoint(
-//                time=point.time,
-//                amplitude=point.amplitude * scale
-//            )
-//        }
-//    }
-
     private fun normalizeAmplitudes(rawAmplitudes: List<AmplitudePoint>): List<AmplitudePoint> {
         if (rawAmplitudes.isEmpty()) return emptyList()
 
@@ -191,38 +168,6 @@ class AudioProcessor {
         Log.e(TAG, " @@AudioProcessor findAudioTrack No audio tracks found in ${extractor.trackCount} tracks")
         return -1
     }
-
-//    private fun calculateAmplitudeFromBuffer(buffer: ByteBuffer, bytesRead: Int, channelCount: Int): Float {
-//        buffer.position(0)
-//        buffer.limit(bytesRead)
-//
-//        val samples = bytesRead / 2 // 16-bit samples
-//        val samplesPerChannel = samples / channelCount
-//
-//        var maxAmplitude = 0f
-//
-//        // Для каждого канала вычисляем амплитуду
-//        for (channel in 0 until channelCount) {
-//            var channelAmplitude = 0f
-//            var sampleCount = 0
-//
-//            for (i in channel until samples step channelCount) {
-//                if (i * 2 + 1 < bytesRead) {
-//                    val sample = buffer.getShort(i * 2).toFloat() / Short.MAX_VALUE.toFloat()
-//                    channelAmplitude += abs(sample)
-//                    sampleCount++
-//                }
-//            }
-//
-//            if (sampleCount > 0) {
-//                channelAmplitude /= sampleCount
-//                maxAmplitude = max(maxAmplitude, channelAmplitude)
-//            }
-//        }
-//
-//        return maxAmplitude
-//    }
-
 
     //Улучшенный расчет амплитуды с RMS
     private fun calculateAmplitudeFromBuffer(buffer: ByteBuffer, bytesRead: Int, channelCount: Int): Float {
@@ -327,29 +272,6 @@ class AudioProcessor {
         mediaPlayer?.seekTo((time * 1000).toInt())
     }
 
-//    //не устанавливается библиотека FFmpeg
-//    fun trimAudio(inputPath: String, outputPath: String, startTime: Double, endTime: Double) {
-//        // Использование FFmpeg для обрезки аудио
-//        val cmd = arrayOf(
-//            "-i", inputPath,
-//            "-ss", startTime.toString(),
-//            "-to", endTime.toString(),
-//            "-c", "copy",
-//            outputPath
-//        )
-//
-//        try {
-//            val returnCode = FFmpeg.execute(cmd)
-//            if (returnCode == 0) {
-//                Log.d(TAG, "Аудио успешно обрезано: $outputPath")
-//            } else {
-//                throw RuntimeException("Ошибка FFmpeg, код: $returnCode")
-//            }
-//        } catch (e: Exception) {
-//            throw RuntimeException("Ошибка обрезки аудио: ${e.message}")
-//        }
-//    }
-
     fun trimAudio(inputPath: String, outputPath: String, startTimeMs: Long, endTimeMs: Long) {
         var extractor: MediaExtractor? = null
         var muxer: MediaMuxer? = null
@@ -443,3 +365,27 @@ class AudioProcessor {
         const val TAG = "33333"
     }
 }
+
+
+//    //не устанавливается библиотека FFmpeg
+//    fun trimAudio(inputPath: String, outputPath: String, startTime: Double, endTime: Double) {
+//        // Использование FFmpeg для обрезки аудио
+//        val cmd = arrayOf(
+//            "-i", inputPath,
+//            "-ss", startTime.toString(),
+//            "-to", endTime.toString(),
+//            "-c", "copy",
+//            outputPath
+//        )
+//
+//        try {
+//            val returnCode = FFmpeg.execute(cmd)
+//            if (returnCode == 0) {
+//                Log.d(TAG, "Аудио успешно обрезано: $outputPath")
+//            } else {
+//                throw RuntimeException("Ошибка FFmpeg, код: $returnCode")
+//            }
+//        } catch (e: Exception) {
+//            throw RuntimeException("Ошибка обрезки аудио: ${e.message}")
+//        }
+//    }

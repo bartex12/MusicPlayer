@@ -42,6 +42,6 @@
 
     //панель редактирования/обрезки
     <color name="light_gray">#F5F5F5</color>
-    <color name="selection_background">#E3F2FD</color>
+    <color name="selection_background">#30FF0000</color>
 
 </resources>
