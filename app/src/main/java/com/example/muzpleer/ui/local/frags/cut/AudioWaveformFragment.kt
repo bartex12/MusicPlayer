@@ -2,6 +2,8 @@ package com.example.muzpleer.ui.local.frags.cut
 
 import android.graphics.Color
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -33,22 +35,18 @@ class  AudioWaveformFragment : Fragment() {
     private var audioFilePath: String? = null
     private var isPlaying = false
     private var audioDuration = 0L
-    private var selectionStart = 0f
-    private var selectionEnd = 0f
     private var selectionStartTime = 0f
     private var selectionEndTime = 0f
-    private var isSelectingStart = true
+
+    private var isPlayingSelection = false // флаг воспроизведения выделенного отрезка
+    private var selectionDuration = 0f // длительность выделения в секундах
+    private var isPlaybackStarted = false // новый флаг
+
+    private var playbackUpdateHandler = Handler(Looper.getMainLooper())
+    private var playbackUpdateRunnable: Runnable? = null
 
     companion object {
         private const val TAG = "33333"
-
-        fun newInstance(audioPath: String): AudioWaveformFragment {
-            return AudioWaveformFragment().apply {
-                arguments = Bundle().apply {
-                    putString("audioPath", audioPath)
-                }
-            }
-        }
     }
 
     override fun onCreateView(
@@ -68,7 +66,6 @@ class  AudioWaveformFragment : Fragment() {
             findNavController().navigateUp()
             return
         }
-
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -78,6 +75,38 @@ class  AudioWaveformFragment : Fragment() {
         setupControls()
         setupObservers()
         loadAudioData()
+        resetSelection()  // Инициализируем выделение
+
+        // Устанавливаем callback для начала воспроизведения
+        viewModel.setPlaybackStartedCallback {
+            Log.d(TAG, "%% Playback started callback called")
+            requireActivity().runOnUiThread {
+                isPlaybackStarted = true
+                Log.d(TAG, "%% Playback confirmed started, starting progress updates")
+                startPlaybackProgressUpdates()
+            }
+        }
+
+        // Устанавливаем callback для завершения воспроизведения
+        viewModel.setPlaybackCompletionCallback {
+            Log.d(TAG, "%% Playback completion callback called")
+            requireActivity().runOnUiThread {
+                isPlaying = false
+                isPlayingSelection = false
+                isPlaybackStarted = false
+                binding.btnPlayPause.setImageResource(R.drawable.ic_play_arrow)
+                stopPlaybackProgressUpdates()
+
+                // Сбрасываем прогресс в конец
+                binding.seekBarPlayback.progress = 1000
+                Log.d(TAG, "%% Playback completed, UI updated")
+            }
+        }
+    }
+
+    private fun resetSelection() {
+        selectionStartTime = 0f
+        // selectionEndTime установится после загрузки аудио в updateAudioInfo()
     }
 
 
@@ -110,8 +139,6 @@ class  AudioWaveformFragment : Fragment() {
             axisRight.isEnabled = false
 
             legend.isEnabled = false
-            // Убираем фон
-            //setDrawGridBackground(false)
         }
     }
 
@@ -124,34 +151,63 @@ class  AudioWaveformFragment : Fragment() {
         // Настройка двух SeekBar
         setupSeekBars()
 
-        // Кнопки действий
-        binding.btnPlaySelection.setOnClickListener {
-            playSelection()
-        }
-
         binding.btnTrim.setOnClickListener {
             trimAudio()
         }
     }
 
     private fun setupSeekBars() {
-        // SeekBar для воспроизведения
         binding.seekBarPlayback.max = 1000
         binding.seekBarPlayback.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
                 if (fromUser && audioDuration > 0) {
-                    val time = progress * audioDuration / 1000f
-                    // Обновляем позицию воспроизведения
+                    if (isPlayingSelection && selectionDuration > 0) {
+                        // Перемотка в пределах выделенного отрезка
+                        val timeInSelection = progress * selectionDuration / 1000f
+                        val absoluteTime = selectionStartTime + timeInSelection
+                        seekToPosition(absoluteTime)
+                    } else {
+                        // Перемотка по всему треку
+                        val time = progress * audioDuration / 1000f
+                        seekToPosition(time)
+                    }
                 }
             }
-            override fun onStartTrackingTouch(seekBar: SeekBar) {}
-            override fun onStopTrackingTouch(seekBar: SeekBar) {}
+
+            override fun onStartTrackingTouch(seekBar: SeekBar) {
+                // Пауза при начале перемотки
+                if (isPlaying) {
+                    pausePlayback()
+                }
+            }
+
+            override fun onStopTrackingTouch(seekBar: SeekBar) {
+                // Автоматически не возобновляем воспроизведение после перемотки
+                // Пользователь сам решит когда нажать play
+            }
         })
 
-        // SeekBar для выделения начала и конца
         setupSelectionSeekBars()
     }
 
+    private fun seekToPosition(time: Float) {
+        viewModel.seekTo(time)
+        updateCurrentTime(time)
+    }
+
+    private fun updateCurrentTime(timeInSeconds: Float) {
+        if (isPlayingSelection && selectionDuration > 0) {
+            // Обновляем прогресс относительно выделенного отрезка
+            val progressInSelection = ((timeInSeconds - selectionStartTime) * 1000 / selectionDuration).toInt()
+            binding.seekBarPlayback.progress = progressInSelection.coerceIn(0, 1000)
+        } else {
+            // Обновляем прогресс относительно всего трека
+            val progress = (timeInSeconds * 1000 * 1000 / audioDuration).toInt()
+            binding.seekBarPlayback.progress = progress
+        }
+    }
+
+    //обработчик изменения выделения
     private fun setupSelectionSeekBars() {
         binding.seekBarStart.max = 1000
         binding.seekBarEnd.max = 1000
@@ -159,26 +215,38 @@ class  AudioWaveformFragment : Fragment() {
         val seekBarListener = object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
                 if (fromUser && audioDuration > 0) {
-                    val time = progress * audioDuration / 1000f
-
+                    // ПРАВИЛЬНОЕ преобразование: progress -> время в секундах
+                    val timeInSeconds = (progress * audioDuration / 1000f) / 1000f
+                    Log.d(TAG, "%%  AudioWaveformFragment setupSelectionSeekBars " +
+                            "SeekBar progress: $progress, audioDuration: $audioDuration, timeInSeconds: $timeInSeconds")
                     when (seekBar.id) {
                         R.id.seekBarStart -> {
-                            selectionStartTime = time
-                            binding.tvCurrentTimeStart.text = formatTime(time.toLong())
+                            selectionStartTime = timeInSeconds
+                            binding.tvCurrentTimeStart.text = formatTime((timeInSeconds  * 1000).toLong())
                             if (selectionStartTime > selectionEndTime) {
                                 selectionStartTime = selectionEndTime
-                                binding.seekBarStart.progress = (selectionStartTime * 1000 / audioDuration).toInt()
+                                binding.seekBarStart.progress = (selectionStartTime * 1000 * 1000 / audioDuration).toInt()
                             }
                         }
                         R.id.seekBarEnd -> {
-                            selectionEndTime = time
-                            binding.tvCurrentTimeEnd.text = formatTime(time.toLong())
+                            selectionEndTime = timeInSeconds
+                            binding.tvCurrentTimeEnd.text = formatTime((timeInSeconds  * 1000).toLong())
                             if (selectionEndTime < selectionStartTime) {
                                 selectionEndTime = selectionStartTime
-                                binding.seekBarEnd.progress = (selectionEndTime * 1000 / audioDuration).toInt()
+                                binding.seekBarEnd.progress = (selectionEndTime * 1000 * 1000 / audioDuration).toInt()
                             }
                         }
                     }
+
+                    // При изменении выделения сбрасываем флаг воспроизведения выделенного отрезка
+                    if (isPlayingSelection) {
+                        Log.d(TAG, "%% Selection changed during playback, stopping")
+                        isPlayingSelection = false
+                        if (isPlaying) {
+                            pausePlayback()
+                        }
+                    }
+
                     updateSelectionInfo()
                     highlightSelectionOnChart()
                 }
@@ -189,10 +257,6 @@ class  AudioWaveformFragment : Fragment() {
 
         binding.seekBarStart.setOnSeekBarChangeListener(seekBarListener)
         binding.seekBarEnd.setOnSeekBarChangeListener(seekBarListener)
-
-        // Инициализируем начальные значения времени
-        binding.tvCurrentTimeStart.text = formatTime(0)
-        binding.tvCurrentTimeEnd.text = formatTime(audioDuration)
     }
 
     private fun setupObservers() {
@@ -245,7 +309,6 @@ class  AudioWaveformFragment : Fragment() {
 
         val entries = amplitudes.map { Entry(it.time, it.amplitude) }
 
-        // Основная линия амплитуд
         val dataSet = LineDataSet(entries, "Амплитуда")
         dataSet.color = Color.BLUE
         dataSet.setDrawCircles(false)
@@ -276,39 +339,81 @@ class  AudioWaveformFragment : Fragment() {
         binding.tvFileInfo.text = "Длительность: ${formatTime(audioDuration)} | Размер: $fileSize"
         binding.tvTotalTime.text = formatTime(audioDuration)
 
-        // Устанавливаем конечное время в конечный SeekBar
+        // Устанавливаем конечное время
+        selectionEndTime = audioDuration / 1000f // переводим в секунды
         binding.seekBarEnd.progress = 1000
-        selectionEndTime = audioDuration / 1000f
         binding.tvCurrentTimeEnd.text = formatTime(audioDuration)
+        binding.tvCurrentTimeStart.text = formatTime(0)
 
         updateSelectionInfo()
+        highlightSelectionOnChart() // Обновляем график после загрузки данных
     }
+
     private fun togglePlayback() {
-        isPlaying = !isPlaying
+        Log.d(TAG, "%% togglePlayback called, isPlaying: $isPlaying")
 
         if (isPlaying) {
-            binding.btnPlayPause.setImageResource(R.drawable.ic_pause)
-            // Воспроизводим выделенный отрезок или весь трек
-            if (selectionEndTime > selectionStartTime) {
-                viewModel.startPlayback(selectionStartTime, selectionEndTime)
-            } else {
-                viewModel.startPlayback(0f, audioDuration / 1000f)
-            }
+            // Останавливаем воспроизведение
+            pausePlayback()
         } else {
-            binding.btnPlayPause.setImageResource(R.drawable.ic_play_arrow)
-            viewModel.pausePlayback()
+            // Начинаем воспроизведение
+            startPlayback()
         }
     }
 
-    private fun playSelection() {
-        if (selectionStartTime >= selectionEndTime) {
-            Toast.makeText(requireContext(), "Некорректный интервал", Toast.LENGTH_SHORT).show()
-            return
+    private fun updateTimeDisplayForSelection() {
+        // Для выделенного отрезка показываем его длительность
+        val selectionDurationMs = (selectionDuration * 1000).toLong()
+        binding.tvTotalTime.text = formatTime(selectionDurationMs)
+    }
+
+    private fun updateTimeDisplayForFullTrack() {
+        // Для всего трека показываем полную длительность
+        binding.tvTotalTime.text = formatTime(audioDuration)
+    }
+
+    private fun startPlayback() {
+        Log.d(TAG, "1%% startPlayback called isPlaying = $isPlaying")
+
+        isPlaying = true
+        isPlaybackStarted = false // сбрасываем флаг начала воспроизведения
+        binding.btnPlayPause.setImageResource(R.drawable.ic_pause)
+        Log.d(TAG, "2%% startPlayback called isPlaying = $isPlaying")
+
+        // Определяем что воспроизводить
+        if (selectionEndTime > selectionStartTime) {
+            // Воспроизводим выделенный отрезок
+            isPlayingSelection = true
+            selectionDuration = selectionEndTime - selectionStartTime
+            Log.d(TAG, "3%% Playing selection: $selectionStartTime - $selectionEndTime c, duration: $selectionDuration c")
+
+            viewModel.startPlayback(selectionStartTime, selectionEndTime)
+            // Обновляем отображение времени для выделенного отрезка
+            updateTimeDisplayForSelection()
+        } else {
+            // Воспроизводим весь трек
+            isPlayingSelection = false
+            Log.d(TAG, "%% Playing full track")
+            viewModel.startPlayback(0f, audioDuration / 1000f)
+            // Обновляем отображение времени для всего трека
+            updateTimeDisplayForFullTrack()
         }
 
-        viewModel.playSelection(selectionStartTime, selectionEndTime)
-        binding.btnPlayPause.setImageResource(R.drawable.ic_pause)
-        isPlaying = true
+        // Сбрасываем прогресс на начало
+        binding.seekBarPlayback.progress = 0
+
+        // НЕ запускаем обновление прогресса здесь - дождемся callback
+        Log.d(TAG, "%% Waiting for playback to actually start...")
+    }
+
+    private fun pausePlayback() {
+        Log.d(TAG, "%% pausePlayback called")
+
+        isPlaying = false
+        isPlaybackStarted = false
+        binding.btnPlayPause.setImageResource(R.drawable.ic_play_arrow)
+        viewModel.pausePlayback()
+        stopPlaybackProgressUpdates()
     }
 
     private fun trimAudio() {
@@ -322,14 +427,22 @@ class  AudioWaveformFragment : Fragment() {
     }
 
     private fun updateSelectionInfo() {
-        val duration = (selectionEndTime  - selectionStartTime).toLong()
-        binding.tvSelectionDuration.text = "Длительность выделения: ${formatTime(duration)}"
+        val durationMs = ((selectionEndTime - selectionStartTime) * 1000).toLong()
+        selectionDuration = selectionEndTime - selectionStartTime
+
+        binding.tvSelectionDuration.text = "Длительность выделения: ${formatTime(durationMs)}"
+
+        // Если выделение валидно, обновляем отображение времени для seekBar
+        if (selectionEndTime > selectionStartTime) {
+            binding.tvTotalTime.text = formatTime(durationMs)
+        } else {
+            binding.tvTotalTime.text = formatTime(audioDuration)
+        }
 
         val hasValidSelection = selectionEndTime > selectionStartTime
-        binding.btnPlaySelection.isEnabled = hasValidSelection
         binding.btnTrim.isEnabled = hasValidSelection
 
-        // Визуальная индикация валидности выделения
+        // Визуальная индикация
         if (hasValidSelection) {
             binding.tvSelectionDuration.setBackgroundColor(
                 ContextCompat.getColor(requireContext(), R.color.selection_background)
@@ -346,12 +459,13 @@ class  AudioWaveformFragment : Fragment() {
     }
 
     private fun highlightSelectionOnChart() {
-        // Добавляем маркеры выделения на график
         val chart = binding.lineChart
+        Log.d(TAG, "%% AudioWaveformFragment highlightSelectionOnChart Setting highlights:" +
+                " start=$selectionStartTime, end=$selectionEndTime")
 
-        // Создаем выделения для начальной и конечной точек
-        val highlightStart = Highlight(selectionStart, 0f, 0) // xValue, yValue, dataSetIndex
-        val highlightEnd = Highlight(selectionEnd, 0f, 0)
+        // ИСПРАВЛЕНИЕ: используем правильные переменные
+        val highlightStart = Highlight(selectionStartTime, 0f, 0) // xValue, yValue, dataSetIndex
+        val highlightEnd = Highlight(selectionEndTime, 0f, 0)
 
         // Устанавливаем оба маркера
         chart.highlightValues(arrayOf(highlightStart, highlightEnd))
@@ -359,8 +473,10 @@ class  AudioWaveformFragment : Fragment() {
         // Добавляем визуальное выделение области
         addSelectionArea(selectionStartTime, selectionEndTime)
 
-        // Обновляем график
         chart.invalidate()
+
+        Log.d(TAG, "%%  AudioWaveformFragment highlightSelectionOnChart " +
+                "Highlight selection: $selectionStartTime - $selectionEndTime")
     }
 
     private fun addSelectionArea(startTime: Float, endTime: Float) {
@@ -370,24 +486,26 @@ class  AudioWaveformFragment : Fragment() {
         // Удаляем старую область выделения если есть
         removeSelectionArea()
 
-        // Создаем точки для области выделения
-        val areaEntries = listOf(
-            Entry(startTime, -1f),
-            Entry(startTime, 1f),
-            Entry(endTime, 1f),
-            Entry(endTime, -1f),
-            Entry(startTime, -1f) // замыкаем полигон
-        )
+        if (endTime > startTime) {
+            // Создаем точки для области выделения
+            val areaEntries = listOf(
+                Entry(startTime, -1f),
+                Entry(startTime, 1f),
+                Entry(endTime, 1f),
+                Entry(endTime, -1f),
+                Entry(startTime, -1f)
+            )
 
-        val areaDataSet = LineDataSet(areaEntries, "Selection Area")
-        areaDataSet.color = Color.TRANSPARENT
-        areaDataSet.setDrawCircles(false)
-        areaDataSet.setDrawValues(false)
-        areaDataSet.setDrawFilled(true)
-        areaDataSet.fillColor = Color.argb(50, 255, 0, 0) // полупрозрачный красный
-        areaDataSet.fillAlpha = 80
+            val areaDataSet = LineDataSet(areaEntries, "Selection Area")
+            areaDataSet.color = Color.TRANSPARENT
+            areaDataSet.setDrawCircles(false)
+            areaDataSet.setDrawValues(false)
+            areaDataSet.setDrawFilled(true)
+            areaDataSet.fillColor = Color.argb(50, 255, 0, 0)
+            areaDataSet.fillAlpha = 80
 
-        data.addDataSet(areaDataSet)
+            data.addDataSet(areaDataSet)
+        }
     }
 
     private fun removeSelectionArea() {
@@ -400,17 +518,115 @@ class  AudioWaveformFragment : Fragment() {
         }
     }
 
+
+//    private fun formatTime(milliseconds: Long): String {
+//        val totalSeconds = milliseconds / 1000
+//        val minutes = totalSeconds / 60
+//        val seconds = totalSeconds % 60
+//        val ms = (milliseconds % 1000) / 10 // две цифры миллисекунд
+//
+//        return String.format("%d:%02d.%02d", minutes, seconds, ms)
+//    }
+
+    // Исправляем форматирование времени
     private fun formatTime(milliseconds: Long): String {
+        Log.d(TAG, "5%%  AudioWaveformFragment formatTime called with: $milliseconds ms")
         val totalSeconds = milliseconds / 1000
         val minutes = totalSeconds / 60
         val seconds = totalSeconds % 60
-        val ms = (milliseconds % 1000) / 10 // две цифры миллисекунд
-
-        return String.format("%d:%02d.%02d", minutes, seconds, ms)
+        return String.format("%d:%02d", minutes, seconds)
     }
 
     override fun onDestroy() {
         super.onDestroy()
+        stopPlaybackProgressUpdates()
         viewModel.release()
+    }
+
+    private fun startPlaybackProgressUpdates() {
+        stopPlaybackProgressUpdates()
+
+        playbackUpdateRunnable = object : Runnable {
+            override fun run() {
+                try {
+                    if (isPlaying && isPlaybackStarted && viewModel.isPlaying()) {
+                        updatePlaybackProgress()
+                        playbackUpdateHandler.postDelayed(this, 100)
+                    } else if (isPlaying && !isPlaybackStarted) {
+                        // Ждем начала воспроизведения
+                        Log.d(TAG, "%% Still waiting for playback to start...")
+                        playbackUpdateHandler.postDelayed(this, 50)
+                    } else if (!viewModel.isPlaying() && isPlaying) {
+                        // Воспроизведение остановилось
+                        Log.d(TAG, "%% Playback stopped unexpectedly")
+                        requireActivity().runOnUiThread {
+                            pausePlayback()
+                        }
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error in playback update", e)
+                    requireActivity().runOnUiThread {
+                        pausePlayback()
+                    }
+                }
+            }
+        }
+        playbackUpdateHandler.post(playbackUpdateRunnable!!)
+        Log.d(TAG, "%% Playback progress updates started")
+    }
+
+    private fun stopPlaybackProgressUpdates() {
+        playbackUpdateRunnable?.let {
+            playbackUpdateHandler.removeCallbacks(it)
+            playbackUpdateRunnable = null
+        }
+    }
+
+    private fun updatePlaybackProgress() {
+        try {
+            val currentPosition = viewModel.getCurrentPosition()
+            Log.d(TAG, "%% updatePlaybackProgress - currentPosition: $currentPosition, isPlayingSelection: $isPlayingSelection")
+
+            if (isPlayingSelection && selectionDuration > 0) {
+                // Прогресс в пределах выделенного отрезка
+                val timeInSelection = (currentPosition - selectionStartTime).coerceIn(0f, selectionDuration)
+                val progressInSelection = (timeInSelection * 1000 / selectionDuration).toInt()
+                val clampedProgress = progressInSelection.coerceIn(0, 1000)
+
+                Log.d(TAG, "%% Selection progress - timeInSelection: $timeInSelection, progress: $clampedProgress")
+
+                binding.seekBarPlayback.progress = clampedProgress
+
+                // Если дошли до конца выделенного отрезка
+                if (timeInSelection >= selectionDuration) {
+                    Log.d(TAG, "%% Reached end of selection, stopping")
+                    requireActivity().runOnUiThread {
+                        pausePlayback()
+                    }
+                }
+
+            } else {
+                // Прогресс по всему треку
+                val progress = (currentPosition * 1000 * 1000 / audioDuration).toInt()
+                val clampedProgress = progress.coerceIn(0, 1000)
+
+                Log.d(TAG, "%% Full track progress: $clampedProgress")
+
+                binding.seekBarPlayback.progress = clampedProgress
+
+                // Если дошли до конца трека
+                if (currentPosition >= audioDuration / 1000f) {
+                    Log.d(TAG, "%% Reached end of track, stopping")
+                    requireActivity().runOnUiThread {
+                        pausePlayback()
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error updating playback progress", e)
+            requireActivity().runOnUiThread {
+                pausePlayback()
+            }
+        }
     }
 }

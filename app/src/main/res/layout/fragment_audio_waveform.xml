@@ -54,7 +54,7 @@
             android:paddingBottom="4dp">
 
             <TextView
-                android:layout_width="wrap_content"
+                android:layout_width="50dp"
                 android:layout_height="wrap_content"
                 android:text="Начало:"
                 android:textSize="12sp"
@@ -87,7 +87,7 @@
             android:paddingTop="4dp">
 
             <TextView
-                android:layout_width="wrap_content"
+                android:layout_width="50dp"
                 android:layout_height="wrap_content"
                 android:text="Конец:"
                 android:textSize="12sp"
@@ -176,28 +176,27 @@
         android:orientation="horizontal"
         android:gravity="center">
 
-        <Button
-            android:id="@+id/btnPlaySelection"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginEnd="8dp"
-            android:text="Прослушать выделение"
-            android:textSize="12sp"
-            android:textColor="@android:color/white"
-            android:backgroundTint="?attr/colorPrimary"
-            android:enabled="false" />
+<!--        <Button-->
+<!--            android:id="@+id/btnPlaySelection"-->
+<!--            android:layout_width="0dp"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_weight="1"-->
+<!--            android:layout_marginEnd="8dp"-->
+<!--            android:text="Прослушать выделение"-->
+<!--            android:textSize="12sp"-->
+<!--            android:textColor="@android:color/white"-->
+<!--            android:backgroundTint="?attr/colorPrimary"-->
+<!--            android:enabled="false" />-->
 
         <Button
             android:id="@+id/btnTrim"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:layout_marginStart="8dp"
             android:text="Обрезать"
             android:textSize="12sp"
             android:textColor="@android:color/white"
-            android:backgroundTint="?attr/colorPrimaryDark"
+            android:backgroundTint="@color/colorPrimaryBlack"
             android:enabled="false" />
 
     </LinearLayout>

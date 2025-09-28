@@ -209,8 +209,6 @@ class SharedViewModel(
     private val _processingState = MutableLiveData<ProcessingState>()
     val processingState: LiveData<ProcessingState> = _processingState
 
-//    private val _allSongs = MutableLiveData<List<Song>>()
-//    val allSongs: LiveData<List<Song>> = _allSongs
 
      fun scanMedia(afterLoad:()->Unit) {
         viewModelScope.launch {
@@ -340,7 +338,11 @@ class SharedViewModel(
 
     override fun onCleared() {
         super.onCleared()
-        playerHandler.release()
+        release()
+    }
+
+    fun release() {
+        audioProcessor.release()
     }
 
     internal fun filterSongs(query: String) {
@@ -1326,14 +1328,9 @@ class SharedViewModel(
         }
     }
 
-    fun editSongCut(mediaUri:String) {
-        viewModelScope.launch {
-            repository.editSongCut(mediaUri)
-        }
-    }
-
     fun loadAudioData(audioPath: String) {
         viewModelScope.launch(Dispatchers.IO) {
+            Log.d(TAG,"SharedViewModel loadAudioData audioPath = $audioPath")
             try {
                 _processingState.postValue(ProcessingState.Loading)
 
@@ -1345,26 +1342,17 @@ class SharedViewModel(
                 //Log.d(TAG,"SharedViewModel loadAudioData amplitudes = ${amplitudes.map{it.amplitude}}")
 
                 _processingState.postValue(ProcessingState.Success("Данные загружены"))
+
+                audioProcessor.setFilePath(audioPath) //ставим путь
             } catch (e: Exception) {
                 _processingState.postValue(ProcessingState.Error(e.message ?: "Ошибка загрузки"))
             }
         }
     }
 
-    fun startPlayback(startTime: Float = 0f, endTime: Float = 0f) {
-        viewModelScope.launch(Dispatchers.IO) {
-            audioProcessor.startPlayback(startTime, endTime)
-        }
-    }
-
     fun pausePlayback() {
+        Log.d(TAG, "ViewModel pausePlayback")
         audioProcessor.pausePlayback()
-    }
-
-    fun playSelection(startTime: Float, endTime: Float) {
-        viewModelScope.launch(Dispatchers.IO) {
-            audioProcessor.playSelection(startTime, endTime)
-        }
     }
 
     fun seekTo(time: Float) {
@@ -1388,9 +1376,31 @@ class SharedViewModel(
         }
     }
 
-    fun release() {
-        audioProcessor.release()
+    fun getCurrentPosition(): Float {
+        val position = audioProcessor.getCurrentPosition()
+        Log.d(TAG, "ViewModel getCurrentPosition: $position")
+        return position
     }
 
+    fun isPlaying(): Boolean {
+        val playing = audioProcessor.isPlaying()
+        Log.d(TAG, "6%% ViewModel isPlaying: $playing")
+        return playing
+    }
+
+    fun setPlaybackCompletionCallback(callback: () -> Unit) {
+        audioProcessor.setPlaybackCompletionCallback(callback)
+    }
+
+    fun setPlaybackStartedCallback(callback: () -> Unit) {
+        audioProcessor.setPlaybackStartedCallback(callback)
+    }
+
+    fun startPlayback(startTime: Float = 0f, endTime: Float = 0f) {
+        Log.d(TAG, "4ViewModel startPlayback: $startTime - $endTime")
+        viewModelScope.launch(Dispatchers.IO) {
+            audioProcessor.startPlayback(startTime, endTime)
+        }
+    }
 
 }
