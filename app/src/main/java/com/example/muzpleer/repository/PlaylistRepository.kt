@@ -170,5 +170,18 @@ class PlaylistRepository(
         return getSongsForPlaylist(playlistId)
     }
 
+    suspend fun deleteSongFromPlaylist(playlistId: Long, songId: Long) {
+        // Удаляем связь из промежуточной таблицы
+        playlistDao.deleteSongFromPlaylist(playlistId, songId)
+
+        // Обновляем счетчик песен в плейлисте
+        val playlist = playlistDao.getPlaylistById(playlistId)
+        val updatedCount = playlistDao.getSongsCountForPlaylist(playlistId)
+        playlist?. let{
+            playlistDao.update(playlist.copy(songCount = updatedCount))
+        }
+
+    }
+
 }
 

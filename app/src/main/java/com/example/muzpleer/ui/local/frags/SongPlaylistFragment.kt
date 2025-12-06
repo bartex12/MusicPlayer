@@ -21,6 +21,7 @@ import com.example.muzpleer.databinding.FragmentAlltracksForPlaylistBinding
 import com.example.muzpleer.model.Song
 import com.example.muzpleer.model.SongAndPlaylist
 import com.example.muzpleer.ui.local.adapters.SongsAdapter
+import com.example.muzpleer.ui.local.adapters.SongsPlaylistAdapter
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 import com.example.muzpleer.util.getNormalizedPath
 import com.example.muzpleer.util.getSortedDataSong
@@ -30,7 +31,7 @@ import kotlin.getValue
 class SongPlaylistFragment:Fragment() {
     private var _binding: FragmentAlltracksForPlaylistBinding? = null
     private val binding get() = _binding!!
-    private lateinit var adapter: SongsAdapter
+    private lateinit var adapter: SongsPlaylistAdapter
     private val viewModel: SharedViewModel by activityViewModel()
     private var currentSearchQuery = ""
     private  var playlistId:Long = -1
@@ -57,7 +58,7 @@ class SongPlaylistFragment:Fragment() {
 
         initMenu()
 
-        adapter = SongsAdapter(viewModel,  { song ->
+        adapter = SongsPlaylistAdapter(viewModel,  { song ->
             val playlistSongs  = getSortedDataSong(viewModel.getCurrentPlaylist()?.playlistSongs ?: listOf()) //можно было взять и из currentFilteredPlaylistSongs
             Log.d(TAG,"!@#@ SongPlaylistFragment размер плейлиста = ${playlistSongs.size} имя первой песни плейлиста " +
                     "= ${getSortedDataSong(playlistSongs).first().title} ")
@@ -69,15 +70,6 @@ class SongPlaylistFragment:Fragment() {
                 )
             )
             viewModel.setCurrentSong(song)
-        },{song->
-            val playlistSongs  = getSortedDataSong(viewModel.getCurrentPlaylist()?.playlistSongs ?: listOf())
-            viewModel.setSongAndPlaylist(
-                SongAndPlaylist(
-                    song = song,
-                    playlist = playlistSongs)
-            )
-            viewModel.setCurrentSong(song)
-            findNavController().navigate(R.id.action_songPlaylistFragment_to_playerFragment)
         })
 
         viewModel.loadCurrentPlaylistForSongs(playlistId)  //грузим текущий плейлист ради песен для адаптера
@@ -94,6 +86,9 @@ class SongPlaylistFragment:Fragment() {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = this@SongPlaylistFragment.adapter
         }
+
+        // Также обновляем пустое состояние меню
+        requireActivity().invalidateOptionsMenu()
     }
 
     override fun onDestroyView() {
@@ -162,7 +157,7 @@ class SongPlaylistFragment:Fragment() {
                         val currentSongMediaUri = getNormalizedPath(currentSong?.mediaUri ?: "")
                         val indexOfSong = getSortedDataSong(currentPlaylistSongs)
                             .indexOfFirst { getNormalizedPath(it.mediaUri) == currentSongMediaUri }
-                        Log.d(TAG, "4$$$ SongListFragment onMenuItemSelected indexOfSong = $indexOfSong currentSongMediaUri = $currentSongMediaUri")
+                        Log.d(TAG, "4$$$ SongPlaylistFragment onMenuItemSelected indexOfSong = $indexOfSong currentSongMediaUri = $currentSongMediaUri")
 
                         (binding.alltracksPlaylistRecyclerView.layoutManager as LinearLayoutManager).let{
                             if(indexOfSong >= 0 ) it.scrollToPositionWithOffset(indexOfSong, 0) else it.scrollToPosition(0)

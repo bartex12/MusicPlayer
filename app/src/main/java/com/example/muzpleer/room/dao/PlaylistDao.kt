@@ -54,6 +54,13 @@ interface PlaylistDao {
     @Query("UPDATE playlist_songs SET sortOrder = :newOrder WHERE playlistId = :playlistId AND songId = :songId")
     suspend fun updateSongSortOrder(playlistId: Long, songId: Long, newOrder: Int)
 
+    @Query("DELETE FROM playlist_songs WHERE playlistId = :playlistId AND songId = :songId")
+    suspend fun deleteSongFromPlaylist(playlistId: Long, songId: Long)
+
+    @Query("SELECT COUNT(*) FROM playlist_songs WHERE playlistId = :playlistId")
+    suspend fun getSongsCountForPlaylist(playlistId: Long): Int
+
+
     // Обновление порядка плейлистов
     @Query("UPDATE playlists SET sortOrder = :newOrder WHERE id = :playlistId")
     suspend fun updatePlaylistOrder(playlistId: Long, newOrder: Int)

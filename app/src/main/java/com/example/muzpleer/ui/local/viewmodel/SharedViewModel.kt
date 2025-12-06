@@ -1385,6 +1385,49 @@ class SharedViewModel(
         }
     }
 
+    fun deleteSongFromPlaylist(songId: Long) {
+        viewModelScope.launch {
+            try {
+                // Получаем текущий плейлист
+                val playlist = getCurrentPlaylist()?: return@launch
+                val playlistId =playlist.id
+                // Удаляем песню из плейлиста в БД
+                playlistRepository.deleteSongFromPlaylist(playlistId, songId)
+
+                // Обновляем локальные данные
+                val updatedSongs = currentFilteredPlaylistSongs.value?.filter { it.id != songId }
+                _currentFilteredPlaylistSongs.value = updatedSongs
+
+                // Обновляем текущий плейлист  (для обновления счетчика)
+                val newCurrentPlaylist = _currentPlaylist.value?.copy(
+                    playlistSongs = updatedSongs ?: listOf())
+                _currentPlaylist.value = newCurrentPlaylist
+
+                _currentPlaylistSongs.value =newCurrentPlaylist?.playlistSongs
+
+                // Уведомляем об изменении плейлиста
+                _playlists.value = _playlists.value?.map { playlist ->
+                    if (playlist.id == playlistId) {
+                        playlist.copy(
+                            playlistSongs = updatedSongs ?: listOf(),
+                            songCount = updatedSongs?.size ?: 0
+                        )
+                    } else {
+                        playlist
+                    }
+                }
+
+                //Все плейлисты, чтобы при возврате на списки плейлистов кол-во песен отображалось правильно
+                val playlists = playlistRepository.getAllPlaylists()
+                _playlists.value = playlists
+                _filteredPlaylists.value = playlists
+
+            } catch (e: Exception) {
+                Log.e(TAG, "Ошибка при удалении песни из плейлиста", e)
+            }
+        }
+    }
+
 }
 
 //fun setSelectedSong(song: Song) {
