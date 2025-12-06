@@ -131,6 +131,7 @@ class FavoritesAdapter(
             if (isEditMode) {
                 binding.dragHandle.visibility = View.VISIBLE
                 binding.menuButton.visibility = View.GONE
+
                 // Добавляем слушатель касаний для иконки перетаскивания
                 binding.dragHandle.setOnTouchListener { v, event ->
                     if (event.action == MotionEvent.ACTION_DOWN) {

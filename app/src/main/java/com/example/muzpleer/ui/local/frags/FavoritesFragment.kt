@@ -75,7 +75,7 @@ class FavoritesFragment: Fragment() {
         viewModel.loadFavoriteSongs()
 
         viewModel.filteredFavoriteSongs.observe(viewLifecycleOwner) { filteredFavorites ->
-            //здесь нельзя делать сортировку, иначе собьётся перемещение папок
+            //здесь нельзя делать сортировку, иначе собьётся перемещение папок!!!
             //val sortedData = getSortedDataSong(filteredFavorites)
            // adapter.data = sortedData  //передаём данные в адаптер
             adapter.data = filteredFavorites  //передаём данные в адаптер

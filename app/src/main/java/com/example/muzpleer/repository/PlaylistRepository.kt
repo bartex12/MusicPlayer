@@ -119,5 +119,56 @@ class PlaylistRepository(
         playlistDao.updatePlaylistArtUri(playlistId, artUri)
     }
 
+    //Удаление песни из плейлиста
+    suspend fun removeSongFromPlaylist(playlistId: Long, songId: Long): Boolean {
+        return try {
+            // 1. Удаляем связь песни с плейлистом
+            playlistDao.removeSongFromPlaylist(playlistId, songId)
+
+            // 2. Обновляем порядок остальных песен в плейлисте
+            val remainingSongs = playlistDao.getPlaylistSongs(playlistId)
+            remainingSongs.forEachIndexed { index, crossRef ->
+                playlistDao.updateSongSortOrder(
+                    playlistId = crossRef.playlistId,
+                    songId = crossRef.songId,
+                    newOrder = index
+                )
+            }
+
+            // 3. Обновляем счетчик песен
+            updateSongCount(playlistId)
+
+            true
+        } catch (e: Exception) {
+            Log.e(TAG, "Error removing song from playlist: ${e.message}", e)
+            false
+        }
+    }
+
+    //удаление нескольких песен из плейлиста
+    suspend fun removeSongsFromPlaylist(playlistId: Long, songIds: List<Long>): Int {
+        return try {
+            var removedCount = 0
+
+            songIds.forEach { songId ->
+                val success = removeSongFromPlaylist(playlistId, songId)
+                if (success) removedCount++
+            }
+
+            // Обновляем счетчик песен
+            updateSongCount(playlistId)
+
+            removedCount
+        } catch (e: Exception) {
+            Log.e(TAG, "Error removing songs from playlist: ${e.message}", e)
+            0
+        }
+    }
+
+    // Получение только песен плейлиста (без обертки Playlist)
+    suspend fun getPlaylistSongsOnly(playlistId: Long): List<Song> {
+        return getSongsForPlaylist(playlistId)
+    }
+
 }
 

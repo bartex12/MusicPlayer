@@ -3,8 +3,14 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
         android:id="@+id/add_song_to_playlist"
-        android:title="Добавить песню в плейлист"
+        android:title="Добавить песни в плейлист"
         app:showAsAction="never" />
+
+    <item
+        android:id="@+id/delete_song_from_playlist"
+        android:title="Удалить песни из плейлиста"
+        app:showAsAction="never" />
+
     <item
         android:id="@+id/action_change_cover_playlist"
         android:title="Изменить обложку плейлиста"

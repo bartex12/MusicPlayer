@@ -117,6 +117,18 @@ class PlaylistAdapter(
         val popup = PopupMenu(context, view)
         popup.menuInflater.inflate(R.menu.playlist_item_menu, popup.menu)
 
+        // Скрываем или показываем пункт в зависимости от содержимого
+        val deleteSongsItem = popup.menu.findItem(R.id.delete_song_from_playlist)
+        if (playlist.playlistSongs.isEmpty()) {
+            // Если пусто - меняем текст и отключаем
+            deleteSongsItem?.title = "Плейлист пуст"
+            deleteSongsItem?.isEnabled = false
+        } else {
+            // Если есть песни - показываем нормальный текст
+            deleteSongsItem?.title = "Удалить песни из плейлиста"
+            deleteSongsItem?.isEnabled = true
+        }
+
         popup.setOnMenuItemClickListener { menuItem ->
             when (menuItem.itemId) {
 
@@ -132,6 +144,15 @@ class PlaylistAdapter(
                     showRenameDialog(context, playlist)
                     true
                 }
+                R.id.delete_song_from_playlist -> {
+                    if (playlist.playlistSongs.isNotEmpty()) {
+                        navigateToRemoveSongsFromPlaylist(view, playlist)
+                        true
+                    } else {
+                        // Просто игнорируем нажатие на неактивный пункт
+                        false
+                    }
+                }
                 R.id.delete_playlist -> {  //удалить плейлист
                     showDeleteDialog(context, playlist)
                     true
@@ -141,6 +162,23 @@ class PlaylistAdapter(
         }
         popup.show()
     }
+
+    // Новый метод для навигации к удалению песен
+    private fun navigateToRemoveSongsFromPlaylist(view: View, playlist: Playlist) {
+        // Создаем Bundle для передачи данных
+        val bundle = Bundle().apply {
+            putLong("playlistId", playlist.id)
+            putString("playlistName", playlist.playlistName)
+        }
+
+        // Используем существующий ID фрагмента
+        view.findNavController().navigate(
+            R.id.action_tabLocalFragment_to_removeSongsFromPlaylistFragment,
+            bundle
+        )
+    }
+
+
     fun showDeleteDialog(context:Context, playlist: Playlist) {
         val deleteDialog = AlertDialog.Builder(context)
         deleteDialog.setTitle("Удалить: Вы уверены?")

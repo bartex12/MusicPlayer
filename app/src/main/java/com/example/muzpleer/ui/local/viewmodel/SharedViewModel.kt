@@ -1315,6 +1315,76 @@ class SharedViewModel(
     fun setCurrentPlaylist(playlist: Playlist){
 
     }
+
+    // Удаление песни из плейлиста
+    fun removeSongFromPlaylist(playlistId: Long, songId: Long) {
+        viewModelScope.launch {
+            try {
+                val success = playlistRepository.removeSongFromPlaylist(playlistId, songId)
+                if (success) {
+                    // Обновляем текущий плейлист если он открыт
+                    if (currentPlaylist.value?.id == playlistId) {
+                        loadCurrentPlaylistForSongs(playlistId)
+                    }
+
+                    // Обновляем список всех плейлистов (для счетчика песен)
+                    loadPlaylists()
+
+                    // Показываем уведомление
+                    Toast.makeText(App.instance, "Песня удалена из плейлиста", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(App.instance, "Ошибка удаления песни", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error removing song from playlist: ${e.message}", e)
+                Toast.makeText(App.instance, "Ошибка: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    // Удаление нескольких песен из плейлиста
+    fun removeSongsFromPlaylist(playlistId: Long, songIds: List<Long>) {
+        viewModelScope.launch {
+            try {
+                val removedCount = playlistRepository.removeSongsFromPlaylist(playlistId, songIds)
+                if (removedCount > 0) {
+                    // Обновляем текущий плейлист если он открыт
+                    if (currentPlaylist.value?.id == playlistId) {
+                        loadCurrentPlaylistForSongs(playlistId)
+                    }
+
+                    // Обновляем список всех плейлистов
+                    loadPlaylists()
+
+                    // Показываем уведомление
+                    Toast.makeText(App.instance, "Удалено песен: $removedCount", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(App.instance, "Не удалось удалить песни", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error removing songs from playlist: ${e.message}", e)
+                Toast.makeText(App.instance, "Ошибка: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    // Получение только песен плейлиста (без загрузки всего объекта Playlist)
+    fun getPlaylistSongsOnly(playlistId: Long, callback: (List<Song>) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val songs = playlistRepository.getPlaylistSongsOnly(playlistId)
+                withContext(Dispatchers.Main) {
+                    callback(songs)
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error getting playlist songs: ${e.message}", e)
+                withContext(Dispatchers.Main) {
+                    callback(emptyList())
+                }
+            }
+        }
+    }
+
 }
 
 //fun setSelectedSong(song: Song) {

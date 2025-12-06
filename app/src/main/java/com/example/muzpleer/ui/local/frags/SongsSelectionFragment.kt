@@ -20,6 +20,7 @@ class SongsSelectionFragment : Fragment() {
     private lateinit var adapter: SongSelectionAdapter
     private var playlistId: Long = -1
     private var selectionType: SelectionType = SelectionType.ALL_SONGS
+    private var title = ""
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -39,23 +40,29 @@ class SongsSelectionFragment : Fragment() {
         when (selectionType) {
             SelectionType.ALL_SONGS -> {
                 viewModel.loadAllSongsForAdding()
+                title = "Все песни"
             }
             SelectionType.FAVORITES ->{
                 viewModel.loadFavoritesSongsForAdding()
+                title = "Избранное"
             }
             SelectionType.ALBUM ->{
                 val albumId = arguments?.getLong("albumId") ?: -1
                 viewModel.loadAlbumSongsForAdding(albumId)
+                title = "Альбом"
             }
             SelectionType.ARTIST ->{
                 val artistId = arguments?.getLong("artistId") ?: -1
                 viewModel.loadArtistSongsForAdding(artistId)
+                title = "Исполнитель"
             }
             SelectionType.FOLDER ->{
                 val folderPath = arguments?.getString("folderPath") ?: ""
                 viewModel.loadFolderSongsForAdding(folderPath)
+                title = "Папка"
             }
         }
+        //binding.toolbar.title = title
 
         setupRecyclerView()
         setupObservers()
