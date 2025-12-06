@@ -4,17 +4,17 @@
 
     <item
         android:id="@+id/action_add_to_favorites_playlist"
-        android:title="Добавить в избранное"
+        android:title="Добавить песню в избранное"
         app:showAsAction="never" />
 
     <item
         android:id="@+id/action_remove_from_favorites_playlist"
-        android:title="Удалить из избранного"
+        android:title="Удалить песню из избранного"
         app:showAsAction="never" />
 
     <item
         android:id="@+id/action_delete_from_playlist"
-        android:title="Удалить из плейлиста"
+        android:title="Удалить песню из плейлиста"
         app:showAsAction="never"/>
 
     <item
