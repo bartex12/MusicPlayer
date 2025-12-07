@@ -2,20 +2,12 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <item android:id="@+id/search_toolbar_favorite"
-        android:orderInCategory="100"
-        android:title="@string/search"
-        android:icon="@android:drawable/ic_menu_search"
-        app:showAsAction="collapseActionView|ifRoom"
-        app:actionViewClass="androidx.appcompat.widget.SearchView" />
-
-
     <item
         android:id="@+id/action_go_to_song_favorite"
         android:orderInCategory="200"
         android:title="К песне"
         android:icon="@drawable/outline_flag_24"
-        app:showAsAction="collapseActionView|ifRoom" />
+        app:showAsAction="ifRoom" />
 
     <item
         android:id="@+id/action_edit_order_favorite"

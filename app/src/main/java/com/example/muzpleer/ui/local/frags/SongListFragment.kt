@@ -44,7 +44,7 @@ class SongListFragment:Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        initMenu()
+        //initMenu()
 
         adapter = SongsAdapter(viewModel,  { song ->
             val playlist = viewModel.getPlaylist()

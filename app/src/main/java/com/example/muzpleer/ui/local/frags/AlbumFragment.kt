@@ -1,5 +1,6 @@
 package com.example.muzpleer.ui.local.frags
 
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -8,6 +9,7 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.widget.SearchView
 import androidx.core.content.ContextCompat
 import androidx.core.view.MenuHost
@@ -36,6 +38,11 @@ class AlbumFragment: Fragment() {
 
     private lateinit var itemTouchHelper: ItemTouchHelper
     private var isEditMode = false
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setHasOptionsMenu(true)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -86,7 +93,7 @@ class AlbumFragment: Fragment() {
         //восстанавливаем позицию списка после поворота или возвращения на экран
         binding.albumRecyclerView.layoutManager?.scrollToPosition(viewModel.getPositionAlbum())
 
-        initMenu()
+        //initMenu()
     }
 
     //запоминаем  позицию списка, на которой сделан клик - на случай поворота экрана
@@ -115,59 +122,110 @@ class AlbumFragment: Fragment() {
         }
     }
 
-    fun initMenu() {
-        val menuHost: MenuHost = requireActivity()
-        menuHost.addMenuProvider(object : MenuProvider {
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.menu_other, menu)
 
-            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-                menuInflater.inflate(R.menu.menu_other, menu)
+        val searchItem: MenuItem = menu.findItem(R.id.search_toolbar_other)
+        val searchView =searchItem.actionView as SearchView
+        //значок лупы слева в развёрнутом сост и сворачиваем строку поиска (true)
+        searchView.setIconifiedByDefault(true)
+        //пишем подсказку в строке поиска
+        searchView.queryHint = getString(R.string.search_album)
+        //устанавливаем в панели действий кнопку ( > )для отправки поискового запроса
+        searchView.isSubmitButtonEnabled = true
+        //устанавливаем слушатель
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?) = false
 
-                val searchItem: MenuItem = menu.findItem(R.id.search_toolbar_other)
-                val searchView =searchItem.actionView as SearchView
-                //значок лупы слева в развёрнутом сост и сворачиваем строку поиска (true)
-                searchView.setIconifiedByDefault(true)
-                //пишем подсказку в строке поиска
-                searchView.queryHint = getString(R.string.search_album)
-                //устанавливаем в панели действий кнопку ( > )для отправки поискового запроса
-                searchView.isSubmitButtonEnabled = true
-                //устанавливаем слушатель
-                searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-                    override fun onQueryTextSubmit(query: String?) = false
-
-                    override fun onQueryTextChange(newText: String?): Boolean {
-                        viewModel.filterAlbums(newText.orEmpty())
-                        return true
-                    }
-                })
-                // Показываем/скрываем пункт в зависимости от режима
-                val editItem = menu.findItem(R.id.action_edit_order)
-                editItem.title = if (isEditMode) "Готово" else "Редактировать порядок"
+            override fun onQueryTextChange(newText: String?): Boolean {
+                viewModel.filterAlbums(newText.orEmpty())
+                return true
             }
-            override fun onPrepareMenu(menu: Menu) {
-                super.onPrepareMenu(menu)
-                menu.findItem(R.id.action_go_to_song).isVisible =false
+        })
+        // Показываем/скрываем пункт в зависимости от режима
+        val editItem = menu.findItem(R.id.action_edit_order)
+        editItem.title = if (isEditMode) "Готово" else "Редактировать порядок"
 
-                val editItem = menu.findItem(R.id.action_edit_order)
-                // Меняем цвет в зависимости от режима
-                val color = if (isEditMode) {
-                    ContextCompat.getColor(requireContext(), R.color.green)
-                } else {
-                    ContextCompat.getColor(requireContext(), R.color.white)
-                }
-                editItem?.icon?.setTint(color)
-            }
-
-            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-                when(menuItem.itemId){
-                    R.id.action_edit_order -> {
-                        toggleEditMode()
-                        true
-                    }
-                }
-                return false
-            }
-        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
+        super.onCreateOptionsMenu(menu, inflater)
     }
+
+    override fun onPrepareOptionsMenu(menu: Menu) {
+        super.onPrepareOptionsMenu(menu)
+        menu.findItem(R.id.action_go_to_song).isVisible =false
+
+        val editItem = menu.findItem(R.id.action_edit_order)
+        // Меняем цвет в зависимости от режима
+        val color = if (isEditMode) {
+            ContextCompat.getColor(requireContext(), R.color.green)
+        } else {
+            ContextCompat.getColor(requireContext(), R.color.white)
+        }
+        editItem?.icon?.setTint(color)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when(item.itemId){
+            R.id.action_edit_order -> {
+                toggleEditMode()
+                true
+            }
+        }
+        return super.onOptionsItemSelected(item)
+    }
+
+//    fun initMenu() {
+//        val menuHost: MenuHost = requireActivity()
+//        menuHost.addMenuProvider(object : MenuProvider {
+//
+//            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+//                menuInflater.inflate(R.menu.menu_other, menu)
+//
+//                val searchItem: MenuItem = menu.findItem(R.id.search_toolbar_other)
+//                val searchView =searchItem.actionView as SearchView
+//                //значок лупы слева в развёрнутом сост и сворачиваем строку поиска (true)
+//                searchView.setIconifiedByDefault(true)
+//                //пишем подсказку в строке поиска
+//                searchView.queryHint = getString(R.string.search_album)
+//                //устанавливаем в панели действий кнопку ( > )для отправки поискового запроса
+//                searchView.isSubmitButtonEnabled = true
+//                //устанавливаем слушатель
+//                searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+//                    override fun onQueryTextSubmit(query: String?) = false
+//
+//                    override fun onQueryTextChange(newText: String?): Boolean {
+//                        viewModel.filterAlbums(newText.orEmpty())
+//                        return true
+//                    }
+//                })
+//                // Показываем/скрываем пункт в зависимости от режима
+//                val editItem = menu.findItem(R.id.action_edit_order)
+//                editItem.title = if (isEditMode) "Готово" else "Редактировать порядок"
+//            }
+//            override fun onPrepareMenu(menu: Menu) {
+//                super.onPrepareMenu(menu)
+//                menu.findItem(R.id.action_go_to_song).isVisible =false
+//
+//                val editItem = menu.findItem(R.id.action_edit_order)
+//                // Меняем цвет в зависимости от режима
+//                val color = if (isEditMode) {
+//                    ContextCompat.getColor(requireContext(), R.color.green)
+//                } else {
+//                    ContextCompat.getColor(requireContext(), R.color.white)
+//                }
+//                editItem?.icon?.setTint(color)
+//            }
+//
+//            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+//                when(menuItem.itemId){
+//                    R.id.action_edit_order -> {
+//                        toggleEditMode()
+//                        true
+//                    }
+//                }
+//                return false
+//            }
+//        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
+//    }
 
     private fun toggleEditMode() {
         isEditMode = !isEditMode

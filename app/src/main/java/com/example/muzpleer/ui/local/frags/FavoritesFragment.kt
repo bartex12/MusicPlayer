@@ -1,7 +1,11 @@
 package com.example.muzpleer.ui.local.frags
 
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
@@ -9,11 +13,14 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.widget.SearchView
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
+import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.recyclerview.widget.ItemTouchHelper
@@ -26,7 +33,9 @@ import com.example.muzpleer.ui.local.adapters.FavoritesAdapter
 import com.example.muzpleer.ui.local.adapters.touch.ItemTouchHelperCallback
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 import com.example.muzpleer.util.getSortedDataSong
+import com.example.muzpleer.util.toast
 import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.textfield.TextInputLayout
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 
 class FavoritesFragment: Fragment() {
@@ -36,11 +45,7 @@ class FavoritesFragment: Fragment() {
     private lateinit var adapter: FavoritesAdapter
     private lateinit var itemTouchHelper: ItemTouchHelper
     private var isEditMode = false
-
-//    override fun onCreate(savedInstanceState: Bundle?) {
-//        super.onCreate(savedInstanceState)
-//        setHasOptionsMenu(true)
-//    }
+    private var totalSongsCount = 0  // Храним общее количество песен (не отфильтрованных)
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -54,7 +59,7 @@ class FavoritesFragment: Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        adapter = FavoritesAdapter(viewModel) { song ->
+        adapter=FavoritesAdapter(viewModel) { song ->
             //устанавливаем список песен как плейлист
             val playlist=viewModel.getFavoriteSongs()
             viewModel.setPlaylist(playlist) //устанавливаем список песен как плейлист
@@ -67,29 +72,52 @@ class FavoritesFragment: Fragment() {
         }
 
         // Настраиваем ItemTouchHelper
-        val callback = ItemTouchHelperCallback(adapter)
-        itemTouchHelper = ItemTouchHelper(callback)
+        val callback=ItemTouchHelperCallback(adapter)
+        itemTouchHelper=ItemTouchHelper(callback)
         // Передаем ItemTouchHelper в адаптер
         adapter.setItemTouchHelper(itemTouchHelper)
         itemTouchHelper.attachToRecyclerView(binding.favoriteRecyclerView)
 
         binding.favoriteRecyclerView.apply {
-            layoutManager = LinearLayoutManager(requireContext())
-            adapter = this@FavoritesFragment.adapter
+            layoutManager=LinearLayoutManager(requireContext())
+            adapter=this@FavoritesFragment.adapter
         }
+
+        // Настраиваем поиск
+        setupSearch()
 
         //загружаем избранные песни
         viewModel.loadFavoriteSongs()
 
+        // Слушаем ОБЩИЙ список избранных песен (не отфильтрованный)
+        viewModel.favoriteSongs.observe(viewLifecycleOwner) { allFavorites ->
+            totalSongsCount = allFavorites.size
+            updateSearchVisibility()
+
+            Log.d(TAG, "FavoritesFragment total songs: $totalSongsCount")
+        }
+
         viewModel.filteredFavoriteSongs.observe(viewLifecycleOwner) { filteredFavorites ->
             //здесь нельзя делать сортировку, иначе собьётся перемещение папок!!!
             //val sortedData = getSortedDataSong(filteredFavorites)
-           // adapter.data = sortedData  //передаём данные в адаптер
-            adapter.data = filteredFavorites  //передаём данные в адаптер
-            binding.favoriteEmpty.visibility = if (filteredFavorites.isEmpty()) View.VISIBLE else View.GONE
-            binding.emptyImageViewFavorite.visibility = if (filteredFavorites.isEmpty()) View.VISIBLE else View.GONE
+            // adapter.data = sortedData  //передаём данные в адаптер
+            adapter.data=filteredFavorites  //передаём данные в адаптер
 
-            // Ключевое добавление - обновляем меню при загрузке данных
+            // Обновляем видимость пустого состояния (только для фильтрации)
+            val showEmptyState = filteredFavorites.isEmpty()
+            binding.favoriteEmpty.visibility =
+                if (showEmptyState && totalSongsCount > 0) View.VISIBLE else View.GONE
+            binding.emptyImageViewFavorite.visibility =
+                if (showEmptyState && totalSongsCount > 0) View.VISIBLE else View.GONE
+
+            // Обновляем текст пустого состояния
+            if (showEmptyState && totalSongsCount > 0) {
+                binding.favoriteEmpty.text = "По вашему запросу ничего не найдено"
+            } else if (showEmptyState) {
+                binding.favoriteEmpty.text = "Здесь пока нет ни одной песни"
+            }
+
+            // обновляем меню при загрузке данных
             requireActivity().invalidateOptionsMenu()
         }
 
@@ -98,6 +126,121 @@ class FavoritesFragment: Fragment() {
 
         initMenu()
     }
+
+    private fun setupSearch() {
+        // Устанавливаем слушатель на иконку поиска
+        binding.inputLayoutSearch.setEndIconOnClickListener {
+            performSearch()
+        }
+
+        // Устанавливаем слушатель на нажатие Enter на клавиатуре
+        binding.inputEditTextSearch.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                performSearch()
+                hideKeyboard()
+                return@setOnEditorActionListener true
+            }
+            false
+        }
+
+        // Устанавливаем TextWatcher для поиска при вводе текста
+        binding.inputEditTextSearch.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+                // Не нужно
+            }
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                // Ищем при каждом изменении текста
+                s?.let { query ->
+                    viewModel.filterFavoriteSongs(query.toString())
+                }
+            }
+
+            override fun afterTextChanged(s: Editable?) {
+                val hasText = s?.isNotEmpty() == true
+                binding.inputLayoutSearch.endIconMode =
+                    if (hasText) TextInputLayout.END_ICON_CLEAR_TEXT
+                    else TextInputLayout.END_ICON_CUSTOM
+                binding.inputLayoutSearch.setEndIconDrawable(
+                    if (hasText) R.drawable.baseline_close_24
+                    else R.drawable.baseline_search_24
+                )
+            }
+        })
+
+        // Очистка по нажатию на иконку
+        binding.inputLayoutSearch.setEndIconOnClickListener {
+            if (binding.inputEditTextSearch.text?.isNotEmpty() == true) {
+                binding.inputEditTextSearch.text?.clear()
+                viewModel.filterFavoriteSongs("")
+            } else {
+                performSearch()
+            }
+        }
+    }
+
+    private fun performSearch() {
+        val query = binding.inputEditTextSearch.text.toString().trim()
+        if (query.isNotEmpty()) {
+            viewModel.filterFavoriteSongs(query)
+            hideKeyboard()
+        } else {
+            toast("Введите текст для поиска")
+        }
+    }
+
+    private fun hideKeyboard() {
+        val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.hideSoftInputFromWindow(binding.inputEditTextSearch.windowToken, 0)
+    }
+
+    private fun updateSearchVisibility() {
+        // Показываем строку поиска только если ЕСТЬ песни в избранном
+        val shouldShowSearch = totalSongsCount > 0
+
+        if (shouldShowSearch) {
+            // Показываем строку поиска с анимацией
+            if (binding.inputLayoutSearch.visibility != View.VISIBLE) {
+                binding.inputLayoutSearch.visibility = View.VISIBLE
+                binding.inputLayoutSearch.alpha = 0f
+                binding.inputLayoutSearch.animate()
+                    .alpha(1f)
+                    .setDuration(300)
+                    .start()
+
+                // Обновляем constraints для RecyclerView
+                val params = binding.favoriteRecyclerView.layoutParams as ConstraintLayout.LayoutParams
+                params.topToTop = ConstraintLayout.LayoutParams.UNSET
+                params.topToBottom = binding.inputLayoutSearch.id
+                binding.favoriteRecyclerView.layoutParams = params
+            }
+        } else {
+            // Скрываем строку поиска с анимацией
+            if (binding.inputLayoutSearch.visibility != View.GONE) {
+                binding.inputLayoutSearch.animate()
+                    .alpha(0f)
+                    .setDuration(300)
+                    .withEndAction {
+                        binding.inputLayoutSearch.visibility = View.GONE
+                        // Обновляем constraints для RecyclerView
+                        val params = binding.favoriteRecyclerView.layoutParams as ConstraintLayout.LayoutParams
+                        params.topToBottom = ConstraintLayout.LayoutParams.UNSET
+                        params.topToTop = ConstraintLayout.LayoutParams.PARENT_ID
+                        binding.favoriteRecyclerView.layoutParams = params
+                    }
+                    .start()
+
+                // Очищаем текст поиска
+                binding.inputEditTextSearch.text?.clear()
+                viewModel.filterFavoriteSongs("")
+                hideKeyboard()
+            }
+        }
+
+        Log.d(TAG, "updateSearchVisibility: totalSongsCount=$totalSongsCount, shouldShowSearch=$shouldShowSearch")
+    }
+
+
 
     //запоминаем  позицию списка, на которой сделан клик - на случай поворота экрана
     override fun onPause() {
@@ -123,102 +266,12 @@ class FavoritesFragment: Fragment() {
             return FavoritesFragment()
         }
     }
-//
-//    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-//        inflater.inflate(R.menu.menu_favorites, menu)
-//
-//        val searchItem: MenuItem = menu.findItem(R.id.search_toolbar_favorite)
-//        val searchView = searchItem.actionView as SearchView
-//
-//        // ЭТО КЛЮЧЕВОЕ ИЗМЕНЕНИЕ:
-//        searchView.isIconified = false // Раскрываем сразу
-//        searchView.queryHint = getString(R.string.search_favorite)
-//
-//        // Запрашиваем фокус
-//        searchView.post {
-//            searchView.requestFocus()
-//            val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-//            imm.showSoftInput(searchView, InputMethodManager.SHOW_IMPLICIT)
-//        }
-//
-//        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-//            override fun onQueryTextSubmit(query: String?) = false
-//            override fun onQueryTextChange(newText: String?): Boolean {
-//                viewModel.filterFavoriteSongs(newText.orEmpty())
-//                return true
-//            }
-//        })
-//
-//        // Предотвращаем сворачивание при клике
-//        searchView.setOnClickListener {
-//            // Не делаем ничего - оставляем развернутым
-//        }
-//
-//        super.onCreateOptionsMenu(menu, inflater)
-//    }
-//
-//    override fun onPrepareOptionsMenu(menu: Menu) {
-//        super.onPrepareOptionsMenu(menu)
-//
-//        val editItem = menu.findItem(R.id.action_edit_order_favorite)
-//        val color = if (isEditMode) {
-//            ContextCompat.getColor(requireContext(), R.color.green)
-//        } else {
-//            ContextCompat.getColor(requireContext(), R.color.white)
-//        }
-//        editItem?.icon?.setTint(color)
-//
-//        val songsCount = viewModel.filteredFavoriteSongs.value?.size ?: 0
-//        menu.findItem(R.id.action_go_to_song_favorite).isVisible = songsCount > 9
-//    }
-//
-//    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-//        when(item.itemId) {
-//            R.id.action_go_to_song_favorite -> {
-//                val favoriteSongs = viewModel.getFavoriteSongs()
-//                val currentSong = viewModel.getCurrentSong()
-//                val indexOfSong = getSortedDataSong(favoriteSongs).indexOfFirst {
-//                    it.mediaUri == currentSong?.mediaUri
-//                }
-//                (binding.favoriteRecyclerView.layoutManager as LinearLayoutManager).let {
-//                    if(indexOfSong >= 0) it.scrollToPositionWithOffset(indexOfSong, 0)
-//                    else it.scrollToPosition(0)
-//                }
-//                return true
-//            }
-//            R.id.action_edit_order_favorite -> {
-//                toggleEditMode()
-//                activity?.invalidateOptionsMenu()
-//                return true
-//            }
-//        }
-//        return super.onOptionsItemSelected(item)
-//    }
 
     fun initMenu() {
         val menuHost: MenuHost = requireActivity()
         menuHost.addMenuProvider(object : MenuProvider {
-
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
                 menuInflater.inflate(R.menu.menu_favorites, menu)
-
-                val searchItem: MenuItem = menu.findItem(R.id.search_toolbar_favorite)
-                val searchView =searchItem.actionView as SearchView
-                //значок лупы слева в развёрнутом сост и сворачиваем строку поиска (true)
-                searchView.setIconifiedByDefault(true)
-                //пишем подсказку в строке поиска
-                searchView.queryHint = getString(R.string.search_favorite)
-                //устанавливаем в панели действий кнопку ( > )для отправки поискового запроса
-                //searchView.isSubmitButtonEnabled = true
-                //устанавливаем слушатель
-                searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-                    override fun onQueryTextSubmit(query: String?) = false
-
-                    override fun onQueryTextChange(newText: String?): Boolean {
-                        viewModel.filterFavoriteSongs(newText.orEmpty())
-                        return true
-                    }
-                })
 
                 // Показываем/скрываем пункт в зависимости от режима
                 val editItem = menu.findItem(R.id.action_edit_order_favorite)
@@ -239,8 +292,8 @@ class FavoritesFragment: Fragment() {
                 // вычисляем количество песен в списке
                 val songsCount = viewModel.filteredFavoriteSongs.value?.size ?: 0
                 Log.d(SongPlaylistFragment.Companion.TAG, "$$$$$ SongPlaylistFragment onPrepareMenu songsCount = $songsCount ")
-                // Простое условие - больше 9 песен
-                menu.findItem(R.id.action_go_to_song_favorite).isVisible = songsCount > 9
+                // Простое условие - больше  7 песен
+                menu.findItem(R.id.action_go_to_song_favorite).isVisible = songsCount > 7
             }
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
