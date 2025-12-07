@@ -1416,4 +1416,48 @@ class SharedViewModel(
         }
     }
 
+    fun addSongToPlaylist(songId: Long, playlistId: Long) {
+        viewModelScope.launch {
+            try {
+                // Проверяем, нет ли уже этой песни в плейлисте
+                val isAlreadyInPlaylist = playlistRepository.isSongInPlaylist(songId, playlistId)
+
+                if (isAlreadyInPlaylist) {
+                    // Можно показать сообщение, что песня уже есть
+                    Log.d(TAG, "Песня уже есть в плейлисте")
+                    return@launch
+                }
+
+                // Добавляем песню в плейлист
+                playlistRepository.addSongToPlaylist(songId, playlistId)
+
+                // Обновляем список плейлистов
+                refreshPlaylists()
+
+                // Если сейчас открыт этот плейлист, обновляем его песни
+                val currentPlaylist = _currentPlaylist.value
+                if (currentPlaylist?.id == playlistId) {
+                    loadCurrentPlaylistForSongs(playlistId)
+                }
+
+            } catch (e: Exception) {
+                Log.e(TAG, "Ошибка при добавлении песни в плейлист", e)
+            }
+        }
+    }
+
+    fun refreshPlaylists() {
+        viewModelScope.launch {
+            val playlists = playlistRepository.getAllPlaylists()
+            _playlists.value = playlists
+            _filteredPlaylists.value = playlists
+
+            // Также обновляем текущий плейлист, если он открыт
+            _currentPlaylist.value?.let { currentPlaylist ->
+                val updatedPlaylist = playlists.find { it.id == currentPlaylist.id }
+                updatedPlaylist?.let { _currentPlaylist.value = it }
+            }
+        }
+    }
+
 }

@@ -22,8 +22,10 @@
     <string name="search">Поиск</string>
     <string name="search_song">поиск трека</string>
     <string name="search_album">поиск альбома</string>
+    <string name="search_playlist">поиск плейлиста</string>
     <string name="search_artist">поиск исполнителя</string>
     <string name="search_folder">поиск папки</string>
+    <string name="search_favorite">поиск в избранном</string>
     <string name="my_tracks">Избранное</string>
     <string name="my_playlists">Плейлисты</string>
 

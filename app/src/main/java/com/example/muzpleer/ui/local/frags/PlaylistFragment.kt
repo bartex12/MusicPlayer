@@ -127,7 +127,7 @@ class PlaylistFragment():Fragment() {
                 //значок лупы слева в развёрнутом сост и сворачиваем строку поиска (true)
                 searchView.setIconifiedByDefault(true)
                 //пишем подсказку в строке поиска
-                searchView.queryHint = getString(R.string.search_album)
+                searchView.queryHint = getString(R.string.search_playlist)
                 //устанавливаем в панели действий кнопку ( > )для отправки поискового запроса
                 //searchView.isSubmitButtonEnabled = true
                 //устанавливаем слушатель

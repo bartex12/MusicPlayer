@@ -58,19 +58,24 @@ class SongPlaylistFragment:Fragment() {
 
         initMenu()
 
-        adapter = SongsPlaylistAdapter(viewModel,  { song ->
-            val playlistSongs  = getSortedDataSong(viewModel.getCurrentPlaylist()?.playlistSongs ?: listOf()) //можно было взять и из currentFilteredPlaylistSongs
-            Log.d(TAG,"!@#@ SongPlaylistFragment размер плейлиста = ${playlistSongs.size} имя первой песни плейлиста " +
-                    "= ${getSortedDataSong(playlistSongs).first().title} ")
+        adapter = SongsPlaylistAdapter(viewModel) { song ->
+            val playlistSongs=getSortedDataSong(
+                viewModel.getCurrentPlaylist()?.playlistSongs ?: listOf()
+            ) //можно было взять и из currentFilteredPlaylistSongs
+            Log.d(
+                TAG,
+                "!@#@ SongPlaylistFragment размер плейлиста = ${playlistSongs.size} имя первой песни плейлиста " +
+                        "= ${getSortedDataSong(playlistSongs).first().title} "
+            )
 
             viewModel.setSongAndPlaylist(
                 SongAndPlaylist(
-                    song = song,
-                    playlist = playlistSongs
+                    song=song,
+                    playlist=playlistSongs
                 )
             )
             viewModel.setCurrentSong(song)
-        })
+        }
 
         viewModel.loadCurrentPlaylistForSongs(playlistId)  //грузим текущий плейлист ради песен для адаптера
 
@@ -80,6 +85,9 @@ class SongPlaylistFragment:Fragment() {
             adapter.data = getSortedDataSong(currentSongs)
             binding.tvEmptyPlaylistSong.visibility = if (currentSongs.isEmpty()) View.VISIBLE else View.GONE
             binding.emptyImageView.visibility = if (currentSongs.isEmpty()) View.VISIBLE else View.GONE
+
+            // Ключевое добавление - обновляем меню при загрузке данных
+            requireActivity().invalidateOptionsMenu()
         }
 
         binding.alltracksPlaylistRecyclerView.apply {
@@ -87,8 +95,6 @@ class SongPlaylistFragment:Fragment() {
             adapter = this@SongPlaylistFragment.adapter
         }
 
-        // Также обновляем пустое состояние меню
-        requireActivity().invalidateOptionsMenu()
     }
 
     override fun onDestroyView() {
@@ -109,6 +115,7 @@ class SongPlaylistFragment:Fragment() {
     }
 
     fun initMenu() {
+        Log.d(TAG, "$$$$$ SongPlaylistFragment initMenu")
         val menuHost: MenuHost = requireActivity()
         menuHost.addMenuProvider(object : MenuProvider {
 
@@ -144,6 +151,11 @@ class SongPlaylistFragment:Fragment() {
 
             override fun onPrepareMenu(menu: Menu) {
                 menu.findItem(R.id.action_edit_order).isVisible =false
+                // вычисляем количество песен в списке
+                val songsCount = viewModel.currentFilteredPlaylistSongs.value?.size ?: 0
+               Log.d(TAG, "$$$$$ SongPlaylistFragment onPrepareMenu songsCount = $songsCount ")
+                // Простое условие - больше 9 песен
+                menu.findItem(R.id.action_go_to_song).isVisible = songsCount > 9
             }
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {

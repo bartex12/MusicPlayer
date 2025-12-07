@@ -1,5 +1,6 @@
 package com.example.muzpleer.ui.local.frags
 
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -8,6 +9,7 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.widget.SearchView
 import androidx.core.content.ContextCompat
 import androidx.core.view.MenuHost
@@ -34,6 +36,11 @@ class FavoritesFragment: Fragment() {
     private lateinit var adapter: FavoritesAdapter
     private lateinit var itemTouchHelper: ItemTouchHelper
     private var isEditMode = false
+
+//    override fun onCreate(savedInstanceState: Bundle?) {
+//        super.onCreate(savedInstanceState)
+//        setHasOptionsMenu(true)
+//    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -81,6 +88,9 @@ class FavoritesFragment: Fragment() {
             adapter.data = filteredFavorites  //передаём данные в адаптер
             binding.favoriteEmpty.visibility = if (filteredFavorites.isEmpty()) View.VISIBLE else View.GONE
             binding.emptyImageViewFavorite.visibility = if (filteredFavorites.isEmpty()) View.VISIBLE else View.GONE
+
+            // Ключевое добавление - обновляем меню при загрузке данных
+            requireActivity().invalidateOptionsMenu()
         }
 
         //восстанавливаем позицию списка после поворота или возвращения на экран и при новой загрузке
@@ -113,20 +123,91 @@ class FavoritesFragment: Fragment() {
             return FavoritesFragment()
         }
     }
+//
+//    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+//        inflater.inflate(R.menu.menu_favorites, menu)
+//
+//        val searchItem: MenuItem = menu.findItem(R.id.search_toolbar_favorite)
+//        val searchView = searchItem.actionView as SearchView
+//
+//        // ЭТО КЛЮЧЕВОЕ ИЗМЕНЕНИЕ:
+//        searchView.isIconified = false // Раскрываем сразу
+//        searchView.queryHint = getString(R.string.search_favorite)
+//
+//        // Запрашиваем фокус
+//        searchView.post {
+//            searchView.requestFocus()
+//            val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+//            imm.showSoftInput(searchView, InputMethodManager.SHOW_IMPLICIT)
+//        }
+//
+//        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+//            override fun onQueryTextSubmit(query: String?) = false
+//            override fun onQueryTextChange(newText: String?): Boolean {
+//                viewModel.filterFavoriteSongs(newText.orEmpty())
+//                return true
+//            }
+//        })
+//
+//        // Предотвращаем сворачивание при клике
+//        searchView.setOnClickListener {
+//            // Не делаем ничего - оставляем развернутым
+//        }
+//
+//        super.onCreateOptionsMenu(menu, inflater)
+//    }
+//
+//    override fun onPrepareOptionsMenu(menu: Menu) {
+//        super.onPrepareOptionsMenu(menu)
+//
+//        val editItem = menu.findItem(R.id.action_edit_order_favorite)
+//        val color = if (isEditMode) {
+//            ContextCompat.getColor(requireContext(), R.color.green)
+//        } else {
+//            ContextCompat.getColor(requireContext(), R.color.white)
+//        }
+//        editItem?.icon?.setTint(color)
+//
+//        val songsCount = viewModel.filteredFavoriteSongs.value?.size ?: 0
+//        menu.findItem(R.id.action_go_to_song_favorite).isVisible = songsCount > 9
+//    }
+//
+//    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+//        when(item.itemId) {
+//            R.id.action_go_to_song_favorite -> {
+//                val favoriteSongs = viewModel.getFavoriteSongs()
+//                val currentSong = viewModel.getCurrentSong()
+//                val indexOfSong = getSortedDataSong(favoriteSongs).indexOfFirst {
+//                    it.mediaUri == currentSong?.mediaUri
+//                }
+//                (binding.favoriteRecyclerView.layoutManager as LinearLayoutManager).let {
+//                    if(indexOfSong >= 0) it.scrollToPositionWithOffset(indexOfSong, 0)
+//                    else it.scrollToPosition(0)
+//                }
+//                return true
+//            }
+//            R.id.action_edit_order_favorite -> {
+//                toggleEditMode()
+//                activity?.invalidateOptionsMenu()
+//                return true
+//            }
+//        }
+//        return super.onOptionsItemSelected(item)
+//    }
 
     fun initMenu() {
         val menuHost: MenuHost = requireActivity()
         menuHost.addMenuProvider(object : MenuProvider {
 
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-                menuInflater.inflate(R.menu.menu_other, menu)
+                menuInflater.inflate(R.menu.menu_favorites, menu)
 
-                val searchItem: MenuItem = menu.findItem(R.id.search_toolbar_other)
+                val searchItem: MenuItem = menu.findItem(R.id.search_toolbar_favorite)
                 val searchView =searchItem.actionView as SearchView
                 //значок лупы слева в развёрнутом сост и сворачиваем строку поиска (true)
                 searchView.setIconifiedByDefault(true)
                 //пишем подсказку в строке поиска
-                searchView.queryHint = getString(R.string.search_folder)
+                searchView.queryHint = getString(R.string.search_favorite)
                 //устанавливаем в панели действий кнопку ( > )для отправки поискового запроса
                 //searchView.isSubmitButtonEnabled = true
                 //устанавливаем слушатель
@@ -140,12 +221,12 @@ class FavoritesFragment: Fragment() {
                 })
 
                 // Показываем/скрываем пункт в зависимости от режима
-                val editItem = menu.findItem(R.id.action_edit_order)
+                val editItem = menu.findItem(R.id.action_edit_order_favorite)
                 editItem.title = if (isEditMode) "Готово" else "Редактировать порядок"
             }
             override fun onPrepareMenu(menu: Menu) {
                 super.onPrepareMenu(menu)
-                val editItem = menu.findItem(R.id.action_edit_order)
+                val editItem = menu.findItem(R.id.action_edit_order_favorite)
 
                 // Меняем цвет в зависимости от режима
                 val color = if (isEditMode) {
@@ -154,11 +235,17 @@ class FavoritesFragment: Fragment() {
                     ContextCompat.getColor(requireContext(), R.color.white)
                 }
                 editItem?.icon?.setTint(color)
+
+                // вычисляем количество песен в списке
+                val songsCount = viewModel.filteredFavoriteSongs.value?.size ?: 0
+                Log.d(SongPlaylistFragment.Companion.TAG, "$$$$$ SongPlaylistFragment onPrepareMenu songsCount = $songsCount ")
+                // Простое условие - больше 9 песен
+                menu.findItem(R.id.action_go_to_song_favorite).isVisible = songsCount > 9
             }
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
                 when(menuItem.itemId){
-                    R.id.action_go_to_song->{
+                    R.id.action_go_to_song_favorite->{
                         val favoriteSongs = viewModel.getFavoriteSongs() //список песен артиста
                         val currentSong = viewModel.getCurrentSong()
                         val indexOfSong = getSortedDataSong(favoriteSongs).indexOfFirst { it.mediaUri == currentSong?.mediaUri }
@@ -169,7 +256,7 @@ class FavoritesFragment: Fragment() {
                         return true
                     }
 
-                    R.id.action_edit_order -> {
+                    R.id.action_edit_order_favorite -> {
                         toggleEditMode()
                         true
                     }

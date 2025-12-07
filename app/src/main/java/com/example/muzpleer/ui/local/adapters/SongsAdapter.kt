@@ -20,6 +20,7 @@ import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.findNavController
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
@@ -169,6 +170,10 @@ class SongsAdapter(
                     viewModel.toggleFavorite(song)
                     true
                 }
+                R.id.action_add_to_playlist -> {
+                    showChoosePlaylistDialog(context, song)
+                    true
+                }
                 R.id.action_change_cover -> {  //сменить обложку
                     Log.d(TAG, "!!!SongsAdapter showPopupMenu action_change_cover:" +
                             "song title = ${song.title} song artUri =  ${song.artUri}")
@@ -196,6 +201,42 @@ class SongsAdapter(
             }
         }
         popup.show()
+    }
+
+    private fun showChoosePlaylistDialog(context: Context, song: Song) {
+        val dialog = Dialog(context)
+        dialog.setContentView(R.layout.dialog_choose_playlist)
+        dialog.window?.setLayout(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT
+        )
+        dialog.window?.setBackgroundDrawableResource(android.R.color.white)
+        dialog.setCancelable(true)
+
+        val recyclerView = dialog.findViewById<RecyclerView>(R.id.rvPlaylists)
+        val adapter = PlaylistChooseAdapter { playlist ->
+            // Добавляем песню в выбранный плейлист
+            viewModel.addSongToPlaylist(song.id, playlist.id)
+
+            // Показываем уведомление
+            Toast.makeText(
+                context,
+                "Песня добавлена в \"${playlist.playlistName}\"",
+                Toast.LENGTH_SHORT
+            ).show()
+
+            dialog.dismiss()
+        }
+
+        recyclerView.layoutManager = LinearLayoutManager(context)
+        recyclerView.adapter = adapter
+
+        // Загружаем список плейлистов
+        viewModel.filteredPlaylists.observe(context as LifecycleOwner) { playlists ->
+            adapter.playlists = playlists.filter { it.id != -1L } // Исключаем "Все песни"
+        }
+
+        dialog.show()
     }
 
     private fun showSongInfoDialog(context:Context,song: Song) {

@@ -67,4 +67,6 @@ class TabLocalFragment: Fragment()  {
         tabLayout.setSelectedTabIndicatorColor(Color.GREEN)
     }
 
+
+
 }

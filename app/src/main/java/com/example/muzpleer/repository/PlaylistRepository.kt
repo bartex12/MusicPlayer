@@ -180,7 +180,23 @@ class PlaylistRepository(
         playlist?. let{
             playlistDao.update(playlist.copy(songCount = updatedCount))
         }
+    }
+    suspend fun addSongToPlaylist(songId: Long, playlistId: Long) {
+        // Добавляем связь в промежуточную таблицу
+        playlistDao.insertSong(
+            PlaylistSongCrossRef(
+                playlistId = playlistId,
+                songId = songId
+            )
+        )
 
+        // Обновляем счетчик песен в плейлисте
+        val updatedCount = playlistDao.getSongsCountForPlaylist(playlistId)
+        playlistDao.updateSongsCount(playlistId, updatedCount)
+    }
+
+    suspend fun isSongInPlaylist(songId: Long, playlistId: Long): Boolean {
+        return playlistDao.isSongInPlaylist(songId, playlistId) > 0
     }
 
 }

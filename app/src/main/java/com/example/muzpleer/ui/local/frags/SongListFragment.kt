@@ -82,6 +82,9 @@ class SongListFragment:Fragment() {
                     viewModel.filteredListAlbumSong.observe(viewLifecycleOwner) { albumSongs ->
                         Log.d(TAG, "41!@# SongListFragment arguments filteredListAlbumSong size ${albumSongs.size}")
                         adapter.data = getSortedDataSong(albumSongs)
+
+                        // Ключевое добавление - обновляем меню при загрузке данных
+                        requireActivity().invalidateOptionsMenu()
                     }
                     //обновление обложки при её замене
                     viewModel.coverImageUri.observe(viewLifecycleOwner) { uri ->
@@ -104,6 +107,9 @@ class SongListFragment:Fragment() {
                     viewModel.filteredListArtistSong.observe(viewLifecycleOwner) { artistSongs ->
                         Log.d(TAG, "44!@# SongListFragment filteredListArtistSong.observe filteredListArtistSong size ${artistSongs.size}")
                         adapter.data = getSortedDataSong(artistSongs)
+
+                        // Ключевое добавление - обновляем меню при загрузке данных
+                        requireActivity().invalidateOptionsMenu()
                     }
                     //обновление обложки при её замене
                     viewModel.coverImageUri.observe(viewLifecycleOwner) { uri ->
@@ -126,6 +132,9 @@ class SongListFragment:Fragment() {
                         Log.d(TAG, "47!@# SongListFragment filteredListFolderSong.observe " +
                                 "folderSongs size ${folderSongs.size} ")
                         adapter.data = getSortedDataSong(folderSongs)
+
+                        // Ключевое добавление - обновляем меню при загрузке данных
+                        requireActivity().invalidateOptionsMenu()
                     }
                     //обновление обложки при её замене
                     viewModel.coverImageUri.observe(viewLifecycleOwner) { uri ->
@@ -200,6 +209,23 @@ class SongListFragment:Fragment() {
 
             override fun onPrepareMenu(menu: Menu) {
                 menu.findItem(R.id.action_edit_order).isVisible =false
+                var songsCount = 0
+                when(arguments?.getInt("from")){
+                    2->{
+                        songsCount =  viewModel.filteredListAlbumSong.value?.size?:0
+                    }
+                    3->{
+                        songsCount =  viewModel.filteredListArtistSong.value?.size?:0
+                    }
+                    4->{
+                        songsCount =  viewModel.filteredListFolderSong.value?.size?:0
+                    }
+                }
+                // вычисляем количество песен в списке
+               // val songsCount = viewModel.filteredFavoriteSongs.value?.size ?: 0
+                Log.d(TAG, "$$$$$ SongListFragment onPrepareMenu songsCount = $songsCount ")
+                // Простое условие - больше 9 песен
+                menu.findItem(R.id.action_go_to_song).isVisible = songsCount > 9
             }
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
