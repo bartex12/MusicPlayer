@@ -1405,18 +1405,6 @@ class SharedViewModel(
 
                 _currentPlaylistSongs.value =newCurrentPlaylist?.playlistSongs
 
-                // Уведомляем об изменении плейлиста
-                _playlists.value = _playlists.value?.map { playlist ->
-                    if (playlist.id == playlistId) {
-                        playlist.copy(
-                            playlistSongs = updatedSongs ?: listOf(),
-                            songCount = updatedSongs?.size ?: 0
-                        )
-                    } else {
-                        playlist
-                    }
-                }
-
                 //Все плейлисты, чтобы при возврате на списки плейлистов кол-во песен отображалось правильно
                 val playlists = playlistRepository.getAllPlaylists()
                 _playlists.value = playlists
@@ -1429,18 +1417,3 @@ class SharedViewModel(
     }
 
 }
-
-//fun setSelectedSong(song: Song) {
-//    _selectedSong.value = song
-//    if(song.artUri == null){
-//        val uri = getDefaultCoverUri(song)
-//        updateCoverImage(uri)
-//        //DefaultCoverUri = content://media/external/audio/albumart/3
-//        Log.d(TAG, "***SharedViewModel setSelectedSong song.artUri == null DefaultCoverUri = $uri")
-//    }else{
-//        val uri = (song.artUri!!).toUri()
-//        //val uri = "content://com.android.providers.media.documents/document/image%3A135257".toUri()
-//        updateCoverImage(uri)
-//        Log.d(TAG, "***SharedViewModel setSelectedSong song.artUri = $uri song = ${song.title}")
-//    }
-//}
