@@ -1,14 +1,21 @@
 package com.example.muzpleer.ui.local.frags
 
+import android.content.Context
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
+import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.widget.SearchView
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.os.bundleOf
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
@@ -25,6 +32,8 @@ import com.example.muzpleer.ui.local.adapters.SongsPlaylistAdapter
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 import com.example.muzpleer.util.getNormalizedPath
 import com.example.muzpleer.util.getSortedDataSong
+import com.example.muzpleer.util.toast
+import com.google.android.material.textfield.TextInputLayout
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 import kotlin.getValue
 
@@ -35,6 +44,7 @@ class SongPlaylistFragment:Fragment() {
     private val viewModel: SharedViewModel by activityViewModel()
     private var currentSearchQuery = ""
     private  var playlistId:Long = -1
+    private var totalSongsCount = 0  // Храним общее количество песен в плейлисте(не отфильтрованных)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -75,16 +85,42 @@ class SongPlaylistFragment:Fragment() {
             viewModel.setCurrentSong(song)
         }
 
+        // Настраиваем поиск
+        setupSearch()
+
         viewModel.loadCurrentPlaylistForSongs(playlistId)  //грузим текущий плейлист ради песен для адаптера
 
+        // Слушаем ОБЩИЙ список песен плейлиста (не отфильтрованный)
+        viewModel.currentPlaylistSongs.observe(viewLifecycleOwner) { playlistSongs ->
+            totalSongsCount =playlistSongs?.size ?:0
+            updateSearchVisibility( )
+
+            Log.d(TAG, "###3 SongPlaylistFragment total songs: $totalSongsCount")
+        }
+
         viewModel.currentFilteredPlaylistSongs.observe(viewLifecycleOwner) { currentPlaylistSongs ->
-            Log.d(TAG, "!@#@ SongPlaylistFragment currentFilteredPlaylistSongs.observe currentFilteredPlaylistSongs size ${currentPlaylistSongs?.size}")
+            Log.d(TAG, "!@#@4 SongPlaylistFragment currentFilteredPlaylistSongs.observe currentFilteredPlaylistSongs size ${currentPlaylistSongs?.size}")
             val currentSongs = currentPlaylistSongs?: listOf()
             adapter.data = getSortedDataSong(currentSongs)
-            binding.tvEmptyPlaylistSong.visibility = if (currentSongs.isEmpty()) View.VISIBLE else View.GONE
-            binding.emptyImageViewPlaylist.visibility = if (currentSongs.isEmpty()) View.VISIBLE else View.GONE
 
-            // Ключевое добавление - обновляем меню при загрузке данных
+            // Обновляем видимость пустого состояния (только для фильтрации)
+            val showEmptyState =currentPlaylistSongs?.isEmpty() != false//пусто после поиска
+            val  songCountLessZero = totalSongsCount <= 0  // нет песен в плейлисте
+
+            //favoriteEmpty-текст  emptyImageViewFavorite-картинка
+            binding.tvEmptyPlaylistSong.visibility =
+                if (showEmptyState || songCountLessZero) View.VISIBLE else View.GONE
+            binding.emptyImageViewPlaylist.visibility =
+                if (songCountLessZero) View.VISIBLE else View.GONE
+
+            // Обновляем текст пустого состояния
+            if (showEmptyState && !songCountLessZero) {
+                binding.tvEmptyPlaylistSong.text = "По вашему запросу ничего не найдено"
+            } else if (songCountLessZero) {
+                binding.tvEmptyPlaylistSong.text = "Здесь пока нет ни одной песни"
+            }
+
+            // обновляем меню при загрузке данных
             requireActivity().invalidateOptionsMenu()
         }
 
@@ -113,6 +149,153 @@ class SongPlaylistFragment:Fragment() {
         }
     }
 
+    private fun setupSearch() {
+        // Устанавливаем слушатель на иконку поиска
+        binding.inputLayoutSearchAllTracksPlaylist.setEndIconOnClickListener {
+            performSearch()
+        }
+
+        // Устанавливаем слушатель на нажатие Enter на клавиатуре
+        binding.inputEditTextSearchAllTracksPlaylist.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                performSearch()
+                hideKeyboard()
+                return@setOnEditorActionListener true
+            }
+            false
+        }
+
+        // Устанавливаем TextWatcher для поиска при вводе текста
+        binding.inputEditTextSearchAllTracksPlaylist.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+                // Не нужно
+            }
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                // Ищем при каждом изменении текста
+                s?.let { query ->
+                    viewModel.filterPlaylistSongs(query.toString())
+                }
+            }
+
+            override fun afterTextChanged(s: Editable?) {
+                val hasText = s?.isNotEmpty() == true
+                binding.inputLayoutSearchAllTracksPlaylist.endIconMode =
+                    if (hasText) TextInputLayout.END_ICON_CLEAR_TEXT
+                    else TextInputLayout.END_ICON_CUSTOM
+                binding.inputLayoutSearchAllTracksPlaylist.setEndIconDrawable(
+                    if (hasText) R.drawable.baseline_close_24
+                    else R.drawable.baseline_search_24
+                )
+            }
+        })
+
+        // Очистка по нажатию на иконку
+        binding.inputLayoutSearchAllTracksPlaylist.setEndIconOnClickListener {
+            if (binding.inputEditTextSearchAllTracksPlaylist.text?.isNotEmpty() == true) {
+                binding.inputEditTextSearchAllTracksPlaylist.text?.clear()
+                viewModel.filterPlaylistSongs("")
+            } else {
+                performSearch()
+            }
+        }
+
+        // Перехватываем нажатие кнопки "Назад" для поля ввода
+        setupBackButtonHandler()
+    }
+
+    // Перехватываем события клавиатуры для кнопки "Назад"
+    private fun setupBackButtonHandler() {
+        binding.inputEditTextSearchAllTracksPlaylist.setOnKeyListener { _, keyCode, event ->
+            if (keyCode == KeyEvent.KEYCODE_BACK && event.action == KeyEvent.ACTION_UP) {
+                if (binding.inputEditTextSearchAllTracksPlaylist.hasFocus()) {
+                    // Скрываем клавиатуру и убираем фокус ТОЛЬКО при нажатии Back
+                    hideKeyboardAndClearFocus()
+                    return@setOnKeyListener true
+                }
+            }
+            false
+        }
+    }
+
+    private fun hideKeyboardAndClearFocus() {
+        // Убираем фокус с поля
+        binding.inputEditTextSearchAllTracksPlaylist.clearFocus()
+
+        // Гарантированно скрываем курсор
+        binding.inputEditTextSearchAllTracksPlaylist.isCursorVisible = false
+
+        //стираем текст в поле ввода и показываем весь список
+        if (binding.inputEditTextSearchAllTracksPlaylist.text?.isNotEmpty() == true) {
+            binding.inputEditTextSearchAllTracksPlaylist.text?.clear()
+            viewModel.filterFavoriteSongs("")
+        }
+
+        // Скрываем клавиатуру
+        hideKeyboard()
+
+        Log.d(TAG, " SongPlaylistFragment hideKeyboardAndClearFocus: фокус снят, курсор скрыт")
+    }
+
+    private fun performSearch() {
+        val query = binding.inputEditTextSearchAllTracksPlaylist.text.toString().trim()
+        if (query.isNotEmpty()) {
+            viewModel.filterPlaylistSongs(query)
+            hideKeyboard()
+        } else {
+            toast("Введите текст для поиска")
+        }
+    }
+
+    private fun updateSearchVisibility() {
+        // Показываем строку поиска только если ЕСТЬ песни в избранном
+        val shouldShowSearch = totalSongsCount > 0
+        Log.d(TAG, " ###1 SongPlaylistFragment updateSearchVisibility:  shouldShowSearch=$shouldShowSearch")
+        if (shouldShowSearch) {
+            // Показываем строку поиска с анимацией
+                Log.d(TAG, " ###1-1 SongPlaylistFragment updateSearchVisibility внутри if-да")
+                binding.inputLayoutSearchAllTracksPlaylist.visibility = View.VISIBLE
+                binding.inputLayoutSearchAllTracksPlaylist.alpha = 0f
+                binding.inputLayoutSearchAllTracksPlaylist.animate()
+                    .alpha(1f)
+                    .setDuration(300)
+                    .start()
+
+                // Обновляем constraints для RecyclerView
+                val params = binding.alltracksPlaylistRecyclerView.layoutParams as ConstraintLayout.LayoutParams
+                params.topToTop = ConstraintLayout.LayoutParams.UNSET
+                params.topToBottom = binding.inputLayoutSearchAllTracksPlaylist.id
+                binding.alltracksPlaylistRecyclerView.layoutParams = params
+        } else {
+            // Скрываем строку поиска с анимацией
+                Log.d(TAG, " ###1-2 SongPlaylistFragment updateSearchVisibility внутри if-нет")
+                binding.inputLayoutSearchAllTracksPlaylist.animate()
+                    .alpha(0f)
+                    .setDuration(300)
+                    .withEndAction {
+                        binding.inputLayoutSearchAllTracksPlaylist.visibility = View.GONE
+                        // Обновляем constraints для RecyclerView
+                        val params = binding.alltracksPlaylistRecyclerView.layoutParams as ConstraintLayout.LayoutParams
+                        params.topToBottom = ConstraintLayout.LayoutParams.UNSET
+                        params.topToTop = ConstraintLayout.LayoutParams.PARENT_ID
+                        binding.alltracksPlaylistRecyclerView.layoutParams = params
+                    }
+                    .start()
+
+                // Очищаем текст поиска
+                binding.inputEditTextSearchAllTracksPlaylist.text?.clear()
+                viewModel.filterPlaylistSongs("")
+                hideKeyboard()
+        }
+
+        Log.d(TAG, " ###2 SongPlaylistFragment updateSearchVisibility: totalSongsCount=$totalSongsCount, shouldShowSearch=$shouldShowSearch")
+    }
+
+    private fun hideKeyboard() {
+        val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.hideSoftInputFromWindow(binding.inputEditTextSearchAllTracksPlaylist.windowToken, 0)
+    }
+
     fun initMenu() {
         Log.d(TAG, "$$$$$ SongPlaylistFragment initMenu")
         val menuHost: MenuHost = requireActivity()
@@ -126,7 +309,7 @@ class SongPlaylistFragment:Fragment() {
                 menu.findItem(R.id.action_edit_order2).isVisible =false
                 // вычисляем количество песен в списке
                 val songsCount = viewModel.currentFilteredPlaylistSongs.value?.size ?: 0
-               Log.d(TAG, "$$$$$ SongPlaylistFragment onPrepareMenu songsCount = $songsCount ")
+               Log.d(TAG, "$$$$$5 SongPlaylistFragment onPrepareMenu songsCount = $songsCount ")
                 // Простое условие - больше 7 песен
                 menu.findItem(R.id.action_go_to_song2).isVisible = songsCount > 7
             }

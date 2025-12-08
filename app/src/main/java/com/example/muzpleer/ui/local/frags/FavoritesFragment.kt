@@ -280,8 +280,6 @@ class FavoritesFragment: Fragment() {
         Log.d(TAG, "updateSearchVisibility: totalSongsCount=$totalSongsCount, shouldShowSearch=$shouldShowSearch")
     }
 
-
-
     //запоминаем  позицию списка, на которой сделан клик - на случай поворота экрана
     override fun onPause() {
         super.onPause()
