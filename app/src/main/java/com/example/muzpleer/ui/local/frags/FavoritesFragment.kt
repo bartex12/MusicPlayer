@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
+import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
@@ -180,6 +181,42 @@ class FavoritesFragment: Fragment() {
                 performSearch()
             }
         }
+
+        // Перехватываем нажатие кнопки "Назад" для поля ввода
+        setupBackButtonHandler()
+    }
+
+    // Перехватываем события клавиатуры для кнопки "Назад"
+    private fun setupBackButtonHandler() {
+        binding.inputEditTextSearch.setOnKeyListener { _, keyCode, event ->
+            if (keyCode == KeyEvent.KEYCODE_BACK && event.action == KeyEvent.ACTION_UP) {
+                if (binding.inputEditTextSearch.hasFocus()) {
+                    // Скрываем клавиатуру и убираем фокус ТОЛЬКО при нажатии Back
+                    hideKeyboardAndClearFocus()
+                    return@setOnKeyListener true
+                }
+            }
+            false
+        }
+    }
+
+    private fun hideKeyboardAndClearFocus() {
+        // Убираем фокус с поля
+        binding.inputEditTextSearch.clearFocus()
+
+        // Гарантированно скрываем курсор
+        binding.inputEditTextSearch.isCursorVisible = false
+
+        //стираем текст в поле ввода и показываем весь список
+        if (binding.inputEditTextSearch.text?.isNotEmpty() == true) {
+            binding.inputEditTextSearch.text?.clear()
+            viewModel.filterFavoriteSongs("")
+        }
+
+        // Скрываем клавиатуру
+        hideKeyboard()
+
+        Log.d(TAG, "hideKeyboardAndClearFocus: фокус снят, курсор скрыт")
     }
 
     private fun performSearch() {
