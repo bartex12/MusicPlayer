@@ -94,26 +94,29 @@ class FavoritesFragment: Fragment() {
             totalSongsCount = allFavorites.size
             updateSearchVisibility()
 
-            Log.d(TAG, "FavoritesFragment total songs: $totalSongsCount")
+            Log.d(TAG, "###FavoritesFragment total songs: $totalSongsCount")
         }
 
         viewModel.filteredFavoriteSongs.observe(viewLifecycleOwner) { filteredFavorites ->
             //здесь нельзя делать сортировку, иначе собьётся перемещение папок!!!
             //val sortedData = getSortedDataSong(filteredFavorites)
             // adapter.data = sortedData  //передаём данные в адаптер
-            adapter.data=filteredFavorites  //передаём данные в адаптер
+            adapter.data = filteredFavorites  //передаём данные в адаптер
 
             // Обновляем видимость пустого состояния (только для фильтрации)
-            val showEmptyState = filteredFavorites.isEmpty()
+            val showEmptyState = filteredFavorites.isEmpty() //пусто после поиска
+            val  songCountLessZero = totalSongsCount <= 0  // нет песен в избранном
+
+            //favoriteEmpty-текст  emptyImageViewFavorite-картинка
             binding.favoriteEmpty.visibility =
-                if (showEmptyState && totalSongsCount > 0) View.VISIBLE else View.GONE
+                if (showEmptyState || songCountLessZero) View.VISIBLE else View.GONE
             binding.emptyImageViewFavorite.visibility =
-                if (showEmptyState && totalSongsCount > 0) View.VISIBLE else View.GONE
+                if (songCountLessZero) View.VISIBLE else View.GONE
 
             // Обновляем текст пустого состояния
-            if (showEmptyState && totalSongsCount > 0) {
+            if (showEmptyState && !songCountLessZero) {
                 binding.favoriteEmpty.text = "По вашему запросу ничего не найдено"
-            } else if (showEmptyState) {
+            } else if (songCountLessZero) {
                 binding.favoriteEmpty.text = "Здесь пока нет ни одной песни"
             }
 
