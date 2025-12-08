@@ -56,8 +56,6 @@ class SongPlaylistFragment:Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        initMenu()
-
         adapter = SongsPlaylistAdapter(viewModel) { song ->
             val playlistSongs=getSortedDataSong(
                 viewModel.getCurrentPlaylist()?.playlistSongs ?: listOf()
@@ -84,7 +82,7 @@ class SongPlaylistFragment:Fragment() {
             val currentSongs = currentPlaylistSongs?: listOf()
             adapter.data = getSortedDataSong(currentSongs)
             binding.tvEmptyPlaylistSong.visibility = if (currentSongs.isEmpty()) View.VISIBLE else View.GONE
-            binding.emptyImageView.visibility = if (currentSongs.isEmpty()) View.VISIBLE else View.GONE
+            binding.emptyImageViewPlaylist.visibility = if (currentSongs.isEmpty()) View.VISIBLE else View.GONE
 
             // Ключевое добавление - обновляем меню при загрузке данных
             requireActivity().invalidateOptionsMenu()
@@ -95,6 +93,7 @@ class SongPlaylistFragment:Fragment() {
             adapter = this@SongPlaylistFragment.adapter
         }
 
+        initMenu()
     }
 
     override fun onDestroyView() {
@@ -117,50 +116,24 @@ class SongPlaylistFragment:Fragment() {
     fun initMenu() {
         Log.d(TAG, "$$$$$ SongPlaylistFragment initMenu")
         val menuHost: MenuHost = requireActivity()
+
         menuHost.addMenuProvider(object : MenuProvider {
-
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-                menuInflater.inflate(R.menu.menu_other, menu)
-
-                val searchItem: MenuItem = menu.findItem(R.id.search_toolbar_other)
-                val searchView =searchItem.actionView as SearchView
-                //значок лупы слева в развёрнутом сост и сворачиваем строку поиска (true)
-                searchView.setIconifiedByDefault(true)
-                //пишем подсказку в строке поиска
-                searchView.queryHint = getString(R.string.search_song)
-                //устанавливаем в панели действий кнопку ( > )для отправки поискового запроса
-                // searchView.isSubmitButtonEnabled = true
-
-                //Сохраняем состояние поиска при смене ориентации:
-                if ( currentSearchQuery.isNotEmpty()) {
-                    searchItem.expandActionView()
-                    searchView.setQuery(currentSearchQuery, false)
-                }
-                //устанавливаем слушатель
-                searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-                    override fun onQueryTextSubmit(query: String?) = false
-
-                    override fun onQueryTextChange(newText: String?): Boolean {
-                        if(arguments?.getLong("playlistId") != null)  {
-                            viewModel.filterPlaylistSongs(newText.orEmpty())
-                        }
-                        return true
-                    }
-                })
+                menuInflater.inflate(R.menu.menu_other_2, menu)
             }
 
             override fun onPrepareMenu(menu: Menu) {
-                menu.findItem(R.id.action_edit_order).isVisible =false
+                menu.findItem(R.id.action_edit_order2).isVisible =false
                 // вычисляем количество песен в списке
                 val songsCount = viewModel.currentFilteredPlaylistSongs.value?.size ?: 0
                Log.d(TAG, "$$$$$ SongPlaylistFragment onPrepareMenu songsCount = $songsCount ")
-                // Простое условие - больше 9 песен
-                menu.findItem(R.id.action_go_to_song).isVisible = songsCount > 9
+                // Простое условие - больше 7 песен
+                menu.findItem(R.id.action_go_to_song2).isVisible = songsCount > 7
             }
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
                 when(menuItem.itemId){
-                    R.id.action_go_to_song->{
+                    R.id.action_go_to_song2->{
                         //список песен в плейлисте
                         val currentPlaylistSongs  = getSortedDataSong(viewModel.getCurrentPlaylist()?.playlistSongs ?: listOf())
                        //текущая песня

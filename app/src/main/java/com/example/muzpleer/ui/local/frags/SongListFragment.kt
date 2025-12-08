@@ -172,43 +172,43 @@ class SongListFragment:Fragment() {
         menuHost.addMenuProvider(object : MenuProvider {
 
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-                menuInflater.inflate(R.menu.menu_other, menu)
-
-                val searchItem: MenuItem = menu.findItem(R.id.search_toolbar_other)
-                val searchView =searchItem.actionView as SearchView
-                //значок лупы слева в развёрнутом сост и сворачиваем строку поиска (true)
-                searchView.setIconifiedByDefault(true)
-                //пишем подсказку в строке поиска
-                searchView.queryHint = getString(R.string.search_song)
-                //устанавливаем в панели действий кнопку ( > )для отправки поискового запроса
-                // searchView.isSubmitButtonEnabled = true
-
-                //Сохраняем состояние поиска при смене ориентации:
-                if ( currentSearchQuery.isNotEmpty()) {
-                    searchItem.expandActionView()
-                    searchView.setQuery(currentSearchQuery, false)
-                }
-                //устанавливаем слушатель
-                searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-                    override fun onQueryTextSubmit(query: String?) = false
-
-                    override fun onQueryTextChange(newText: String?): Boolean {
-                        if (arguments?.getLong("albumId") != null)  {
-                            viewModel.filterAlbumSongs(newText.orEmpty())
-                        }
-                        if (arguments?.getLong("artistId") != null)  {
-                            viewModel.filterArtistSongs(newText.orEmpty())
-                        }
-                        if (arguments?.getLong("folderPath") != null)  {
-                            viewModel.filterFolderSongs(newText.orEmpty())
-                        }
-                        return true
-                    }
-                })
+                menuInflater.inflate(R.menu.menu_other_2, menu)
+//
+//                val searchItem: MenuItem = menu.findItem(R.id.search_toolbar_other)
+//                val searchView =searchItem.actionView as SearchView
+//                //значок лупы слева в развёрнутом сост и сворачиваем строку поиска (true)
+//                searchView.setIconifiedByDefault(true)
+//                //пишем подсказку в строке поиска
+//                searchView.queryHint = getString(R.string.search_song)
+//                //устанавливаем в панели действий кнопку ( > )для отправки поискового запроса
+//                // searchView.isSubmitButtonEnabled = true
+//
+//                //Сохраняем состояние поиска при смене ориентации:
+//                if ( currentSearchQuery.isNotEmpty()) {
+//                    searchItem.expandActionView()
+//                    searchView.setQuery(currentSearchQuery, false)
+//                }
+//                //устанавливаем слушатель
+//                searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+//                    override fun onQueryTextSubmit(query: String?) = false
+//
+//                    override fun onQueryTextChange(newText: String?): Boolean {
+//                        if (arguments?.getLong("albumId") != null)  {
+//                            viewModel.filterAlbumSongs(newText.orEmpty())
+//                        }
+//                        if (arguments?.getLong("artistId") != null)  {
+//                            viewModel.filterArtistSongs(newText.orEmpty())
+//                        }
+//                        if (arguments?.getLong("folderPath") != null)  {
+//                            viewModel.filterFolderSongs(newText.orEmpty())
+//                        }
+//                        return true
+//                    }
+//                })
             }
 
             override fun onPrepareMenu(menu: Menu) {
-                menu.findItem(R.id.action_edit_order).isVisible =false
+                menu.findItem(R.id.action_edit_order2).isVisible = false
                 var songsCount = 0
                 when(arguments?.getInt("from")){
                     2->{
@@ -221,16 +221,14 @@ class SongListFragment:Fragment() {
                         songsCount =  viewModel.filteredListFolderSong.value?.size?:0
                     }
                 }
-                // вычисляем количество песен в списке
-               // val songsCount = viewModel.filteredFavoriteSongs.value?.size ?: 0
                 Log.d(TAG, "$$$$$ SongListFragment onPrepareMenu songsCount = $songsCount ")
-                // Простое условие - больше 9 песен
-                menu.findItem(R.id.action_go_to_song).isVisible = songsCount > 9
+                // Простое условие - больше 7 песен
+                menu.findItem(R.id.action_go_to_song2).isVisible = songsCount > 7
             }
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
                 when(menuItem.itemId){
-                    R.id.action_go_to_song->{
+                    R.id.action_go_to_song2->{
                         if (arguments?.getLong("albumId") != null)  {
                             val albumSongs = viewModel.listAlbumSong.value //список песен альюома
                             val currentSong = viewModel.getCurrentSong()
