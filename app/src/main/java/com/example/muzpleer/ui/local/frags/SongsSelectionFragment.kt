@@ -62,8 +62,6 @@ class SongsSelectionFragment : Fragment() {
                 title = "Папка"
             }
         }
-        //binding.toolbar.title = title
-
         setupRecyclerView()
         setupObservers()
         setupButtons()

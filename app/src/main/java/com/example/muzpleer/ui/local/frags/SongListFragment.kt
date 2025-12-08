@@ -25,12 +25,12 @@ import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 import com.example.muzpleer.util.getSortedDataSong
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 
+//Больше не нужен - разбит на 3 класса
 class SongListFragment:Fragment() {
     private var _binding: FragmentAlltracksBinding? = null
     private val binding get() = _binding!!
     private lateinit var adapter: SongsAdapter
     private val viewModel: SharedViewModel by activityViewModel()
-    private var currentSearchQuery = ""
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -173,38 +173,6 @@ class SongListFragment:Fragment() {
 
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
                 menuInflater.inflate(R.menu.menu_other_2, menu)
-//
-//                val searchItem: MenuItem = menu.findItem(R.id.search_toolbar_other)
-//                val searchView =searchItem.actionView as SearchView
-//                //значок лупы слева в развёрнутом сост и сворачиваем строку поиска (true)
-//                searchView.setIconifiedByDefault(true)
-//                //пишем подсказку в строке поиска
-//                searchView.queryHint = getString(R.string.search_song)
-//                //устанавливаем в панели действий кнопку ( > )для отправки поискового запроса
-//                // searchView.isSubmitButtonEnabled = true
-//
-//                //Сохраняем состояние поиска при смене ориентации:
-//                if ( currentSearchQuery.isNotEmpty()) {
-//                    searchItem.expandActionView()
-//                    searchView.setQuery(currentSearchQuery, false)
-//                }
-//                //устанавливаем слушатель
-//                searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-//                    override fun onQueryTextSubmit(query: String?) = false
-//
-//                    override fun onQueryTextChange(newText: String?): Boolean {
-//                        if (arguments?.getLong("albumId") != null)  {
-//                            viewModel.filterAlbumSongs(newText.orEmpty())
-//                        }
-//                        if (arguments?.getLong("artistId") != null)  {
-//                            viewModel.filterArtistSongs(newText.orEmpty())
-//                        }
-//                        if (arguments?.getLong("folderPath") != null)  {
-//                            viewModel.filterFolderSongs(newText.orEmpty())
-//                        }
-//                        return true
-//                    }
-//                })
             }
 
             override fun onPrepareMenu(menu: Menu) {

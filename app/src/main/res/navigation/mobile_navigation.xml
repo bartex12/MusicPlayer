@@ -204,5 +204,29 @@
             android:name="playlistName"
             app:argType="string" />
     </fragment>
+    <fragment
+        android:id="@+id/songListAlbumFragment"
+        android:name="com.example.muzpleer.ui.local.frags.SongListAlbumFragment"
+        android:label="SongListAlbumFragment" >
+        <action
+            android:id="@+id/action_songListAlbumFragment_to_playerFragment"
+            app:destination="@id/playerFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/songListArtistFragment"
+        android:name="com.example.muzpleer.ui.local.frags.SongListArtistFragment"
+        android:label="SongListArtistFragment" >
+        <action
+            android:id="@+id/action_songListArtistFragment_to_playerFragment"
+            app:destination="@id/playerFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/songListFolderFragment"
+        android:name="com.example.muzpleer.ui.local.frags.SongListFolderFragment"
+        android:label="SongListFolderFragment" >
+        <action
+            android:id="@+id/action_songListFolderFragment_to_playerFragment"
+            app:destination="@id/playerFragment" />
+    </fragment>
 
 </navigation>
