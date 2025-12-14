@@ -370,8 +370,4 @@ class FavoritesAdapter(
         // Не используется, но должен быть реализован
     }
 
-    // Добавляем метод в адаптер
-    fun saveOrderOnDragEnd() {
-        viewModel.updateFavoritesOrder(data)
-    }
 }

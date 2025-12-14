@@ -329,7 +329,7 @@ class FavoritesFragment: Fragment() {
 
                 // вычисляем количество песен в списке
                 val songsCount = viewModel.filteredFavoriteSongs.value?.size ?: 0
-                Log.d(SongPlaylistFragment.Companion.TAG, "$$$$$ SongPlaylistFragment onPrepareMenu songsCount = $songsCount ")
+                Log.d(TAG, "$$$$$ SongPlaylistFragment onPrepareMenu songsCount = $songsCount ")
                 // Простое условие - больше  7 песен
                 menu.findItem(R.id.action_go_to_song_favorite).isVisible = songsCount > 7
             }

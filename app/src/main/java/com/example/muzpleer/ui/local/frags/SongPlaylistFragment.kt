@@ -16,12 +16,14 @@ import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.widget.SearchView
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentAlltracksForPlaylistBinding
@@ -29,10 +31,13 @@ import com.example.muzpleer.model.Song
 import com.example.muzpleer.model.SongAndPlaylist
 import com.example.muzpleer.ui.local.adapters.SongsAdapter
 import com.example.muzpleer.ui.local.adapters.SongsPlaylistAdapter
+import com.example.muzpleer.ui.local.adapters.touch.ItemTouchHelperCallback
+import com.example.muzpleer.ui.local.frags.FavoritesFragment
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 import com.example.muzpleer.util.getNormalizedPath
 import com.example.muzpleer.util.getSortedDataSong
 import com.example.muzpleer.util.toast
+import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.TextInputLayout
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 import kotlin.getValue
@@ -42,7 +47,8 @@ class SongPlaylistFragment:Fragment() {
     private val binding get() = _binding!!
     private lateinit var adapter: SongsPlaylistAdapter
     private val viewModel: SharedViewModel by activityViewModel()
-    private var currentSearchQuery = ""
+    private lateinit var itemTouchHelper: ItemTouchHelper
+    private var isEditMode = false
     private  var playlistId:Long = -1
     private var totalSongsCount = 0  // Храним общее количество песен в плейлисте(не отфильтрованных)
 
@@ -85,6 +91,19 @@ class SongPlaylistFragment:Fragment() {
             viewModel.setCurrentSong(song)
         }
 
+        // Настраиваем ItemTouchHelper
+        val callback=ItemTouchHelperCallback(adapter)
+        itemTouchHelper=ItemTouchHelper(callback)
+        // Передаем ItemTouchHelper в адаптер
+        adapter.setItemTouchHelper(itemTouchHelper)
+        itemTouchHelper.attachToRecyclerView(binding.alltracksPlaylistRecyclerView)
+
+        binding.alltracksPlaylistRecyclerView.apply {
+            layoutManager = LinearLayoutManager(requireContext())
+            adapter = this@SongPlaylistFragment.adapter
+        }
+
+
         // Настраиваем поиск
         setupSearch()
 
@@ -101,13 +120,14 @@ class SongPlaylistFragment:Fragment() {
         viewModel.currentFilteredPlaylistSongs.observe(viewLifecycleOwner) { currentPlaylistSongs ->
             Log.d(TAG, "!@#@4 SongPlaylistFragment currentFilteredPlaylistSongs.observe currentFilteredPlaylistSongs size ${currentPlaylistSongs?.size}")
             val currentSongs = currentPlaylistSongs?: listOf()
-            adapter.data = getSortedDataSong(currentSongs)
+            //adapter.data = getSortedDataSong(currentSongs) //нельзя, собьётся перемещение строк
+            adapter.data = currentSongs
 
             // Обновляем видимость пустого состояния (только для фильтрации)
             val showEmptyState =currentPlaylistSongs?.isEmpty() != false//пусто после поиска
             val  songCountLessZero = totalSongsCount <= 0  // нет песен в плейлисте
 
-            //favoriteEmpty-текст  emptyImageViewFavorite-картинка
+            //tvEmptyPlaylistSong-текст  emptyImageViewPlaylist-картинка
             binding.tvEmptyPlaylistSong.visibility =
                 if (showEmptyState || songCountLessZero) View.VISIBLE else View.GONE
             binding.emptyImageViewPlaylist.visibility =
@@ -122,11 +142,6 @@ class SongPlaylistFragment:Fragment() {
 
             // обновляем меню при загрузке данных
             requireActivity().invalidateOptionsMenu()
-        }
-
-        binding.alltracksPlaylistRecyclerView.apply {
-            layoutManager = LinearLayoutManager(requireContext())
-            adapter = this@SongPlaylistFragment.adapter
         }
 
         initMenu()
@@ -303,10 +318,24 @@ class SongPlaylistFragment:Fragment() {
         menuHost.addMenuProvider(object : MenuProvider {
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
                 menuInflater.inflate(R.menu.menu_other_2, menu)
+
+                // Показываем/скрываем пункт в зависимости от режима
+                val editItem = menu.findItem(R.id.action_edit_order2)
+                editItem.title = if (isEditMode) "Готово" else "Редактировать порядок"
             }
 
             override fun onPrepareMenu(menu: Menu) {
-                menu.findItem(R.id.action_edit_order2).isVisible =false
+                //menu.findItem(R.id.action_edit_order2).isVisible =false
+                val editItem = menu.findItem(R.id.action_edit_order2)
+
+                // Меняем цвет в зависимости от режима
+                val color = if (isEditMode) {
+                    ContextCompat.getColor(requireContext(), R.color.green)
+                } else {
+                    ContextCompat.getColor(requireContext(), R.color.white)
+                }
+                editItem?.icon?.setTint(color)
+
                 // вычисляем количество песен в списке
                 val songsCount = viewModel.currentFilteredPlaylistSongs.value?.size ?: 0
                Log.d(TAG, "$$$$$5 SongPlaylistFragment onPrepareMenu songsCount = $songsCount ")
@@ -332,9 +361,40 @@ class SongPlaylistFragment:Fragment() {
                         }
                         return true
                     }
+                    R.id.action_edit_order2 -> {
+                        toggleEditMode()
+                        true
+                    }
+
                 }
                 return false
             }
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
+    }
+
+    private fun toggleEditMode() {
+        isEditMode = !isEditMode
+        adapter.setEditMode(isEditMode)
+
+        // Включаем/выключаем возможность перетаскивания
+        if (isEditMode) {
+            itemTouchHelper.attachToRecyclerView(binding.alltracksPlaylistRecyclerView)
+        } else {
+            itemTouchHelper.attachToRecyclerView(null) // Отключаем перетаскивание
+        }
+
+        // Обновляем меню
+        activity?.invalidateOptionsMenu()
+
+        // Показываем/скрываем подсказку
+        if (isEditMode) {
+            showEditModeHint()
+        }
+    }
+    private fun showEditModeHint() {
+        Snackbar.make(binding.root, "Перетаскивайте песни для изменения порядка",
+            Snackbar.LENGTH_LONG)
+            .setAction("OK") {toggleEditMode() }
+            .show()
     }
 }

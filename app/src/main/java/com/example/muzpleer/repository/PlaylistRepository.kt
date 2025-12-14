@@ -199,5 +199,35 @@ class PlaylistRepository(
         return playlistDao.isSongInPlaylist(songId, playlistId) > 0
     }
 
+    suspend fun savePlaylistSongsOrder(playlistId: Long, orderedSongs: List<Song>, callback:()->Unit) {
+        try {
+            // 1. Удаляем все текущие связи
+            val oldSongs = playlistDao.getPlaylistSongs(playlistId)
+            oldSongs.forEach { crossRef ->
+                playlistDao.deleteSong(crossRef)
+            }
+
+            // 2. Добавляем песни в новом порядке
+            orderedSongs.forEachIndexed { index, song ->
+                val crossRef = PlaylistSongCrossRef(
+                    playlistId = playlistId,
+                    songId = song.id,
+                    sortOrder = index, // Сохраняем порядок
+                    addedAt = System.currentTimeMillis()
+                )
+                playlistDao.insertSong(crossRef)
+            }
+
+            // 3. Обновляем счетчик песен
+            updateSongCount(playlistId)
+
+            callback()
+
+            Log.d(TAG, "Порядок песен в плейлисте $playlistId сохранен")
+        } catch (e: Exception) {
+            Log.e(TAG, "Ошибка при сохранении порядка песен: ${e.message}", e)
+            throw e
+        }
+    }
 }
 

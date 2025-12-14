@@ -73,7 +73,7 @@ class SongListFolderFragment:Fragment() {
                     playlist = playlist)
             )
             viewModel.setCurrentSong(song)
-            findNavController().navigate(R.id.action_alltracksFragment_to_playerFragment)
+            findNavController().navigate(R.id.action_songListFolderFragment_to_playerFragment)
         })
 
         binding.alltracksRecyclerView.apply {

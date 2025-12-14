@@ -1459,5 +1459,26 @@ class SharedViewModel(
             }
         }
     }
+    // запомнить новый порядок перен в плейлисте
+    fun updatePlaylistSongsOrder(orderedSongs: List<Song>) {
+        viewModelScope.launch {
+            try {
+                val playlistId = getCurrentPlaylist()?.id ?: return@launch
+                playlistRepository.savePlaylistSongsOrder(playlistId, orderedSongs){
+                    // Обновляем локальные данные
+                    _currentFilteredPlaylistSongs.value = orderedSongs
+                    _currentPlaylistSongs.value = orderedSongs
 
+                    // Обновляем текущий плейлист
+                    _currentPlaylist.value = _currentPlaylist.value?.copy(
+                        playlistSongs = orderedSongs
+                    )
+                    Log.d(TAG, "Порядок песен сохранен")
+                }
+
+            } catch (e: Exception) {
+                Log.e(TAG, "Ошибка при сохранении порядка песен", e)
+            }
+        }
+    }
 }

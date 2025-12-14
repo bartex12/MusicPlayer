@@ -9,6 +9,7 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
@@ -20,6 +21,7 @@ import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.findNavController
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
@@ -27,19 +29,27 @@ import com.example.muzpleer.R
 import com.example.muzpleer.databinding.ItemMusicBinding
 import com.example.muzpleer.databinding.ItemMusicPlaylistBinding
 import com.example.muzpleer.model.Song
+import com.example.muzpleer.ui.local.adapters.touch.ItemTouchHelperAdapter
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 import com.example.muzpleer.util.formatAsTime
 import com.example.muzpleer.util.formatDate
 import com.example.muzpleer.util.formatFileSize
 import java.io.File
+import java.util.Collections
 
 class SongsPlaylistAdapter(   private val viewModel: SharedViewModel,
                               private val onItemClick: (Song) -> Unit,
-) : RecyclerView.Adapter<SongsPlaylistAdapter.MusicViewHolder>() {
+) : RecyclerView.Adapter<SongsPlaylistAdapter.MusicViewHolder>(),
+    ItemTouchHelperAdapter  {
 
     companion object{
         const val TAG = "33333"
     }
+
+    private var isEditMode = false
+    private lateinit var itemTouchHelper: ItemTouchHelper // Добавляем ссылку
+    // Временный список для перетаскивания
+    private val dragData = mutableListOf<Song>()
 
     var data:List<Song> = listOf()
         @SuppressLint("NotifyDataSetChanged")
@@ -77,7 +87,7 @@ class SongsPlaylistAdapter(   private val viewModel: SharedViewModel,
 
                     holder.itemView.isSelected = dataMediaUri == currentSongMediaUri
                 }catch(e: Exception){
-                    Log.d(TAG, "SongsAdapter Ошибка: ${e.message}")
+                    Log.d(TAG, "SongsPlaylistAdapter Ошибка: ${e.message}")
                 }
             }
     }
@@ -99,6 +109,7 @@ class SongsPlaylistAdapter(   private val viewModel: SharedViewModel,
 
         private lateinit var currentSong: Song
 
+        @SuppressLint("ClickableViewAccessibility")
         fun bind(track: Song) {
             currentSong = track
 
@@ -128,12 +139,25 @@ class SongsPlaylistAdapter(   private val viewModel: SharedViewModel,
             binding.menuButtonPlaylist.setOnClickListener { view ->
                 showPopupMenu(view, track)
             }
-//            // устанавливаем слушатель долгих нажатий на списке
-//            binding.root.setOnLongClickListener {
-//                viewModel.setSelectedPosition(absoluteAdapterPosition)
-//                onLongClickListener(track)
-//                false
-//            }
+
+            // Показываем/скрываем иконку перетаскивания в режиме редактирования
+            if (isEditMode) {
+                binding.dragHandlePlaylist.visibility = View.VISIBLE
+                binding.menuButtonPlaylist.visibility = View.GONE
+
+                // Добавляем слушатель касаний для иконки перетаскивания
+                binding.dragHandlePlaylist.setOnTouchListener { v, event ->
+                    if (event.action == MotionEvent.ACTION_DOWN) {
+                        // Запускаем перетаскивание при нажатии на иконку
+                        itemTouchHelper.startDrag(this)
+                    }
+                    false
+                }
+            } else {
+                binding.dragHandlePlaylist.visibility = View.GONE
+                binding.menuButtonPlaylist.visibility = View.VISIBLE
+                binding.dragHandlePlaylist.setOnTouchListener(null) // Убираем слушатель
+            }
         }
     }
 
@@ -281,8 +305,50 @@ class SongsPlaylistAdapter(   private val viewModel: SharedViewModel,
             context.startActivity(chooserIntent)
 
         } catch (e: Exception) {
-            Log.d(SharedViewModel.Companion.TAG, "SongsAdapter shareSong Ошибка при отправке песни: ${e.message}")
+            Log.d(TAG, "SongsPlaylistAdapter shareSong Ошибка при отправке песни: ${e.message}")
             Toast.makeText(context, "Не удалось поделиться песней", Toast.LENGTH_SHORT).show()
         }
+    }
+
+    fun setEditMode(enable: Boolean) {
+        isEditMode = enable
+        if (enable) {
+            // Инициализируем временный список
+            dragData.clear()
+            dragData.addAll(data)
+        }
+        notifyDataSetChanged() // Перерисовываем для показа/скрытия иконки перетаскивания
+    }
+
+    // Метод для установки ItemTouchHelper
+    fun setItemTouchHelper(helper: ItemTouchHelper) {
+        itemTouchHelper = helper
+    }
+
+    override fun onItemMove(fromPosition: Int, toPosition: Int): Boolean {
+        // Работаем с временным списком
+        if (fromPosition < toPosition) {
+            for (i in fromPosition until toPosition) {
+                Collections.swap(dragData, i, i + 1)
+            }
+        } else {
+            for (i in fromPosition downTo toPosition + 1) {
+                Collections.swap(dragData, i, i - 1)
+            }
+        }
+        notifyItemMoved(fromPosition, toPosition)
+
+        return true
+    }
+
+    override fun onItemDismiss(position: Int) {
+        // Не используется, но должен быть реализован
+    }
+
+    override fun onDrop() {
+        // Сохраняем окончательный порядок
+        data = dragData.toList()
+        Log.d(TAG, "SongsPlaylistAdapter onDrop data.first().title = ${data.first().title}")
+        viewModel.updatePlaylistSongsOrder(data)
     }
 }
