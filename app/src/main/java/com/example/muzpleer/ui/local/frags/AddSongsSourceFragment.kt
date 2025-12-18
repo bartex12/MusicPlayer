@@ -12,6 +12,7 @@ import androidx.navigation.fragment.navArgs
 import com.example.muzpleer.databinding.FragmentAddSongsSourceBinding
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 
+//экран выбора источника для замены обложки
 class AddSongsSourceFragment : Fragment() {
     private lateinit var binding: FragmentAddSongsSourceBinding
     private val viewModel: SharedViewModel by activityViewModels()

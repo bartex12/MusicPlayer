@@ -72,15 +72,13 @@ class SongPlaylistFragment:Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        adapter = SongsPlaylistAdapter(viewModel) { song ->
-            val playlistSongs=getSortedDataSong(
+        adapter = SongsPlaylistAdapter(viewModel, { song ->
+            val playlistSongs=
                 viewModel.getCurrentPlaylist()?.playlistSongs ?: listOf()
-            ) //можно было взять и из currentFilteredPlaylistSongs
-            Log.d(
-                TAG,
-                "!@#@ SongPlaylistFragment размер плейлиста = ${playlistSongs.size} имя первой песни плейлиста " +
-                        "= ${getSortedDataSong(playlistSongs).first().title} "
-            )
+             //можно было взять и из currentFilteredPlaylistSongs
+            Log.d(TAG,  "!@#@ SongPlaylistFragment размер плейлиста = " +
+                    "${playlistSongs.size} имя первой песни плейлиста " +
+                        "= ${playlistSongs.first().title} "  )
 
             viewModel.setSongAndPlaylist(
                 SongAndPlaylist(
@@ -89,7 +87,17 @@ class SongPlaylistFragment:Fragment() {
                 )
             )
             viewModel.setCurrentSong(song)
-        }
+        },{song->
+            val playlist =
+                viewModel.getCurrentPlaylist()?.playlistSongs ?: listOf()
+            viewModel.setSongAndPlaylist(
+                SongAndPlaylist(
+                    song = song,
+                    playlist = playlist)
+            )
+            viewModel.setCurrentSong(song)
+            findNavController().navigate(R.id.playerFragment)
+        })
 
         // Настраиваем ItemTouchHelper
         val callback=ItemTouchHelperCallback(adapter)
@@ -102,7 +110,6 @@ class SongPlaylistFragment:Fragment() {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = this@SongPlaylistFragment.adapter
         }
-
 
         // Настраиваем поиск
         setupSearch()
@@ -347,13 +354,12 @@ class SongPlaylistFragment:Fragment() {
                 when(menuItem.itemId){
                     R.id.action_go_to_song2->{
                         //список песен в плейлисте
-                        val currentPlaylistSongs  = getSortedDataSong(viewModel.getCurrentPlaylist()?.playlistSongs ?: listOf())
+                        val currentPlaylistSongs  = viewModel.getCurrentPlaylist()?.playlistSongs ?: listOf()
                        //текущая песня
                         val currentSong = viewModel.getCurrentSong()
 
                         val currentSongMediaUri = getNormalizedPath(currentSong?.mediaUri ?: "")
-                        val indexOfSong = getSortedDataSong(currentPlaylistSongs)
-                            .indexOfFirst { getNormalizedPath(it.mediaUri) == currentSongMediaUri }
+                        val indexOfSong = currentPlaylistSongs.indexOfFirst { getNormalizedPath(it.mediaUri) == currentSongMediaUri }
                         Log.d(TAG, "4$$$ SongPlaylistFragment onMenuItemSelected indexOfSong = $indexOfSong currentSongMediaUri = $currentSongMediaUri")
 
                         (binding.alltracksPlaylistRecyclerView.layoutManager as LinearLayoutManager).let{

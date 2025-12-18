@@ -39,6 +39,7 @@ import java.util.Collections
 
 class SongsPlaylistAdapter(   private val viewModel: SharedViewModel,
                               private val onItemClick: (Song) -> Unit,
+                              private val onLongClickListener:(Song)->Unit
 ) : RecyclerView.Adapter<SongsPlaylistAdapter.MusicViewHolder>(),
     ItemTouchHelperAdapter  {
 
@@ -138,6 +139,13 @@ class SongsPlaylistAdapter(   private val viewModel: SharedViewModel,
 
             binding.menuButtonPlaylist.setOnClickListener { view ->
                 showPopupMenu(view, track)
+            }
+
+            // устанавливаем слушатель долгих нажатий на списке
+            binding.root.setOnLongClickListener {
+                viewModel.setSelectedPosition(absoluteAdapterPosition)
+                onLongClickListener(track)
+                false
             }
 
             // Показываем/скрываем иконку перетаскивания в режиме редактирования

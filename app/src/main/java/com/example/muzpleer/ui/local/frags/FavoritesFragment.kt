@@ -24,6 +24,7 @@ import androidx.core.view.MenuProvider
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.viewpager.widget.ViewPager
@@ -60,7 +61,7 @@ class FavoritesFragment: Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        adapter=FavoritesAdapter(viewModel) { song ->
+        adapter=FavoritesAdapter(viewModel, { song ->
             //устанавливаем список песен как плейлист
             val playlist=viewModel.getFavoriteSongs()
             viewModel.setPlaylist(playlist) //устанавливаем список песен как плейлист
@@ -70,7 +71,17 @@ class FavoritesFragment: Fragment() {
                     playlist=playlist //текущий плейлист
                 )
             )
-        }
+        }, {song->
+            //устанавливаем список песен как плейлист
+            val playlist=viewModel.getFavoriteSongs()
+            viewModel.setPlaylist(playlist) //устанавливаем список песен как плейлист
+            viewModel.setSongAndPlaylist(
+                SongAndPlaylist(
+                song = song,  //текущая песня
+                playlist = playlist //текущий плейлист
+            ))
+            findNavController().navigate(R.id.playerFragment)
+        })
 
         // Настраиваем ItemTouchHelper
         val callback=ItemTouchHelperCallback(adapter)
@@ -339,7 +350,7 @@ class FavoritesFragment: Fragment() {
                     R.id.action_go_to_song_favorite->{
                         val favoriteSongs = viewModel.getFavoriteSongs() //список песен артиста
                         val currentSong = viewModel.getCurrentSong()
-                        val indexOfSong = getSortedDataSong(favoriteSongs).indexOfFirst { it.mediaUri == currentSong?.mediaUri }
+                        val indexOfSong = favoriteSongs.indexOfFirst { it.mediaUri == currentSong?.mediaUri }
                         Log.d(TAG, "$$$ FavoritesFragment onMenuItemSelected indexOfSong = $indexOfSong")
                         (binding.favoriteRecyclerView.layoutManager as LinearLayoutManager).let{
                             if(indexOfSong >= 0 ) it.scrollToPositionWithOffset(indexOfSong, 0) else it.scrollToPosition(0)
