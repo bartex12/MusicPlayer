@@ -68,7 +68,9 @@ class AlbumFragment: Fragment() {
         itemTouchHelper = ItemTouchHelper(callback)
         // Передаем ItemTouchHelper в адаптер
         adapter.setItemTouchHelper(itemTouchHelper)
-        itemTouchHelper.attachToRecyclerView(binding.albumRecyclerView)
+
+        // Изначально НЕ прикрепляем - прикрепим только в режиме редактирования
+        // itemTouchHelper.attachToRecyclerView(binding.playlistRecyclerView)
 
         binding.albumRecyclerView.apply {
             layoutManager = LinearLayoutManager(requireContext())
@@ -86,19 +88,27 @@ class AlbumFragment: Fragment() {
         }
         //восстанавливаем позицию списка после поворота или возвращения на экран
         binding.albumRecyclerView.layoutManager?.scrollToPosition(viewModel.getPositionAlbum())
+    }
 
-        //initMenu()
+    override fun onResume() {
+        super.onResume()
+        // Сбрасываем режим редактирования при возвращении
+        resetEditModeOnStart()
+        // Обновляем меню
+        requireActivity().invalidateOptionsMenu()
     }
 
     //запоминаем  позицию списка, на которой сделан клик - на случай поворота экрана
     override fun onPause() {
         super.onPause()
+        // Сбрасываем режим редактирования при уходе
+        resetEditModeOnPause()
+
         //определяем первую видимую позицию
         val manager = binding.albumRecyclerView.layoutManager as LinearLayoutManager
         val firstPosition = manager.findFirstVisibleItemPosition()
         Log.d(TAG, "AlbumFragment onPause firstPosition = $firstPosition")
         viewModel.savePositionAlbum(firstPosition)
-       // isEditMode = false  ///чтобы не оставался режим редактирования - но видимость остаётся :)
     }
 
     override fun onDestroyView() {
@@ -136,10 +146,6 @@ class AlbumFragment: Fragment() {
                 return true
             }
         })
-        // Показываем/скрываем пункт в зависимости от режима
-        val editItem = menu.findItem(R.id.action_edit_order)
-        editItem.title = if (isEditMode) "Готово" else "Редактировать порядок"
-
         super.onCreateOptionsMenu(menu, inflater)
     }
 
@@ -147,7 +153,11 @@ class AlbumFragment: Fragment() {
         super.onPrepareOptionsMenu(menu)
         menu.findItem(R.id.action_go_to_song).isVisible =false
 
+        // Настраиваем кнопку редактирования
         val editItem = menu.findItem(R.id.action_edit_order)
+        // Меняем текст
+        editItem.title = if (isEditMode) "Готово" else "Редактировать порядок"
+
         // Меняем цвет в зависимости от режима
         val color = if (isEditMode) {
             ContextCompat.getColor(requireContext(), R.color.green)
@@ -245,5 +255,29 @@ class AlbumFragment: Fragment() {
             Snackbar.LENGTH_LONG)
             .setAction("OK") {toggleEditMode() }
             .show()
+    }
+
+    private fun resetEditModeOnStart() {
+        //  Сбрасываем режим редактирования при открытии фрагмента
+        if (isEditMode) {
+            isEditMode = false
+            adapter.setEditMode(false)
+            itemTouchHelper.attachToRecyclerView(null) // Отключаем перетаскивание
+            Log.d(TAG, "PlaylistFragment: Режим редактирования сброшен при открытии")
+        }
+    }
+
+    private fun resetEditModeOnPause() {
+        //  Сбрасываем режим редактирования при уходе с фрагмента
+        if (isEditMode) {
+            isEditMode = false
+            adapter.setEditMode(false)
+            itemTouchHelper.attachToRecyclerView(null)
+
+            // Сохраняем изменения порядка
+            adapter.onDrop() // Сохраняем порядок в БД
+
+            Log.d(TAG, "PlaylistFragment: Режим редактирования сброшен при уходе")
+        }
     }
 }

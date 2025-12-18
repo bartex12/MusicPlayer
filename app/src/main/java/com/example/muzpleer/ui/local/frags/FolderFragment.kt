@@ -69,7 +69,9 @@ class FolderFragment : Fragment(){
         itemTouchHelper = ItemTouchHelper(callback)
         // Передаем ItemTouchHelper в адаптер
         adapter.setItemTouchHelper(itemTouchHelper)
-        itemTouchHelper.attachToRecyclerView(binding.foldersRecyclerView)
+
+        // Изначально НЕ прикрепляем - прикрепим только в режиме редактирования
+        // itemTouchHelper.attachToRecyclerView(binding.playlistRecyclerView)
 
         binding.foldersRecyclerView.apply {
             layoutManager = LinearLayoutManager(requireContext())
@@ -85,13 +87,23 @@ class FolderFragment : Fragment(){
         }
         //восстанавливаем позицию списка после поворота или возвращения на экран
         binding.foldersRecyclerView.layoutManager?.scrollToPosition(viewModel.getPositionFolder())
+    }
 
-        //initMenu()
+    override fun onResume() {
+        super.onResume()
+        // Сбрасываем режим редактирования при возвращении
+        resetEditModeOnStart()
+        // Обновляем меню
+        requireActivity().invalidateOptionsMenu()
     }
 
     //запоминаем  позицию списка, на которой сделан клик - на случай поворота экрана
     override fun onPause() {
         super.onPause()
+
+        // Сбрасываем режим редактирования при уходе
+        resetEditModeOnPause()
+
         //определяем первую видимую позицию
         val manager = binding.foldersRecyclerView.layoutManager as LinearLayoutManager
         val firstPosition = manager.findFirstVisibleItemPosition()
@@ -102,6 +114,26 @@ class FolderFragment : Fragment(){
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    private fun resetEditModeOnStart() {
+        //  Сбрасываем режим редактирования при открытии фрагмента
+        if (isEditMode) {
+            isEditMode = false
+            adapter.setEditMode(false)
+            itemTouchHelper.attachToRecyclerView(null) // Отключаем перетаскивание
+            Log.d(TAG, "PlaylistFragment: Режим редактирования сброшен при открытии")
+        }
+    }
+
+    private fun resetEditModeOnPause() {
+        // Сбрасываем режим редактирования при уходе с фрагмента
+        if (isEditMode) {
+            isEditMode = false
+            adapter.setEditMode(false)
+            itemTouchHelper.attachToRecyclerView(null)
+            Log.d(TAG, "PlaylistFragment: Режим редактирования сброшен при уходе")
+        }
     }
 
     companion object {
@@ -135,10 +167,6 @@ class FolderFragment : Fragment(){
                 return true
             }
         })
-        // Показываем/скрываем пункт в зависимости от режима
-        val editItem = menu.findItem(R.id.action_edit_order)
-        editItem.title = if (isEditMode) "Готово" else "Редактировать порядок"
-
         super.onCreateOptionsMenu(menu, inflater)
     }
 
@@ -146,7 +174,11 @@ class FolderFragment : Fragment(){
         super.onPrepareOptionsMenu(menu)
         menu.findItem(R.id.action_go_to_song).isVisible =false
 
+        // Настраиваем кнопку редактирования
         val editItem = menu.findItem(R.id.action_edit_order)
+        // Меняем текст
+        editItem.title = if (isEditMode) "Готово" else "Редактировать порядок"
+
         // Меняем цвет в зависимости от режима
         val color = if (isEditMode) {
             ContextCompat.getColor(requireContext(), R.color.green)
@@ -166,58 +198,6 @@ class FolderFragment : Fragment(){
         return super.onOptionsItemSelected(item)
     }
 
-//    fun initMenu() {
-//        val menuHost: MenuHost = requireActivity()
-//        menuHost.addMenuProvider(object : MenuProvider {
-//
-//            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-//                menuInflater.inflate(R.menu.menu_other, menu)
-//
-//                val searchItem: MenuItem = menu.findItem(R.id.search_toolbar_other)
-//                val searchView =searchItem.actionView as SearchView
-//                //значок лупы слева в развёрнутом сост и сворачиваем строку поиска (true)
-//                searchView.setIconifiedByDefault(true)
-//                //пишем подсказку в строке поиска
-//                searchView.queryHint = getString(R.string.search_folder)
-//                //устанавливаем в панели действий кнопку ( > )для отправки поискового запроса
-//                searchView.isSubmitButtonEnabled = true
-//                //устанавливаем слушатель
-//                searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-//                    override fun onQueryTextSubmit(query: String?) = false
-//
-//                    override fun onQueryTextChange(newText: String?): Boolean {
-//                        viewModel.filterFolders(newText.orEmpty())
-//                        return true
-//                    }
-//                })
-//                // Показываем/скрываем пункт в зависимости от режима
-//                val editItem = menu.findItem(R.id.action_edit_order)
-//                editItem.title = if (isEditMode) "Готово" else "Редактировать порядок"
-//            }
-//            override fun onPrepareMenu(menu: Menu) {
-//                menu.findItem(R.id.action_go_to_song).isVisible =false
-//
-//                val editItem = menu.findItem(R.id.action_edit_order)
-//                // Меняем цвет в зависимости от режима
-//                val color = if (isEditMode) {
-//                    ContextCompat.getColor(requireContext(), R.color.green)
-//                } else {
-//                    ContextCompat.getColor(requireContext(), R.color.white)
-//                }
-//                editItem?.icon?.setTint(color)
-//            }
-//            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-//                when(menuItem.itemId){
-//                    R.id.action_edit_order -> {
-//                        toggleEditMode()
-//                        true
-//                    }
-//                }
-//                return false
-//            }
-//        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
-//    }
-
     private fun toggleEditMode() {
         isEditMode = !isEditMode
         adapter.setEditMode(isEditMode)
@@ -225,17 +205,13 @@ class FolderFragment : Fragment(){
         // Включаем/выключаем возможность перетаскивания
         if (isEditMode) {
             itemTouchHelper.attachToRecyclerView(binding.foldersRecyclerView)
+            showEditModeHint()
         } else {
             itemTouchHelper.attachToRecyclerView(null) // Отключаем перетаскивание
         }
 
         // Обновляем меню
         activity?.invalidateOptionsMenu()
-
-        // Показываем/скрываем подсказку
-        if (isEditMode) {
-            showEditModeHint()
-        }
     }
     private fun showEditModeHint() {
         Snackbar.make(binding.root, "Перетаскивайте песни для изменения порядка",

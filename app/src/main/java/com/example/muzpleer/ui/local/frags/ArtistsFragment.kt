@@ -72,7 +72,9 @@ class ArtistsFragment:Fragment() {
         itemTouchHelper = ItemTouchHelper(callback)
         // Передаем ItemTouchHelper в адаптер
         adapter.setItemTouchHelper(itemTouchHelper)
-        itemTouchHelper.attachToRecyclerView(binding.singersRecyclerView) // ? это же в toggleEditMode
+
+        // Изначально НЕ прикрепляем - прикрепим только в режиме редактирования
+        // itemTouchHelper.attachToRecyclerView(binding.playlistRecyclerView)
 
         binding.singersRecyclerView.apply {
             layoutManager = LinearLayoutManager(requireContext())
@@ -88,13 +90,23 @@ class ArtistsFragment:Fragment() {
         }
         //восстанавливаем позицию списка после поворота или возвращения на экран
         binding.singersRecyclerView.layoutManager?.scrollToPosition(viewModel.getPositionArtist())
+    }
 
-        //initMenu()
+    override fun onResume() {
+        super.onResume()
+        // Сбрасываем режим редактирования при возвращении
+        resetEditModeOnStart()
+        // Обновляем меню
+        requireActivity().invalidateOptionsMenu()
     }
 
     //запоминаем  позицию списка, на которой сделан клик - на случай поворота экрана
     override fun onPause() {
         super.onPause()
+
+        // Сбрасываем режим редактирования при уходе
+        resetEditModeOnPause()
+
         //определяем первую видимую позицию
         val manager = binding.singersRecyclerView.layoutManager as LinearLayoutManager
         val firstPosition = manager.findFirstVisibleItemPosition()
@@ -137,10 +149,6 @@ class ArtistsFragment:Fragment() {
                 return true
             }
         })
-        // Показываем/скрываем пункт в зависимости от режима
-        val editItem = menu.findItem(R.id.action_edit_order)
-        editItem.title = if (isEditMode) "Готово" else "Редактировать порядок"
-
         super.onCreateOptionsMenu(menu, inflater)
     }
 
@@ -148,7 +156,11 @@ class ArtistsFragment:Fragment() {
         super.onPrepareOptionsMenu(menu)
         menu.findItem(R.id.action_go_to_song).isVisible =false
 
+        // Настраиваем кнопку редактирования
         val editItem = menu.findItem(R.id.action_edit_order)
+        // Меняем текст
+        editItem.title = if (isEditMode) "Готово" else "Редактировать порядок"
+
         // Меняем цвет в зависимости от режима
         val color = if (isEditMode) {
             ContextCompat.getColor(requireContext(), R.color.green)
@@ -167,58 +179,6 @@ class ArtistsFragment:Fragment() {
         }
         return super.onOptionsItemSelected(item)
     }
-
-//    fun initMenu() {
-//        val menuHost: MenuHost = requireActivity()
-//        menuHost.addMenuProvider(object : MenuProvider {
-//
-//            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-//                menuInflater.inflate(R.menu.menu_other, menu)
-//
-//                val searchItem: MenuItem = menu.findItem(R.id.search_toolbar_other)
-//                val searchView =searchItem.actionView as SearchView
-//                //значок лупы слева в развёрнутом сост и сворачиваем строку поиска (true)
-//                searchView.setIconifiedByDefault(true)
-//                //пишем подсказку в строке поиска
-//                searchView.queryHint = getString(R.string.search_artist)
-//                //устанавливаем в панели действий кнопку ( > )для отправки поискового запроса
-//                searchView.isSubmitButtonEnabled = true
-//                //устанавливаем слушатель
-//                searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-//                    override fun onQueryTextSubmit(query: String?) = false
-//
-//                    override fun onQueryTextChange(newText: String?): Boolean {
-//                        viewModel.filterArtists(newText.orEmpty())
-//                        return true
-//                    }
-//                })
-//                // Показываем/скрываем пункт в зависимости от режима
-//                val editItem = menu.findItem(R.id.action_edit_order)
-//                editItem.title = if (isEditMode) "Готово" else "Редактировать порядок"
-//            }
-//            override fun onPrepareMenu(menu: Menu) {
-//                menu.findItem(R.id.action_go_to_song).isVisible =false
-//
-//                val editItem = menu.findItem(R.id.action_edit_order)
-//                // Меняем цвет в зависимости от режима
-//                val color = if (isEditMode) {
-//                    ContextCompat.getColor(requireContext(), R.color.green)
-//                } else {
-//                    ContextCompat.getColor(requireContext(), R.color.white)
-//                }
-//                editItem?.icon?.setTint(color)
-//            }
-//            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-//                when(menuItem.itemId){
-//                    R.id.action_edit_order -> {
-//                        toggleEditMode()
-//                        true
-//                    }
-//                }
-//                return false
-//            }
-//        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
-//    }
 
     private fun toggleEditMode() {
         isEditMode = !isEditMode
@@ -244,5 +204,29 @@ class ArtistsFragment:Fragment() {
             Snackbar.LENGTH_LONG)
             .setAction("OK") {toggleEditMode() }
             .show()
+    }
+
+    private fun resetEditModeOnStart() {
+        // Сбрасываем режим редактирования при открытии фрагмента
+        if (isEditMode) {
+            isEditMode = false
+            adapter.setEditMode(false)
+            itemTouchHelper.attachToRecyclerView(null) // Отключаем перетаскивание
+            Log.d(TAG, "PlaylistFragment: Режим редактирования сброшен при открытии")
+        }
+    }
+
+    private fun resetEditModeOnPause() {
+        // Сбрасываем режим редактирования при уходе с фрагмента
+        if (isEditMode) {
+            isEditMode = false
+            adapter.setEditMode(false)
+            itemTouchHelper.attachToRecyclerView(null)
+
+            // Сохраняем изменения порядка
+            adapter.onDrop() // Сохраняем порядок в БД
+
+            Log.d(TAG, "PlaylistFragment: Режим редактирования сброшен при уходе")
+        }
     }
 }
