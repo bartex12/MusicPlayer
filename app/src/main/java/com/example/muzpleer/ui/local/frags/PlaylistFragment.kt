@@ -74,7 +74,9 @@ class PlaylistFragment():Fragment() {
         itemTouchHelper = ItemTouchHelper(callback)
         // Передаем ItemTouchHelper в адаптер
         adapter.setItemTouchHelper(itemTouchHelper)
-        itemTouchHelper.attachToRecyclerView(binding.playlistRecyclerView)
+
+        // Изначально НЕ прикрепляем - прикрепим только в режиме редактирования в toggleEditMode
+        // itemTouchHelper.attachToRecyclerView(binding.playlistRecyclerView)
 
         binding.playlistRecyclerView.apply {
             layoutManager = LinearLayoutManager(requireContext())
@@ -92,13 +94,23 @@ class PlaylistFragment():Fragment() {
             if (filteredPlaylists.isEmpty()) binding.emptyImageViewPlaylists.visibility = View.VISIBLE else  View.GONE
             if (filteredPlaylists.isEmpty()) binding.tvEmptyPlaylists.visibility = View.VISIBLE else View.GONE
         }
+    }
 
-        //initMenu()
+    override fun onResume() {
+        super.onResume()
+        // Сбрасываем режим редактирования при возвращении
+        resetEditModeOnStart()
+        // Обновляем меню
+        requireActivity().invalidateOptionsMenu()
     }
 
     //запоминаем  позицию списка, на которой сделан клик - на случай поворота экрана
     override fun onPause() {
         super.onPause()
+
+        // Сбрасываем режим редактирования при уходе
+        resetEditModeOnPause()
+
         //определяем первую видимую позицию
         val manager = binding.playlistRecyclerView.layoutManager as LinearLayoutManager
         val firstPosition = manager.findFirstVisibleItemPosition()
@@ -141,10 +153,6 @@ class PlaylistFragment():Fragment() {
                 return true
             }
         })
-        // Показываем/скрываем пункт в зависимости от режима
-        val editItem = menu.findItem(R.id.action_edit_order)
-        editItem.title = if (isEditMode) "Готово" else "Редактировать порядок"
-
         super.onCreateOptionsMenu(menu, inflater)
     }
 
@@ -152,7 +160,11 @@ class PlaylistFragment():Fragment() {
         super.onPrepareOptionsMenu(menu)
         menu.findItem(R.id.action_go_to_song).isVisible =false
 
+        // Настраиваем кнопку редактирования
         val editItem = menu.findItem(R.id.action_edit_order)
+        // Меняем текст
+        editItem.title = if (isEditMode) "Готово" else "Редактировать порядок"
+
         // Меняем цвет в зависимости от режима
         val color = if (isEditMode) {
             ContextCompat.getColor(requireContext(), R.color.green)
@@ -172,60 +184,24 @@ class PlaylistFragment():Fragment() {
         return super.onOptionsItemSelected(item)
     }
 
-//    fun initMenu() {
-//        val menuHost: MenuHost = requireActivity()
-//        menuHost.addMenuProvider(object : MenuProvider {
-//
-//            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-//                menuInflater.inflate(R.menu.menu_other, menu)
-//
-//                val searchItem: MenuItem = menu.findItem(R.id.search_toolbar_other)
-//                val searchView =searchItem.actionView as SearchView
-//                //значок лупы слева в развёрнутом сост и сворачиваем строку поиска (true)
-//                searchView.setIconifiedByDefault(true)
-//                //пишем подсказку в строке поиска
-//                searchView.queryHint = getString(R.string.search_playlist)
-//                //устанавливаем в панели действий кнопку ( > )для отправки поискового запроса
-//                //searchView.isSubmitButtonEnabled = true
-//                //устанавливаем слушатель
-//                searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-//                    override fun onQueryTextSubmit(query: String?) = false
-//
-//                    override fun onQueryTextChange(newText: String?): Boolean {
-//                        viewModel.filterPlaylists(newText.orEmpty())
-//                        return true
-//                    }
-//                })
-//
-//                // Показываем/скрываем пункт в зависимости от режима
-//                val editItem = menu.findItem(R.id.action_edit_order)
-//                editItem.title = if (isEditMode) "Готово" else "Редактировать порядок"
-//            }
-//            override fun onPrepareMenu(menu: Menu) {
-//                super.onPrepareMenu(menu)
-//                menu.findItem(R.id.action_go_to_song).isVisible =false
-//
-//                val editItem = menu.findItem(R.id.action_edit_order)
-//                // Меняем цвет в зависимости от режима
-//                val color = if (isEditMode) {
-//                    ContextCompat.getColor(requireContext(), R.color.green)
-//                } else {
-//                    ContextCompat.getColor(requireContext(), R.color.white)
-//                }
-//                editItem?.icon?.setTint(color)
-//            }
-//
-//            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-//                when(menuItem.itemId) {
-//                    R.id.action_edit_order -> {
-//                        toggleEditMode()
-//                        true
-//                    }
-//                }
-//                return false
-//            }
-//        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
-//    }
+    private fun resetEditModeOnStart() {
+        // Гарантируем, что при открытии фрагмента режим редактирования выключен
+        if (isEditMode) {
+            isEditMode = false
+            adapter.setEditMode(false)
+            itemTouchHelper.attachToRecyclerView(null)
+        }
+    }
+
+    private fun resetEditModeOnPause() {
+        // Сбрасываем режим редактирования при уходе с фрагмента
+        if (isEditMode) {
+            isEditMode = false
+            adapter.setEditMode(false)
+            itemTouchHelper.attachToRecyclerView(null)
+            Log.d(TAG, "PlaylistFragment: Режим редактирования сброшен при уходе")
+        }
+    }
 
     private fun toggleEditMode() {
 
@@ -235,17 +211,13 @@ class PlaylistFragment():Fragment() {
         // Включаем/выключаем возможность перетаскивания
         if (isEditMode) {
             itemTouchHelper.attachToRecyclerView(binding.playlistRecyclerView)
+            showEditModeHint()
         } else {
             itemTouchHelper.attachToRecyclerView(null) // Отключаем перетаскивание
         }
 
         // Обновляем меню
         activity?.invalidateOptionsMenu()
-
-        // Показываем/скрываем подсказку
-        if (isEditMode) {
-            showEditModeHint()
-        }
     }
 
     private fun showEditModeHint() {

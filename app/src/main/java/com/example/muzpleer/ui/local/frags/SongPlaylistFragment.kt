@@ -72,6 +72,9 @@ class SongPlaylistFragment:Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // Сброс режима редактирования при каждом открытии фрагмента
+        resetEditModeOnStart()
+
         adapter = SongsPlaylistAdapter(viewModel, { song ->
             val playlistSongs=
                 viewModel.getCurrentPlaylist()?.playlistSongs ?: listOf()
@@ -154,9 +157,46 @@ class SongPlaylistFragment:Fragment() {
         initMenu()
     }
 
+    private fun resetEditModeOnStart() {
+        // Гарантируем, что при открытии фрагмента режим редактирования выключен
+        if (isEditMode) {
+            isEditMode = false
+            adapter.setEditMode(false)
+            itemTouchHelper.attachToRecyclerView(null)
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Также сбрасываем при возобновлении фрагмента
+        resetEditModeOnStart()
+
+        // Обновляем меню
+        activity?.invalidateOptionsMenu()
+    }
+
+    override fun onPause() {
+        super.onPause()
+
+        // Сбрасываем режим редактирования при уходе с фрагмента
+        resetEditModeOnPause()
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
+        // Сбрасываем режим редактирования при уничтожении вью
+        resetEditModeOnPause()
         _binding = null
+    }
+
+    private fun resetEditModeOnPause() {
+        // Если был включен режим редактирования, выключаем его
+        if (isEditMode) {
+            isEditMode = false
+            adapter.setEditMode(false)
+            itemTouchHelper.attachToRecyclerView(null)
+            Log.d(TAG, "Режим редактирования сброшен при уходе с фрагмента")
+        }
     }
 
     companion object {
@@ -343,6 +383,9 @@ class SongPlaylistFragment:Fragment() {
                 }
                 editItem?.icon?.setTint(color)
 
+                // Обновляем текст кнопки
+                editItem?.title = if (isEditMode) "Готово" else "Редактировать порядок"
+
                 // вычисляем количество песен в списке
                 val songsCount = viewModel.currentFilteredPlaylistSongs.value?.size ?: 0
                Log.d(TAG, "$$$$$5 SongPlaylistFragment onPrepareMenu songsCount = $songsCount ")
@@ -379,23 +422,21 @@ class SongPlaylistFragment:Fragment() {
     }
 
     private fun toggleEditMode() {
-        isEditMode = !isEditMode
-        adapter.setEditMode(isEditMode)
+        val newEditMode = !isEditMode
+        isEditMode = newEditMode
+        adapter.setEditMode(newEditMode)
 
         // Включаем/выключаем возможность перетаскивания
         if (isEditMode) {
             itemTouchHelper.attachToRecyclerView(binding.alltracksPlaylistRecyclerView)
+            showEditModeHint()
         } else {
             itemTouchHelper.attachToRecyclerView(null) // Отключаем перетаскивание
         }
 
         // Обновляем меню
         activity?.invalidateOptionsMenu()
-
-        // Показываем/скрываем подсказку
-        if (isEditMode) {
-            showEditModeHint()
-        }
+        Log.d(TAG, "Режим редактирования: $newEditMode")
     }
     private fun showEditModeHint() {
         Snackbar.make(binding.root, "Перетаскивайте песни для изменения порядка",

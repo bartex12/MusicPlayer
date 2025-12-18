@@ -61,6 +61,9 @@ class FavoritesFragment: Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // Сброс режима редактирования при каждом открытии фрагмента
+        resetEditModeOnStart()
+
         adapter=FavoritesAdapter(viewModel, { song ->
             //устанавливаем список песен как плейлист
             val playlist=viewModel.getFavoriteSongs()
@@ -140,6 +143,15 @@ class FavoritesFragment: Fragment() {
         binding.favoriteRecyclerView.layoutManager?.scrollToPosition(viewModel.getPositionFavoriteSong())
 
         initMenu()
+    }
+
+    private fun resetEditModeOnStart() {
+        // Гарантируем, что при открытии фрагмента режим редактирования выключен
+        if (isEditMode) {
+            isEditMode = false
+            adapter.setEditMode(false)
+            itemTouchHelper.attachToRecyclerView(null)
+        }
     }
 
     private fun setupSearch() {
@@ -291,9 +303,22 @@ class FavoritesFragment: Fragment() {
         Log.d(TAG, "updateSearchVisibility: totalSongsCount=$totalSongsCount, shouldShowSearch=$shouldShowSearch")
     }
 
+    override fun onResume() {
+        super.onResume()
+        // Также сбрасываем при возобновлении фрагмента
+        resetEditModeOnStart()
+
+        // Обновляем меню
+        activity?.invalidateOptionsMenu()
+    }
+
     //запоминаем  позицию списка, на которой сделан клик - на случай поворота экрана
     override fun onPause() {
         super.onPause()
+
+        // Сбрасываем режим редактирования при уходе с фрагмента
+        resetEditModeOnPause()
+
         //определяем первую видимую позицию
         val manager = binding.favoriteRecyclerView.layoutManager as LinearLayoutManager
         val firstPosition = manager.findFirstVisibleItemPosition()
@@ -303,7 +328,19 @@ class FavoritesFragment: Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        // Сбрасываем режим редактирования при уничтожении вью
+        resetEditModeOnPause()
         _binding = null
+    }
+
+    private fun resetEditModeOnPause() {
+        // Если был включен режим редактирования, выключаем его
+        if (isEditMode) {
+            isEditMode = false
+            adapter.setEditMode(false)
+            itemTouchHelper.attachToRecyclerView(null)
+            Log.d(TAG, "Режим редактирования сброшен при уходе с фрагмента")
+        }
     }
 
     companion object {
@@ -338,6 +375,9 @@ class FavoritesFragment: Fragment() {
                 }
                 editItem?.icon?.setTint(color)
 
+                // Обновляем текст кнопки
+                editItem?.title = if (isEditMode) "Готово" else "Редактировать порядок"
+
                 // вычисляем количество песен в списке
                 val songsCount = viewModel.filteredFavoriteSongs.value?.size ?: 0
                 Log.d(TAG, "$$$$$ SongPlaylistFragment onPrepareMenu songsCount = $songsCount ")
@@ -369,23 +409,20 @@ class FavoritesFragment: Fragment() {
     }
 
     private fun toggleEditMode() {
-        isEditMode = !isEditMode
-        adapter.setEditMode(isEditMode)
+        val newEditMode = !isEditMode
+        isEditMode = newEditMode
+        adapter.setEditMode(newEditMode)
 
         // Включаем/выключаем возможность перетаскивания
         if (isEditMode) {
             itemTouchHelper.attachToRecyclerView(binding.favoriteRecyclerView)
+            showEditModeHint()
         } else {
             itemTouchHelper.attachToRecyclerView(null) // Отключаем перетаскивание
+           // saveOrderChanges()
         }
-
         // Обновляем меню
         activity?.invalidateOptionsMenu()
-
-        // Показываем/скрываем подсказку
-        if (isEditMode) {
-            showEditModeHint()
-        }
     }
 
     private fun showEditModeHint() {
@@ -394,5 +431,4 @@ class FavoritesFragment: Fragment() {
             .setAction("OK") {toggleEditMode() }
             .show()
     }
-
 }
