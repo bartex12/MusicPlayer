@@ -105,7 +105,7 @@ class MusicRepository(
                     // Файл существует в базе
                     dbIds.remove(id)  //удаляем запись с этой id из списка всех id
 
-                    // Проверяем и дату изменения, и путь
+                    // Проверяем и дату изменения, путь, и тд
                     val isModified = existingFile.lastModified != lastModified
                     val isMoved = existingFile.path != path
                     val isTitleChanged = existingFile.title != title

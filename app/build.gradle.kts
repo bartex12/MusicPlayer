@@ -56,9 +56,6 @@ dependencies {
     //preference
     implementation ("androidx.preference:preference-ktx:1.2.1")
 
-    implementation ("androidx.fragment:fragment-ktx:1.6.1")
-    implementation ("androidx.navigation:navigation-fragment-ktx:2.7.3")
-    implementation ("androidx.navigation:navigation-ui-ktx:2.7.3")
     //exoplayer
     implementation("androidx.media3:media3-exoplayer:1.7.1")
     implementation("androidx.media3:media3-ui:1.7.1")
@@ -84,7 +81,7 @@ dependencies {
     //glide
     implementation("com.github.bumptech.glide:compose:1.0.0-beta01")
     implementation ("com.github.bumptech.glide:glide:4.16.0")
-    annotationProcessor ("com.github.bumptech.glide:compiler:4.16.0")
+    kapt("com.github.bumptech.glide:compiler:4.16.0")
 
     //picasso
     implementation ("com.squareup.picasso:picasso:2.8")
