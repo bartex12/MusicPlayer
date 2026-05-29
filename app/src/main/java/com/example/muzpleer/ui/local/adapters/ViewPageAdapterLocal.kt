@@ -26,20 +26,20 @@ class ViewPageAdapterLocal(private val context: Context, fragmentManager : Fragm
 
     private val fragments = arrayOf(
         SongFragment.newInstance(viewPager) ,
-        AlbumFragment.newInstance(viewPager),
-        ArtistsFragment.newInstance(viewPager),
         FolderFragment.newInstance(viewPager),
         FavoritesFragment.newInstance(viewPager),
-        PlaylistFragment.newInstance(viewPager)
+        PlaylistFragment.newInstance(viewPager),
+        AlbumFragment.newInstance(viewPager),
+        ArtistsFragment.newInstance(viewPager)
     )
 
     private val titles = arrayOf(
         context.getString(R.string.local),
-        context.getString(R.string.albums),
-        context.getString(R.string.singers),
         context.getString(R.string.folders),
         context.getString(R.string.my_tracks),
-        context.getString(R.string.my_playlists)
+        context.getString(R.string.my_playlists),
+        context.getString(R.string.albums),
+        context.getString(R.string.singers)
     )
 
     override fun getCount(): Int {
