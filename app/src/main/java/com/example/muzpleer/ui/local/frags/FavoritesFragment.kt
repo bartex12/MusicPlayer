@@ -1,8 +1,6 @@
 package com.example.muzpleer.ui.local.frags
 
 import android.content.Context
-import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -16,15 +14,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
-import androidx.appcompat.widget.SearchView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
-import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
-import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.viewpager.widget.ViewPager
@@ -34,7 +29,6 @@ import com.example.muzpleer.model.SongAndPlaylist
 import com.example.muzpleer.ui.local.adapters.FavoritesAdapter
 import com.example.muzpleer.ui.local.adapters.touch.ItemTouchHelperCallback
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
-import com.example.muzpleer.util.getSortedDataSong
 import com.example.muzpleer.util.toast
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.TextInputLayout
@@ -64,7 +58,7 @@ class FavoritesFragment: Fragment() {
         // Сброс режима редактирования при каждом открытии фрагмента
         resetEditModeOnStart()
 
-        adapter=FavoritesAdapter(viewModel, { song ->
+        adapter=FavoritesAdapter(viewModel) { song ->
             //устанавливаем список песен как плейлист
             val playlist=viewModel.getFavoriteSongs()
             viewModel.setPlaylist(playlist) //устанавливаем список песен как плейлист
@@ -74,17 +68,7 @@ class FavoritesFragment: Fragment() {
                     playlist=playlist //текущий плейлист
                 )
             )
-        }, {song->
-            //устанавливаем список песен как плейлист
-            val playlist=viewModel.getFavoriteSongs()
-            viewModel.setPlaylist(playlist) //устанавливаем список песен как плейлист
-            viewModel.setSongAndPlaylist(
-                SongAndPlaylist(
-                song = song,  //текущая песня
-                playlist = playlist //текущий плейлист
-            ))
-            findNavController().navigate(R.id.playerFragment)
-        })
+        }
 
         // Настраиваем ItemTouchHelper
         val callback=ItemTouchHelperCallback(adapter)

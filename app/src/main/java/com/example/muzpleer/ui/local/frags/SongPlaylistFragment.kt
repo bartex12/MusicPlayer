@@ -14,7 +14,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
-import androidx.appcompat.widget.SearchView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
@@ -22,25 +21,20 @@ import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
-import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentAlltracksForPlaylistBinding
 import com.example.muzpleer.model.Song
 import com.example.muzpleer.model.SongAndPlaylist
-import com.example.muzpleer.ui.local.adapters.SongsAdapter
 import com.example.muzpleer.ui.local.adapters.SongsPlaylistAdapter
 import com.example.muzpleer.ui.local.adapters.touch.ItemTouchHelperCallback
-import com.example.muzpleer.ui.local.frags.FavoritesFragment
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 import com.example.muzpleer.util.getNormalizedPath
-import com.example.muzpleer.util.getSortedDataSong
 import com.example.muzpleer.util.toast
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.TextInputLayout
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
-import kotlin.getValue
 
 class SongPlaylistFragment:Fragment() {
     private var _binding: FragmentAlltracksForPlaylistBinding? = null
@@ -90,16 +84,6 @@ class SongPlaylistFragment:Fragment() {
                 )
             )
             viewModel.setCurrentSong(song)
-        },{song->
-            val playlist =
-                viewModel.getCurrentPlaylist()?.playlistSongs ?: listOf()
-            viewModel.setSongAndPlaylist(
-                SongAndPlaylist(
-                    song = song,
-                    playlist = playlist)
-            )
-            viewModel.setCurrentSong(song)
-            findNavController().navigate(R.id.playerFragment)
         })
 
         // Настраиваем ItemTouchHelper
