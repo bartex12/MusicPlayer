@@ -22,7 +22,7 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/player_bottom"
         android:layout_width="match_parent"
-        android:layout_height="80dp"
+        android:layout_height="100dp"
         android:background="@color/colorPrimaryBlack"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
@@ -32,10 +32,10 @@
         <!-- Album Artwork (optional) -->
         <ImageView
             android:id="@+id/artwork"
-            android:layout_width="72dp"
-            android:layout_height="72dp"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:padding="4dp"
             android:scaleType="centerCrop"
-            android:padding="8dp"
             android:src="@drawable/muz_player3"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -44,23 +44,27 @@
         <!-- Track Title -->
         <TextView
             android:id="@+id/title"
-            android:layout_width="150dp"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:ellipsize="end"
             android:maxLines="2"
+            android:layout_marginTop="4dp"
             android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
             android:textColor="@color/white"
             android:text="Название песни"
             android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
             app:layout_constraintBottom_toTopOf="@id/artist"
             app:layout_constraintStart_toEndOf="@id/artwork"
             app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
             />
 
         <!-- Artist & Album Info -->
         <TextView
             android:id="@+id/artist"
-            android:layout_width="150dp"
+            android:layout_width="0dp"
+            android:layout_marginEnd="8dp"
             android:layout_height="wrap_content"
             android:ellipsize="end"
             android:maxLines="1"
@@ -68,47 +72,106 @@
             android:layout_marginStart="8dp"
             android:textAppearance="@style/TextAppearance.AppCompat.Caption"
             android:textColor="@color/white"
-            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toEndOf="@id/artwork"
             app:layout_constraintTop_toBottomOf="@id/title"
-            />
+            app:layout_constraintEnd_toEndOf="parent"/>
 
         <ImageButton
             android:id="@+id/previous"
             android:layout_width="24dp"
             android:layout_height="24dp"
+            android:layout_marginStart="32dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:scaleType="fitCenter"
             android:src="@drawable/ic_previous_white"
-            app:layout_constraintBottom_toBottomOf="@+id/artist"
-            app:layout_constraintEnd_toStartOf="@+id/playPause"
-            app:layout_constraintStart_toEndOf="@+id/title"
-            app:layout_constraintTop_toTopOf="@+id/title" />
+           app:layout_constraintTop_toTopOf="@id/playPause"
+            app:layout_constraintBottom_toBottomOf="@id/playPause"
+            app:layout_constraintStart_toEndOf="@id/artwork"/>
 
         <ImageButton
             android:id="@+id/playPause"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
             android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="playPause"
             android:scaleType="fitCenter"
             android:src="@drawable/ic_play_white"
-            app:layout_constraintBottom_toBottomOf="@+id/previous"
-            app:layout_constraintEnd_toStartOf="@+id/next"
-            app:layout_constraintStart_toEndOf="@+id/previous"
-            app:layout_constraintTop_toTopOf="@+id/previous" />
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/artwork"
+            app:layout_constraintTop_toBottomOf="@id/artist" />
 
         <ImageButton
             android:id="@+id/next"
             android:layout_width="24dp"
             android:layout_height="24dp"
+            android:layout_marginEnd="32dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:scaleType="fitCenter"
             android:src="@drawable/ic_next_white"
-            app:layout_constraintBottom_toBottomOf="@+id/playPause"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/playPause"
-            app:layout_constraintTop_toTopOf="@+id/playPause" />
+           app:layout_constraintTop_toTopOf="@id/playPause"
+            app:layout_constraintBottom_toBottomOf="@id/playPause"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+        <ImageButton
+            android:id="@+id/rewindBack"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/baseline_arrow_back_ios_new_24"
+            app:layout_constraintTop_toTopOf="@id/playPause"
+            app:layout_constraintBottom_toBottomOf="@id/playPause"
+            app:layout_constraintStart_toEndOf="@id/previous"
+            app:layout_constraintEnd_toStartOf="@id/playPause"/>
+
+        <ImageButton
+            android:id="@+id/rewindForward"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/baseline_arrow_forward_ios_24"
+            app:layout_constraintTop_toTopOf="@id/playPause"
+            app:layout_constraintBottom_toBottomOf="@id/playPause"
+            app:layout_constraintStart_toEndOf="@id/playPause"
+            app:layout_constraintEnd_toStartOf="@id/next"/>
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!--        <ImageButton-->
+    <!--            android:id="@+id/previous"-->
+    <!--            android:layout_width="24dp"-->
+    <!--            android:layout_height="24dp"-->
+    <!--            android:background="?attr/selectableItemBackgroundBorderless"-->
+    <!--            android:scaleType="fitCenter"-->
+    <!--            android:src="@drawable/ic_previous_white"-->
+    <!--            app:layout_constraintBottom_toBottomOf="@+id/artist"-->
+    <!--            app:layout_constraintEnd_toStartOf="@+id/playPause"-->
+    <!--            app:layout_constraintStart_toEndOf="@+id/artwork"-->
+    <!--            app:layout_constraintTop_toBottomOf="@id/artist"/>-->
+
+    <!--        <ImageButton-->
+    <!--            android:id="@+id/playPause"-->
+    <!--            android:layout_width="36dp"-->
+    <!--            android:layout_height="36dp"-->
+    <!--            android:background="?attr/selectableItemBackgroundBorderless"-->
+    <!--            android:scaleType="fitCenter"-->
+    <!--            android:src="@drawable/ic_play_white"-->
+    <!--            app:layout_constraintBottom_toBottomOf="@+id/previous"-->
+    <!--            app:layout_constraintEnd_toStartOf="@+id/next"-->
+    <!--            app:layout_constraintStart_toEndOf="@+id/previous"-->
+    <!--            app:layout_constraintTop_toTopOf="@+id/previous" />-->
+
+    <!--        <ImageButton-->
+    <!--            android:id="@+id/next"-->
+    <!--            android:layout_width="24dp"-->
+    <!--            android:layout_height="24dp"-->
+    <!--            android:background="?attr/selectableItemBackgroundBorderless"-->
+    <!--            android:scaleType="fitCenter"-->
+    <!--            android:src="@drawable/ic_next_white"-->
+    <!--            app:layout_constraintBottom_toBottomOf="@+id/playPause"-->
+    <!--            app:layout_constraintEnd_toEndOf="parent"-->
+    <!--            app:layout_constraintStart_toEndOf="@+id/playPause"-->
+    <!--            app:layout_constraintTop_toTopOf="@+id/playPause" />-->
+

@@ -61,6 +61,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var previous: ImageView
     private lateinit var playPause: ImageView
     private lateinit var next: ImageView
+    private lateinit var rewindBack: ImageView
+    private lateinit var rewindForward: ImageView
 
     private lateinit var appPreferences: IPreferenceHelper
     private var currentSong: Song? = null
@@ -253,10 +255,14 @@ class MainActivity : AppCompatActivity() {
         previous=binding.appBarMain.contentMain.previous
         playPause=binding.appBarMain.contentMain.playPause
         next=binding.appBarMain.contentMain.next
+        rewindBack = binding.appBarMain.contentMain.rewindBack
+        rewindForward = binding.appBarMain.contentMain.rewindForward
 
         previous.setOnClickListener { viewModel.playPrevious() }
         playPause.setOnClickListener { viewModel.togglePlayPause() }
         next.setOnClickListener { viewModel.playNext() }
+        rewindBack.setOnClickListener {viewModel.seekRelative(-5000) } // -5 секунд
+        rewindForward.setOnClickListener {  viewModel.seekRelative(15000) } // +15 секунд
 
         artWork.setOnClickListener { navController.navigate(R.id.playerFragment) }
         title.setOnClickListener { navController.navigate(R.id.playerFragment) }
