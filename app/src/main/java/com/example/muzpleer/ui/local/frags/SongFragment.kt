@@ -51,24 +51,17 @@ class SongFragment : Fragment() {
 
         appPreferences =PreferenceHelperImpl(App.instance)
 
-        adapter = SongsAdapter(viewModel, { song ->
+        adapter = SongsAdapter(viewModel) { song ->
             //устанавливаем список песен как плейлист
-            val playlist = getSortedDataSong(viewModel.getSongs())
+            val playlist=getSortedDataSong(viewModel.getSongs())
             viewModel.setPlaylist(playlist) //устанавливаем список песен как плейлист
-            viewModel.setSongAndPlaylist( SongAndPlaylist(
-                    song = song,  //текущая песня
-                    playlist = playlist //текущий плейлист
-                ))
-        }, {song->
-            //устанавливаем список песен как плейлист
-            val playlist = getSortedDataSong(viewModel.getSongs())
-            viewModel.setPlaylist(playlist) //устанавливаем список песен как плейлист
-            viewModel.setSongAndPlaylist( SongAndPlaylist(
-                song = song,  //текущая песня
-                playlist = playlist //текущий плейлист
-            ))
-            findNavController().navigate(R.id.action_tabsLocalFragment_to_playerFragment)
-        } )
+            viewModel.setSongAndPlaylist(
+                SongAndPlaylist(
+                    song=song,  //текущая песня
+                    playlist=playlist //текущий плейлист
+                )
+            )
+        }
 
         binding.localRecyclerView.apply {
             layoutManager = LinearLayoutManager(requireContext())

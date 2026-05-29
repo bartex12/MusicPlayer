@@ -37,7 +37,6 @@ import java.io.File
 class SongsAdapter(
     private val viewModel: SharedViewModel,
     private val onItemClick: (Song) -> Unit,
-    private val onLongClickListener:(Song)->Unit
 ) : RecyclerView.Adapter<SongsAdapter.MusicViewHolder>() {
 
     companion object{
@@ -130,12 +129,6 @@ class SongsAdapter(
 
             binding.menuButton.setOnClickListener { view ->
                 showPopupMenu(view, track)
-            }
-            // устанавливаем слушатель долгих нажатий на списке
-            binding.root.setOnLongClickListener {
-                viewModel.setSelectedPosition(absoluteAdapterPosition)
-                onLongClickListener(track)
-                false
             }
         }
     }

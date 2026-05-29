@@ -56,25 +56,17 @@ class SongListFolderFragment:Fragment() {
 
         initMenu()
 
-        adapter = SongsAdapter(viewModel,  { song ->
-            val playlist = viewModel.getPlaylist()
+        adapter = SongsAdapter(viewModel) { song ->
+            val playlist=viewModel.getPlaylist()
 
             viewModel.setSongAndPlaylist(
                 SongAndPlaylist(
-                    song = song,
-                    playlist = playlist)
+                    song=song,
+                    playlist=playlist
+                )
             )
             viewModel.setCurrentSong(song)
-        },{song->
-            val playlist = viewModel.getPlaylist()
-            viewModel.setSongAndPlaylist(
-                SongAndPlaylist(
-                    song = song,
-                    playlist = playlist)
-            )
-            viewModel.setCurrentSong(song)
-            findNavController().navigate(R.id.action_songListFolderFragment_to_playerFragment)
-        })
+        }
 
         binding.alltracksRecyclerView.apply {
             layoutManager = LinearLayoutManager(requireContext())
