@@ -2,6 +2,7 @@ package com.example.muzpleer.ui.local.adapters
 
 
 import android.content.Context
+import android.media.MediaMetadataRetriever
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentPagerAdapter
