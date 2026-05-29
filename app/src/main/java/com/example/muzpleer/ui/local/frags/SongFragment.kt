@@ -82,7 +82,9 @@ class SongFragment : Fragment() {
             Log.d( TAG,"32 SongsFragment onViewCreated filteredSongs.observe: filteredSongs.size= ${filteredSongs.size} ")
             val sortedData = getSortedDataSong(filteredSongs)
             adapter.data = sortedData  //передаём данные в адаптер
-            Log.d( TAG,"32 SongsFragment onViewCreated sortedData = ${sortedData.map{it.title}} ")
+            //вывод заголовков всех песен
+            //Log.d( TAG,"32 SongsFragment onViewCreated sortedData = ${sortedData.map{it.title}} ")
+            //Log.d( TAG,"32 SongsFragment onViewCreated sortedData.size = ${sortedData.size} ")
             if (viewModel.getSongs().isEmpty()) binding.progressBar.visibility = View.VISIBLE else binding.progressBar.visibility = View.GONE
             if (filteredSongs.isEmpty()) binding.imageHolder3.visibility = View.VISIBLE else binding.imageHolder3.visibility = View.GONE
         }
@@ -190,6 +192,7 @@ class SongFragment : Fragment() {
                     viewModel.syncAlbums()
                     viewModel.syncArtist ()
                     viewModel.syncFolders()
+                    viewModel.loadPlaylists()
                     // Восстанавливаем последнюю песню
                     currentSong?. let{
                         viewModel.setCurrentSongById(currentSong.id)

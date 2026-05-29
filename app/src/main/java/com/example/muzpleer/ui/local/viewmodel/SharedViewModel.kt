@@ -269,7 +269,7 @@ class SharedViewModel(
         //так не меняется автоматом- остаётся старый artUri из плейлиста
         _currentSong.value = track
         //считаем индекс выбранной песни в отсортированном списке песен,
-        // чтобы при возврате на песни можно было перейти к этой песне по индекс
+        // чтобы при возврате на песни можно было перейти к этой песне по индексу
         val trackMediaUri = getNormalizedPath(track.mediaUri)
         val indexOfSong = getSortedDataSong(getSongs())
             .indexOfFirst { getNormalizedPath(it.mediaUri) == trackMediaUri }

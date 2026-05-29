@@ -20,6 +20,7 @@ class AlbumRepository(
     }
 
     suspend fun syncAlbumsFromMediaFiles() {
+        Log.d(TAG, "# AlbumRepository Начало синхронизации альбомов...")
 
         // СОХРАНЯЕМ КАСТОМНЫЕ ОБЛОЖКИ ПЕРЕД ОЧИСТКОЙ
         val existingAlbums = albumDao.getAllOrderedAlbums()
