@@ -22,7 +22,7 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/player_bottom"
         android:layout_width="match_parent"
-        android:layout_height="100dp"
+        android:layout_height="110dp"
         android:background="@color/colorPrimaryBlack"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
@@ -39,7 +39,7 @@
             android:src="@drawable/muz_player3"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toBottomOf="@id/title" />
 
         <!-- Track Title -->
         <TextView
@@ -55,7 +55,7 @@
             android:text="Название песни"
             android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
             app:layout_constraintBottom_toTopOf="@id/artist"
-            app:layout_constraintStart_toEndOf="@id/artwork"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             />
@@ -65,11 +65,11 @@
             android:id="@+id/artist"
             android:layout_width="0dp"
             android:layout_marginEnd="8dp"
+            android:layout_marginStart="8dp"
             android:layout_height="wrap_content"
             android:ellipsize="end"
             android:maxLines="1"
             android:text="Исполнитель"
-            android:layout_marginStart="8dp"
             android:textAppearance="@style/TextAppearance.AppCompat.Caption"
             android:textColor="@color/white"
             app:layout_constraintStart_toEndOf="@id/artwork"
@@ -80,7 +80,7 @@
             android:id="@+id/previous"
             android:layout_width="24dp"
             android:layout_height="24dp"
-            android:layout_marginStart="32dp"
+            android:layout_marginStart="48dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:scaleType="fitCenter"
             android:src="@drawable/ic_previous_white"
@@ -99,13 +99,13 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/artwork"
-            app:layout_constraintTop_toBottomOf="@id/artist" />
+            app:layout_constraintTop_toBottomOf="@id/seekBar_main"/>
 
         <ImageButton
             android:id="@+id/next"
             android:layout_width="24dp"
             android:layout_height="24dp"
-            android:layout_marginEnd="32dp"
+            android:layout_marginEnd="48dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:scaleType="fitCenter"
             android:src="@drawable/ic_next_white"
@@ -136,42 +136,39 @@
             app:layout_constraintEnd_toStartOf="@id/next"/>
 
 
+        <!-- SeekBar -->
+        <SeekBar
+            android:id="@+id/seekBar_main"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/artwork"
+            app:layout_constraintTop_toBottomOf="@id/artist" />
+
+        <!-- Duration -->
+        <!-- Current Time -->
+        <TextView
+            android:id="@+id/tv_current_time_main"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="0:00"
+            android:textColor="@color/black"
+            app:layout_constraintStart_toEndOf="@id/artwork"
+            app:layout_constraintTop_toBottomOf="@+id/seekBar_main" />
+
+        <TextView
+            android:id="@+id/tv_total_time_main"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:text="3:45"
+            android:textColor="@color/black"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/seekBar_main"/>
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <!--        <ImageButton-->
-    <!--            android:id="@+id/previous"-->
-    <!--            android:layout_width="24dp"-->
-    <!--            android:layout_height="24dp"-->
-    <!--            android:background="?attr/selectableItemBackgroundBorderless"-->
-    <!--            android:scaleType="fitCenter"-->
-    <!--            android:src="@drawable/ic_previous_white"-->
-    <!--            app:layout_constraintBottom_toBottomOf="@+id/artist"-->
-    <!--            app:layout_constraintEnd_toStartOf="@+id/playPause"-->
-    <!--            app:layout_constraintStart_toEndOf="@+id/artwork"-->
-    <!--            app:layout_constraintTop_toBottomOf="@id/artist"/>-->
-
-    <!--        <ImageButton-->
-    <!--            android:id="@+id/playPause"-->
-    <!--            android:layout_width="36dp"-->
-    <!--            android:layout_height="36dp"-->
-    <!--            android:background="?attr/selectableItemBackgroundBorderless"-->
-    <!--            android:scaleType="fitCenter"-->
-    <!--            android:src="@drawable/ic_play_white"-->
-    <!--            app:layout_constraintBottom_toBottomOf="@+id/previous"-->
-    <!--            app:layout_constraintEnd_toStartOf="@+id/next"-->
-    <!--            app:layout_constraintStart_toEndOf="@+id/previous"-->
-    <!--            app:layout_constraintTop_toTopOf="@+id/previous" />-->
-
-    <!--        <ImageButton-->
-    <!--            android:id="@+id/next"-->
-    <!--            android:layout_width="24dp"-->
-    <!--            android:layout_height="24dp"-->
-    <!--            android:background="?attr/selectableItemBackgroundBorderless"-->
-    <!--            android:scaleType="fitCenter"-->
-    <!--            android:src="@drawable/ic_next_white"-->
-    <!--            app:layout_constraintBottom_toBottomOf="@+id/playPause"-->
-    <!--            app:layout_constraintEnd_toEndOf="parent"-->
-    <!--            app:layout_constraintStart_toEndOf="@+id/playPause"-->
-    <!--            app:layout_constraintTop_toTopOf="@+id/playPause" />-->
 

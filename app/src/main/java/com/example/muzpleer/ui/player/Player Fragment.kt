@@ -30,6 +30,7 @@ import com.example.muzpleer.model.Song
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 import com.google.android.material.snackbar.Snackbar
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
+import java.io.File
 
 class PlayerFragment : Fragment() {
     private var _binding: FragmentPlayerBinding? = null
@@ -130,6 +131,10 @@ class PlayerFragment : Fragment() {
             Log.d(TAG, "2*** PlayerFragment onViewCreated songAndPlaylist.observe: " +
                     " currentSong title = ${currentSong?.title}  " +
                     " currentSong.artUri = ${currentSong?.artUri}")
+
+            binding.tvTitle.text = currentSong?.title
+            binding.tvArtist.text =currentSong?.artist
+
             //находим индекс трека в плейлисте
             val indexOfTrack =
                 songAndPlaylist.playlist.indexOfFirst {song->
@@ -142,12 +147,22 @@ class PlayerFragment : Fragment() {
                     "songAndPlaylist.playlist.size = ${songAndPlaylist.playlist.size} artUri = $trackArtUri")
 
             //не работает - требует права доступа
-            trackArtUri?.let{
-                showImageWithGlide(binding.root.context, trackArtUri.toUri(), binding.artworkImageView)
-            }
+            trackArtUri?.let{artUri->
 
+                // 🔍 ДИАГНОСТИКА - проверяем URI перед загрузкой
+                checkUriPermission(artUri.toUri())
+
+                // Загружаем изображение
+                try {
+                    showImageWithGlide(binding.root.context, artUri.toUri(), binding.artworkImageView)
+                } catch (e: SecurityException) {
+                    Log.e(TAG, "Security exception when loading: ${e.message}")
+                    binding.artworkImageView.setImageResource(R.drawable.muz_player2)
+                }
+            }
             viewModel.setPlaylistForHandler(songAndPlaylist.playlist, indexOfTrack)
         }
+
 
         viewModel.isPlaying.observe(viewLifecycleOwner) { isPlaying ->
             binding.playPauseButton.setImageResource(
@@ -173,33 +188,46 @@ class PlayerFragment : Fragment() {
         }
     }
 
-    fun getRealPathFromUri(context: Context, uri: Uri): String? {
-        when (uri.scheme) {
-            "content" -> {
-                // Пытаемся получить путь через ContentResolver
-                val cursor = context.contentResolver.query(uri, null, null, null, null)
-                cursor?.use {
-                    if (it.moveToFirst()) {
-                        val columnIndex = it.getColumnIndex("_data")
-                        if (columnIndex != -1) {
-                            return it.getString(columnIndex)
-                        }
-                    }
-                }
+    private fun checkUriPermission(uri: Uri) {
+        try {
+            Log.d(TAG, "=== Checking URI permission ===")
+            Log.d(TAG, "URI: $uri  Scheme: ${uri.scheme}  Authority: ${uri.authority}")
 
-                // Если не получилось, пробуем получить через DocumentFile
-                try {
-                    val documentFile = DocumentFile.fromSingleUri(context, uri)
-                    return documentFile?.uri?.path
-                } catch (e: Exception) {
-                    e.printStackTrace()
+            // Проверяем persisted permissions
+            val perms = requireContext().contentResolver.persistedUriPermissions
+            Log.d(TAG, "Persisted permissions count: ${perms.size}")
+            perms.forEach { perm ->
+                Log.d(TAG, "  Permission: ${perm.uri}, read: ${perm.isReadPermission}, write: ${perm.isWritePermission}")
+                if (perm.uri.toString() == uri.toString()) {
+                    Log.d(TAG, "  ✅ Found matching permission!")
                 }
             }
-            "file" -> {
-                return uri.path
+
+            // Проверяем, можем ли открыть InputStream
+            try {
+                val inputStream = requireContext().contentResolver.openInputStream(uri)
+                if (inputStream != null) {
+                    Log.d(TAG, "✅ Can open InputStream successfully!")
+                    inputStream.close()
+                } else {
+                    Log.d(TAG, "❌ Cannot open InputStream (null)")
+                }
+            } catch (e: SecurityException) {
+                Log.e(TAG, "❌ SecurityException: ${e.message}")
+                throw e
             }
+
+            // Проверяем, существует ли файл
+            try {
+                val file = File(uri.path ?: "")
+                Log.d(TAG, "File exists: ${file.exists()}, can read: ${file.canRead()}")
+            } catch (e: Exception) {
+                Log.d(TAG, "Cannot check file: ${e.message}")
+            }
+
+        } catch (e: Exception) {
+            Log.e(TAG, "Error in diagnostic: ${e.message}")
         }
-        return null
     }
 
     fun showImageWithGlide(context: Context, artUri: Uri, imageView: ImageView){
@@ -291,3 +319,32 @@ class PlayerFragment : Fragment() {
 //                Log.d(TAG, "3.3 *** PlayerFragment onViewCreated Нет обложки")
 //                binding.artworkImageView.setImageResource(R.drawable.muz_player3)
 //            }
+
+//              fun getRealPathFromUri(context: Context, uri: Uri): String? {
+//        when (uri.scheme) {
+//            "content" -> {
+//                // Пытаемся получить путь через ContentResolver
+//                val cursor = context.contentResolver.query(uri, null, null, null, null)
+//                cursor?.use {
+//                    if (it.moveToFirst()) {
+//                        val columnIndex = it.getColumnIndex("_data")
+//                        if (columnIndex != -1) {
+//                            return it.getString(columnIndex)
+//                        }
+//                    }
+//                }
+//
+//                // Если не получилось, пробуем получить через DocumentFile
+//                try {
+//                    val documentFile = DocumentFile.fromSingleUri(context, uri)
+//                    return documentFile?.uri?.path
+//                } catch (e: Exception) {
+//                    e.printStackTrace()
+//                }
+//            }
+//            "file" -> {
+//                return uri.path
+//            }
+//        }
+//        return null
+//    }

@@ -18,6 +18,7 @@ import android.util.Log
 import android.view.MenuItem
 import android.view.View
 import android.widget.ImageView
+import android.widget.SeekBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -65,6 +66,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var next: ImageView
     private lateinit var rewindBack: ImageView
     private lateinit var rewindForward: ImageView
+    private lateinit var tvTotalTimeMain: TextView
+    private lateinit var tvCurrentTimeMain: TextView
+    private lateinit var seekBarMain:SeekBar
 
     private lateinit var appPreferences: IPreferenceHelper
     private var currentSong: Song? = null
@@ -175,6 +179,16 @@ class MainActivity : AppCompatActivity() {
 
         })
 
+        viewModel.currentPosition.observe(this) { position ->
+            tvCurrentTimeMain.text = formatTime(position)
+            seekBarMain.progress = position.toInt()
+        }
+
+        viewModel.duration.observe(this) { duration ->
+            tvTotalTimeMain.text = formatTime(duration)
+            seekBarMain.max = duration.toInt()
+        }
+
         viewModel.isPlaying.observe(this) { isPlaying ->
             playPause.setImageResource(
                 if (isPlaying) R.drawable.ic_pause_white else R.drawable.ic_play_white
@@ -243,6 +257,12 @@ class MainActivity : AppCompatActivity() {
        //initMenu() нельзя - иначе двоится меню тулбара
     }
 
+    private fun formatTime(millis: Long): String {
+        val seconds = (millis / 1000) % 60
+        val minutes = (millis / (1000 * 60)) % 60
+        return String.format("%02d:%02d", minutes, seconds)
+    }
+
     fun showImageWithGlide(context:Context, artUri:Uri, imageView: ImageView){
         // Загрузка обложки
         Glide.with(context)
@@ -264,6 +284,9 @@ class MainActivity : AppCompatActivity() {
         next=binding.appBarMain.contentMain.next
         rewindBack = binding.appBarMain.contentMain.rewindBack
         rewindForward = binding.appBarMain.contentMain.rewindForward
+        seekBarMain = binding.appBarMain.contentMain.seekBarMain
+        tvCurrentTimeMain = binding.appBarMain.contentMain.tvCurrentTimeMain
+        tvTotalTimeMain = binding.appBarMain.contentMain.tvTotalTimeMain
 
         previous.setOnClickListener { viewModel.playPrevious() }
         playPause.setOnClickListener { viewModel.togglePlayPause() }
@@ -275,6 +298,16 @@ class MainActivity : AppCompatActivity() {
         title.setOnClickListener { navController.navigate(R.id.playerFragment) }
         artist.setOnClickListener { navController.navigate(R.id.playerFragment) }
 
+        ///перемещение прогресса в нижнем плеере
+        seekBarMain.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
+                if (fromUser) {
+                    viewModel.seekTo(progress.toLong())
+                }
+            }
+            override fun onStartTrackingTouch(seekBar: SeekBar) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar) {}
+        })
     }
 
     private fun startMediaScan() {
