@@ -24,6 +24,7 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.AppCompatTextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
@@ -58,7 +59,7 @@ class MainActivity : AppCompatActivity() {
     private val viewModel: SharedViewModel by viewModel()
 
     private lateinit var playerLayout: ConstraintLayout
-    private lateinit var title: TextView
+    private lateinit var title: AppCompatTextView
     private lateinit var artist: TextView
     private lateinit var artWork: ImageView
     private lateinit var previous: ImageView
