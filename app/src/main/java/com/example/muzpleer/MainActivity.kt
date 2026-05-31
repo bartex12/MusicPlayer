@@ -3,6 +3,7 @@ package com.example.muzpleer
 import android.Manifest
 import android.content.ActivityNotFoundException
 import android.content.ContentUris
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
@@ -41,6 +42,7 @@ import com.example.muzpleer.model.Song
 import com.example.muzpleer.ui.local.helper.IPreferenceHelper
 import com.example.muzpleer.ui.local.helper.PreferenceHelperImpl
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
+import com.example.muzpleer.ui.player.PlayerFragment
 import com.example.muzpleer.util.toast
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
@@ -203,21 +205,16 @@ class MainActivity : AppCompatActivity() {
                     val artUri = ContentUris.withAppendedId(
                         ("content://media/external/audio/albumart").toUri(),
                         songCurrent.albumId)
+                    Log.d(TAG, "###MainActivity currentSong.observe songCurrent.artUri==null artUri = $artUri")
                     // Загрузка обложки
-                    Glide.with(binding.root.context)
-                        .load(artUri)
-                        .placeholder(R.drawable.muz_player3)
-                        .error(R.drawable.muz_player3)
-                        .diskCacheStrategy(DiskCacheStrategy.ALL)
-                        .into(artWork)
+                    showImageWithGlide(binding.root.context, artUri, artWork)
                 }else {
-                    // Загрузка обложки
-                    Glide.with(binding.root.context)
-                        .load(songCurrent.artUri)
-                        .placeholder(R.drawable.muz_player3)
-                        .error(R.drawable.muz_player3)
-                        .diskCacheStrategy(DiskCacheStrategy.ALL)
-                        .into(artWork)
+                    // Загрузка обложки, если заменили её на другую
+                    songCurrent.artUri?.let {
+                        Log.d(TAG,"###MainActivity currentSong.observe artUri != null uri = ${it.toUri()}")
+                        // Загрузка обложки
+                        showImageWithGlide(binding.root.context, it.toUri(), artWork)
+                    }
                 }
             }
         }
@@ -237,13 +234,23 @@ class MainActivity : AppCompatActivity() {
                     Glide.with(binding.root.context)
                         .load(it)
                         .placeholder(R.drawable.muz_player3)
-                        .error(R.drawable.muz_player3)
+                        .error(R.drawable.muz_player2)
                         .diskCacheStrategy(DiskCacheStrategy.ALL)
                         .into(artWork)
                 }
             }
         }
        //initMenu() нельзя - иначе двоится меню тулбара
+    }
+
+    fun showImageWithGlide(context:Context, artUri:Uri, imageView: ImageView){
+        // Загрузка обложки
+        Glide.with(context)
+            .load(artUri)
+            .placeholder(R.drawable.muz_player3)
+            .error(R.drawable.muz_player2)
+            .diskCacheStrategy(DiskCacheStrategy.ALL)
+            .into(imageView)
     }
 
     private fun initViews() {

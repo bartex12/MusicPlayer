@@ -1,7 +1,7 @@
 package com.example.muzpleer.ui.player
 
-import android.content.ContentUris
 import android.content.Context
+import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -13,13 +13,17 @@ import android.widget.SeekBar
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.net.toUri
 import androidx.core.os.bundleOf
+import androidx.documentfile.provider.DocumentFile
 import androidx.fragment.app.Fragment
 import androidx.transition.ChangeBounds
 import androidx.transition.ChangeImageTransform
 import androidx.transition.TransitionManager
 import androidx.transition.TransitionSet
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.bumptech.glide.load.engine.GlideException
+import com.bumptech.glide.request.RequestListener
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentPlayerBinding
 import com.example.muzpleer.model.Song
@@ -137,30 +141,12 @@ class PlayerFragment : Fragment() {
             Log.d(TAG, "3*** PlayerFragment onViewCreated indexOfTrack = $indexOfTrack " +
                     "songAndPlaylist.playlist.size = ${songAndPlaylist.playlist.size} artUri = $trackArtUri")
 
-            viewModel.setPlaylistForHandler(songAndPlaylist.playlist, indexOfTrack)
-        }
-
-        viewModel.currentSong.observe(viewLifecycleOwner) { currentSong ->
-            currentSong?. let{track->
-                binding.tvTitle.text = track.title
-                binding.tvArtist.text = track.artist
-
-                if (track.artUri == null) {
-                    // Загружаем обложку, когда не меняли её
-                    val artUri = ContentUris.withAppendedId(
-                        ("content://media/external/audio/albumart").toUri(), track.albumId)
-                    Log.d(TAG,  "***3 PlayerFragment currentSong.observe Когда track.artUri = null artUri = $artUri")
-                    // Загрузка обложки
-                    showImageWithGlide(binding.root.context, artUri, binding.artworkImageView)
-                }else {
-                    // Загрузка обложки, если заменили её на другую
-                    track.artUri?.let {
-                        Log.d(TAG,"***4 PlayerFragment currentSong.observe artUri != null uri = ${it.toUri()}")
-                        // Загрузка обложки
-                        showImageWithGlide(binding.root.context, it.toUri(), binding.artworkImageView)
-                    }
-                }
+            //не работает - требует права доступа
+            trackArtUri?.let{
+                showImageWithGlide(binding.root.context, trackArtUri.toUri(), binding.artworkImageView)
             }
+
+            viewModel.setPlaylistForHandler(songAndPlaylist.playlist, indexOfTrack)
         }
 
         viewModel.isPlaying.observe(viewLifecycleOwner) { isPlaying ->
@@ -187,14 +173,65 @@ class PlayerFragment : Fragment() {
         }
     }
 
-    fun showImageWithGlide(context:Context, artUri:Uri, imageView: ImageView){
+    fun getRealPathFromUri(context: Context, uri: Uri): String? {
+        when (uri.scheme) {
+            "content" -> {
+                // Пытаемся получить путь через ContentResolver
+                val cursor = context.contentResolver.query(uri, null, null, null, null)
+                cursor?.use {
+                    if (it.moveToFirst()) {
+                        val columnIndex = it.getColumnIndex("_data")
+                        if (columnIndex != -1) {
+                            return it.getString(columnIndex)
+                        }
+                    }
+                }
+
+                // Если не получилось, пробуем получить через DocumentFile
+                try {
+                    val documentFile = DocumentFile.fromSingleUri(context, uri)
+                    return documentFile?.uri?.path
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+            "file" -> {
+                return uri.path
+            }
+        }
+        return null
+    }
+
+    fun showImageWithGlide(context: Context, artUri: Uri, imageView: ImageView){
         // Загрузка обложки
-        Glide.with(context)
-            .load(artUri)
-            .placeholder(R.drawable.muz_player3)
-            .error(R.drawable.muz_player3)
-            .diskCacheStrategy(DiskCacheStrategy.ALL)
-            .into(imageView)
+            Glide.with(context)
+                .load(artUri)
+                .placeholder(R.drawable.muz_player3)
+                .error(R.drawable.muz_player2)
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                .addListener(object : RequestListener<Drawable> {
+                    override fun onLoadFailed(
+                        e: GlideException?,
+                        model: Any?,
+                        target: com.bumptech.glide.request.target.Target<Drawable?>,
+                        isFirstResource: Boolean
+                    ): Boolean {
+                        Log.e(TAG, "Glide load failed for URI: $artUri", e)
+                        return false
+                    }
+
+                    override fun onResourceReady(
+                        resource: Drawable,
+                        model: Any,
+                        target: com.bumptech.glide.request.target.Target<Drawable?>?,
+                        dataSource: DataSource,
+                        isFirstResource: Boolean
+                    ): Boolean {
+                        Log.d(TAG, "Glide load success for URI: $artUri")
+                        return false
+                    }
+                })
+                .into(imageView)
     }
 
     private fun formatTime(millis: Long): String {
@@ -232,4 +269,25 @@ class PlayerFragment : Fragment() {
         viewModel.setPlayerVisibility(true)
     }
 }
-
+//не работает - требует права доступа
+//            // ✅ Конвертируем URI в реальный путь, если это DownloadProvider
+//            val realPath = trackArtUri?.let { getRealPathFromUri(requireContext(), it.toUri()) }
+//            Log.d(TAG, "3.1 *** PlayerFragment onViewCreated realPath = $realPath")
+//            // Загружаем изображение
+//            if (realPath != null) {
+//                // Используем реальный путь
+//                showImageWithGlide(requireContext(), Uri.parse("file://$realPath"), binding.artworkImageView)
+//            } else if (trackArtUri != null) {
+//                Log.d(TAG, "3.2 *** PlayerFragment onViewCreated realPath != null")
+//                // Пробуем напрямую с оригинальным URI
+//                try {
+//                    showImageWithGlide(requireContext(), trackArtUri.toUri(), binding.artworkImageView)
+//                } catch (e: Exception) {
+//                    // Если не получилось, используем placeholder
+//                    binding.artworkImageView.setImageResource(R.drawable.muz_player3)
+//                }
+//            } else {
+//                // Нет обложки
+//                Log.d(TAG, "3.3 *** PlayerFragment onViewCreated Нет обложки")
+//                binding.artworkImageView.setImageResource(R.drawable.muz_player3)
+//            }
