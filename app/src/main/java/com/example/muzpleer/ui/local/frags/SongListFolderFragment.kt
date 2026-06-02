@@ -21,6 +21,7 @@ import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.muzpleer.MainActivity
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentAlltracksBinding
 import com.example.muzpleer.model.Song
@@ -39,6 +40,12 @@ class SongListFolderFragment:Fragment() {
     private val viewModel: SharedViewModel by activityViewModel()
     private var isEditMode = false
     private var totalSongsCount = 0  // Храним общее количество песен (не отфильтрованных)
+    private var folderName: String? = null //имя папки
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        folderName = arguments?.getString("folderName")
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -51,6 +58,9 @@ class SongListFolderFragment:Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        // Устанавливаем заголовок
+        updateToolbarTitle("Папка: $folderName")
 
         initMenu()
 
@@ -128,6 +138,8 @@ class SongListFolderFragment:Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        //меняем заголовок тулбара по кнопке Назад
+        (requireActivity() as? MainActivity)?.resetToTabTitle()
         _binding = null
     }
 
@@ -143,6 +155,9 @@ class SongListFolderFragment:Fragment() {
         }
     }
 
+    private fun updateToolbarTitle(title: String) {
+        (requireActivity() as? MainActivity)?.updateToolbarTitle(title)
+    }
 
     private fun setupSearch() {
         // Устанавливаем слушатель на иконку поиска

@@ -60,6 +60,7 @@ class FolderFragment : Fragment(){
             // Навигация через Bundle
             val bundle = Bundle().apply {
                 putString("folderPath", folder.path)
+                putString("folderName", folder.name)
             }
             findNavController().navigate( R.id.songListFolderFragment, bundle)
         }

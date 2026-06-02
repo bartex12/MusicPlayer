@@ -21,6 +21,7 @@ import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.muzpleer.MainActivity
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentAlltracksBinding
 import com.example.muzpleer.model.Song
@@ -39,6 +40,12 @@ class SongListArtistFragment:Fragment() {
     private val viewModel: SharedViewModel by activityViewModel()
     private var isEditMode = false
     private var totalSongsCount = 0  // Храним общее количество песен (не отфильтрованных)
+    private var artistName: String? = null //имя артиста
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        artistName = arguments?.getString("artistName")
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -51,6 +58,9 @@ class SongListArtistFragment:Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        // Устанавливаем заголовок
+        updateToolbarTitle("Исполнитель: $artistName")
 
         initMenu()
 
@@ -127,7 +137,12 @@ class SongListArtistFragment:Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        (requireActivity() as? MainActivity)?.resetToTabTitle()
         _binding = null
+    }
+
+    private fun updateToolbarTitle(title: String) {
+        (requireActivity() as? MainActivity)?.updateToolbarTitle(title)
     }
 
     companion object {

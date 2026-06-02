@@ -57,7 +57,9 @@ class ArtistsFragment:Fragment() {
             // Навигация через Bundle
             val bundle = Bundle().apply {
                 putLong("artistId", artist.id)
-                Log.d(TAG,"33 ArtistsFragment onViewCreated bundle: artistId = ${artist.id}  from = 3")
+                putString("artistName", artist.name)
+                Log.d(TAG,"33 ArtistsFragment onViewCreated bundle: " +
+                        "artistId = ${artist.id}  artistName = ${artist.name}  from = 3")
             }
             findNavController().navigate( R.id.songListArtistFragment,bundle)
         }

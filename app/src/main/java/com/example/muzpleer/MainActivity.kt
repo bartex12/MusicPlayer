@@ -265,7 +265,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     // Для сброса к заголовку вкладки
-    fun resetToTabTitle() {
+    fun   resetToTabTitle() {
         // Получаем текущий фрагмент из NavController
         val currentFragment = navController.currentDestination?.let { destination ->
             when (destination.id) {
