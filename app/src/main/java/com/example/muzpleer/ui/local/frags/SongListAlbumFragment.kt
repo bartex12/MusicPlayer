@@ -38,7 +38,6 @@ class SongListAlbumFragment:Fragment() {
     private val binding get() = _binding!!
     private lateinit var adapter: SongsAdapter
     private val viewModel: SharedViewModel by activityViewModel()
-    private var isEditMode = false
     private var totalSongsCount = 0  // Храним общее количество песен (не отфильтрованных)
     private var albumName: String? = null //Название альбома
 

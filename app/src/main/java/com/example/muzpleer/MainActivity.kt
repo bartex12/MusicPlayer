@@ -46,7 +46,6 @@ import com.example.muzpleer.ui.local.TabLocalFragment
 import com.example.muzpleer.ui.local.helper.IPreferenceHelper
 import com.example.muzpleer.ui.local.helper.PreferenceHelperImpl
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
-import com.example.muzpleer.ui.player.PlayerFragment
 import com.example.muzpleer.util.toast
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
@@ -568,7 +567,7 @@ class MainActivity : AppCompatActivity() {
     private fun rateApp() {
         try {
             val intent = Intent(Intent.ACTION_VIEW).apply {
-                data = Uri.parse("market://details?id=$packageName")
+                data ="market://details?id=$packageName".toUri()
                 setPackage("com.android.vending") // Направляем в Google Play
             }
 
@@ -578,7 +577,7 @@ class MainActivity : AppCompatActivity() {
             // Если Google Play не установлен, открываем в браузере
             try {
                 val intent = Intent(Intent.ACTION_VIEW).apply {
-                    data = Uri.parse("https://play.google.com/store/apps/details?id=$packageName")
+                    data ="https://play.google.com/store/apps/details?id=$packageName".toUri()
                 }
                 startActivity(intent)
             } catch (e: Exception) {
