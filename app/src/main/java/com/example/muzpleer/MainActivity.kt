@@ -32,6 +32,7 @@ import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
+import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
@@ -265,9 +266,21 @@ class MainActivity : AppCompatActivity() {
 
     // Для сброса к заголовку вкладки
     fun resetToTabTitle() {
-        val currentTab = (supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main) as? TabLocalFragment)
-        currentTab?.let {
-            val currentPosition = it.viewPager.currentItem
+        // Получаем текущий фрагмент из NavController
+        val currentFragment = navController.currentDestination?.let { destination ->
+            when (destination.id) {
+                R.id.tabLocalFragment -> {
+                    // Получаем TabLocalFragment из NavHost
+                    val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main) as? NavHostFragment
+                    val childFragment = navHostFragment?.childFragmentManager?.fragments?.firstOrNull()
+                    (childFragment as? TabLocalFragment)
+                }
+                else -> null
+            }
+        }
+
+        if (currentFragment is TabLocalFragment) {
+            val currentPosition = currentFragment.viewPager.currentItem
             val tabTitle = when (currentPosition) {
                 0 -> "Песни"
                 1 -> "Папки"
@@ -278,6 +291,9 @@ class MainActivity : AppCompatActivity() {
                 else -> "Музыка на ладони"
             }
             binding.appBarMain.mainTitle.text = tabTitle
+        } else {
+            // Если не на вкладках, ставим стандартный заголовок
+            binding.appBarMain.mainTitle.text = "Музыка на ладони"
         }
     }
 
@@ -524,6 +540,8 @@ class MainActivity : AppCompatActivity() {
         }else{
             Log.d(TAG, "MainActivity onBackPressed  это НЕ TabLocalFragment ")
             super.onBackPressed()
+            // После возврата обновляем заголовок nek,fhf
+            resetToTabTitle()
         }
     }
 

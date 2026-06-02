@@ -23,6 +23,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.muzpleer.MainActivity
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentAlltracksForPlaylistBinding
 import com.example.muzpleer.model.Song
@@ -69,13 +70,22 @@ class SongPlaylistFragment:Fragment() {
         // Сброс режима редактирования при каждом открытии фрагмента
         resetEditModeOnStart()
 
-        adapter = SongsPlaylistAdapter(viewModel, { song ->
+        // Получаем название плейлиста из аргументов или ViewModel
+        val playlistName = arguments?.getString("playlistName")
+            ?: viewModel.getCurrentPlaylist()?.playlistName
+
+        // Устанавливаем заголовок
+        updateToolbarTitle("Плейлист: $playlistName")
+
+        adapter = SongsPlaylistAdapter(viewModel) { song ->
             val playlistSongs=
                 viewModel.getCurrentPlaylist()?.playlistSongs ?: listOf()
-             //можно было взять и из currentFilteredPlaylistSongs
-            Log.d(TAG,  "!@#@ SongPlaylistFragment размер плейлиста = " +
-                    "${playlistSongs.size} имя первой песни плейлиста " +
-                        "= ${playlistSongs.first().title} "  )
+            //можно было взять и из currentFilteredPlaylistSongs
+            Log.d(
+                TAG, "!@#@ SongPlaylistFragment размер плейлиста = " +
+                        "${playlistSongs.size} имя первой песни плейлиста " +
+                        "= ${playlistSongs.first().title} "
+            )
 
             viewModel.setSongAndPlaylist(
                 SongAndPlaylist(
@@ -84,7 +94,7 @@ class SongPlaylistFragment:Fragment() {
                 )
             )
             viewModel.setCurrentSong(song)
-        })
+        }
 
         // Настраиваем ItemTouchHelper
         val callback=ItemTouchHelperCallback(adapter)
@@ -161,16 +171,21 @@ class SongPlaylistFragment:Fragment() {
 
     override fun onPause() {
         super.onPause()
-
         // Сбрасываем режим редактирования при уходе с фрагмента
         resetEditModeOnPause()
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
+        // Сбрасываем заголовок при уходе с фрагмента
+        (requireActivity() as? MainActivity)?.resetToTabTitle()
         // Сбрасываем режим редактирования при уничтожении вью
         resetEditModeOnPause()
         _binding = null
+    }
+
+    private fun updateToolbarTitle(title: String) {
+        (requireActivity() as? MainActivity)?.updateToolbarTitle(title)
     }
 
     private fun resetEditModeOnPause() {
