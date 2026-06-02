@@ -41,6 +41,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.example.muzpleer.databinding.ActivityMainBinding
 import com.example.muzpleer.model.Song
+import com.example.muzpleer.ui.local.TabLocalFragment
 import com.example.muzpleer.ui.local.helper.IPreferenceHelper
 import com.example.muzpleer.ui.local.helper.PreferenceHelperImpl
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
@@ -256,6 +257,28 @@ class MainActivity : AppCompatActivity() {
             }
         }
        //initMenu() нельзя - иначе двоится меню тулбара
+    }
+
+    fun updateToolbarTitle(title: String) {
+        binding.appBarMain.mainTitle.text = title
+    }
+
+    // Для сброса к заголовку вкладки
+    fun resetToTabTitle() {
+        val currentTab = (supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main) as? TabLocalFragment)
+        currentTab?.let {
+            val currentPosition = it.viewPager.currentItem
+            val tabTitle = when (currentPosition) {
+                0 -> "Песни"
+                1 -> "Папки"
+                2 -> "Избранное"
+                3 -> "Плейлисты"
+                4 -> "Альбомы"
+                5 -> "Исполнители"
+                else -> "Музыка на ладони"
+            }
+            binding.appBarMain.mainTitle.text = tabTitle
+        }
     }
 
     private fun formatTime(millis: Long): String {

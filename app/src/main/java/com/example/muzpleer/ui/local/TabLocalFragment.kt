@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.viewpager.widget.ViewPager
+import com.example.muzpleer.MainActivity
 import com.example.muzpleer.databinding.FragmentTabslocalBinding
 import com.example.muzpleer.ui.local.adapters.ViewPageAdapterLocal
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
@@ -42,9 +43,22 @@ class TabLocalFragment: Fragment()  {
         Log.d(TAG, "#TabLocalFragment onViewCreated:  ")
         initViews()
         initPageAdapter()
-
         //устанавливаем текущую вкладку - берём из преференсис
         viewPager.currentItem  =  viewModel.getTabsLocalPosition()
+
+        // Устанавливаем слушатель на TabLayout
+        tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+            override fun onTabSelected(tab: TabLayout.Tab?) {
+                val title = tab?.text?.toString() ?: ""
+                (requireActivity() as? MainActivity)?.updateToolbarTitle(title)
+            }
+            override fun onTabUnselected(tab: TabLayout.Tab?) {
+                // Не используем
+            }
+            override fun onTabReselected(tab: TabLayout.Tab?) {
+                // Не используем
+            }
+        })
     }
 
     override fun onPause() {
@@ -66,7 +80,4 @@ class TabLocalFragment: Fragment()  {
         tabLayout.setTabTextColors(Color.WHITE, Color.GREEN)
         tabLayout.setSelectedTabIndicatorColor(Color.GREEN)
     }
-
-
-
 }
