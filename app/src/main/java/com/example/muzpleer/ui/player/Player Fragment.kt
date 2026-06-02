@@ -1,6 +1,8 @@
 package com.example.muzpleer.ui.player
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
@@ -31,6 +33,7 @@ import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 import com.google.android.material.snackbar.Snackbar
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 import java.io.File
+import java.io.FileOutputStream
 
 class PlayerFragment : Fragment() {
     private var _binding: FragmentPlayerBinding? = null
@@ -226,7 +229,7 @@ class PlayerFragment : Fragment() {
             }
 
         } catch (e: Exception) {
-            Log.e(TAG, "Error in diagnostic: ${e.message}")
+            Log.e(TAG, "❌ Error in diagnostic: ${e.message}")
         }
     }
 
@@ -236,7 +239,7 @@ class PlayerFragment : Fragment() {
                 .load(artUri)
                 .placeholder(R.drawable.muz_player3)
                 .error(R.drawable.muz_player2)
-                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
                 .addListener(object : RequestListener<Drawable> {
                     override fun onLoadFailed(
                         e: GlideException?,
@@ -244,7 +247,7 @@ class PlayerFragment : Fragment() {
                         target: com.bumptech.glide.request.target.Target<Drawable?>,
                         isFirstResource: Boolean
                     ): Boolean {
-                        Log.e(TAG, "Glide load failed for URI: $artUri", e)
+                        Log.e(TAG, " ❌ Glide load failed for URI: $artUri", e)
                         return false
                     }
 
@@ -255,11 +258,24 @@ class PlayerFragment : Fragment() {
                         dataSource: DataSource,
                         isFirstResource: Boolean
                     ): Boolean {
-                        Log.d(TAG, "Glide load success for URI: $artUri")
+                        Log.d(TAG, "✅Glide load success for URI: $artUri")
+                        Log.d(TAG, "✅ DataSource: $dataSource") // 👈 Важно! Покажет откуда загружено
                         return false
                     }
                 })
                 .into(imageView)
+    }
+
+    private fun saveArtworkToCache(uri: Uri, bitmap: Bitmap, songId: Long): String {
+        val cacheDir = File(requireContext().cacheDir, "album_art")
+        if (!cacheDir.exists()) cacheDir.mkdirs()
+
+        val cacheFile = File(cacheDir, "song_$songId.jpg")
+        FileOutputStream(cacheFile).use { out ->
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out)
+        }
+
+        return cacheFile.absolutePath
     }
 
     private fun formatTime(millis: Long): String {
@@ -297,54 +313,3 @@ class PlayerFragment : Fragment() {
         viewModel.setPlayerVisibility(true)
     }
 }
-//не работает - требует права доступа
-//            // ✅ Конвертируем URI в реальный путь, если это DownloadProvider
-//            val realPath = trackArtUri?.let { getRealPathFromUri(requireContext(), it.toUri()) }
-//            Log.d(TAG, "3.1 *** PlayerFragment onViewCreated realPath = $realPath")
-//            // Загружаем изображение
-//            if (realPath != null) {
-//                // Используем реальный путь
-//                showImageWithGlide(requireContext(), Uri.parse("file://$realPath"), binding.artworkImageView)
-//            } else if (trackArtUri != null) {
-//                Log.d(TAG, "3.2 *** PlayerFragment onViewCreated realPath != null")
-//                // Пробуем напрямую с оригинальным URI
-//                try {
-//                    showImageWithGlide(requireContext(), trackArtUri.toUri(), binding.artworkImageView)
-//                } catch (e: Exception) {
-//                    // Если не получилось, используем placeholder
-//                    binding.artworkImageView.setImageResource(R.drawable.muz_player3)
-//                }
-//            } else {
-//                // Нет обложки
-//                Log.d(TAG, "3.3 *** PlayerFragment onViewCreated Нет обложки")
-//                binding.artworkImageView.setImageResource(R.drawable.muz_player3)
-//            }
-
-//              fun getRealPathFromUri(context: Context, uri: Uri): String? {
-//        when (uri.scheme) {
-//            "content" -> {
-//                // Пытаемся получить путь через ContentResolver
-//                val cursor = context.contentResolver.query(uri, null, null, null, null)
-//                cursor?.use {
-//                    if (it.moveToFirst()) {
-//                        val columnIndex = it.getColumnIndex("_data")
-//                        if (columnIndex != -1) {
-//                            return it.getString(columnIndex)
-//                        }
-//                    }
-//                }
-//
-//                // Если не получилось, пробуем получить через DocumentFile
-//                try {
-//                    val documentFile = DocumentFile.fromSingleUri(context, uri)
-//                    return documentFile?.uri?.path
-//                } catch (e: Exception) {
-//                    e.printStackTrace()
-//                }
-//            }
-//            "file" -> {
-//                return uri.path
-//            }
-//        }
-//        return null
-//    }
