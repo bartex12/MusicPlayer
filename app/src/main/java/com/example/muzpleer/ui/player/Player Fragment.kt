@@ -52,14 +52,18 @@ class PlayerFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        // Устанавливаем заголовок
-        updateToolbarTitle("Аудиоплеер")
 
         setupControls()
         observeViewModel()
 
         // Скрыть плеер при открытии фрагмента
         hideActivityPlayer()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Устанавливаем заголовок
+        updateToolbarTitle("Аудиоплеер")
     }
 
     private fun updateToolbarTitle(title: String) {

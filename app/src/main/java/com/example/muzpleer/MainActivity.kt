@@ -277,7 +277,6 @@ class MainActivity : AppCompatActivity() {
                 else -> null
             }
         }
-
         if (currentFragment is TabLocalFragment) {
             val currentPosition = currentFragment.viewPager.currentItem
             val tabTitle = when (currentPosition) {
