@@ -263,6 +263,10 @@ class MainActivity : AppCompatActivity() {
         binding.appBarMain.mainTitle.text = title
     }
 
+    fun getCurrentTitle(): String {
+        return binding.appBarMain.mainTitle.text.toString()
+    }
+
     // Для сброса к заголовку вкладки
     fun   resetToTabTitle() {
         // Получаем текущий фрагмент из NavController
@@ -517,8 +521,8 @@ class MainActivity : AppCompatActivity() {
         }else{
             Log.d(TAG, "MainActivity onBackPressed  это НЕ TabLocalFragment ")
             super.onBackPressed()
-            // После возврата обновляем заголовок nek,fhf
-            resetToTabTitle()
+            // После возврата нельзя делать resetToTabTitle() - всё сделано
+        // через запоминание предыдужего заголовка
         }
     }
 

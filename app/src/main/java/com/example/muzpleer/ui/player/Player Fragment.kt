@@ -40,6 +40,7 @@ class PlayerFragment : Fragment() {
     private val binding get() = _binding!!
     private val viewModel: SharedViewModel by activityViewModel()
     private var isExpanded = false
+    private var previousTitle: String = "" // Сохраняем предыдущий заголовок
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -52,6 +53,10 @@ class PlayerFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        // Сохраняем текущий заголовок перед сменой
+        previousTitle = (requireActivity() as? MainActivity)?.getCurrentTitle() ?: "Музыка на ладони"
+        Log.d(TAG, "=== === PlayerFragment onViewCreated previousTitle = $previousTitle")
 
         setupControls()
         observeViewModel()
@@ -310,11 +315,21 @@ class PlayerFragment : Fragment() {
     override fun onDestroyView() {
 
         // Сбрасываем заголовок при уходе с фрагмента
-        (requireActivity() as? MainActivity)?.resetToTabTitle()
+        //(requireActivity() as? MainActivity)?.resetToTabTitle()
+
+        // Восстанавливаем предыдущий заголовок при уходе с фрагмента
+        restorePreviousTitle()
+
         // Показать нижний плеер при закрытии фрагмента
         showActivityPlayer()
         _binding = null
         super.onDestroyView()
+    }
+
+    private fun restorePreviousTitle() {
+        if (previousTitle.isNotEmpty()) {
+            (requireActivity() as? MainActivity)?.updateToolbarTitle(previousTitle)
+        }
     }
 
     companion object {
