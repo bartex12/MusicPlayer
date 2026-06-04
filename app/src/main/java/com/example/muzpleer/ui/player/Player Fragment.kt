@@ -25,6 +25,7 @@ import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
+import com.example.muzpleer.MainActivity
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentPlayerBinding
 import com.example.muzpleer.model.Song
@@ -51,12 +52,18 @@ class PlayerFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        // Устанавливаем заголовок
+        updateToolbarTitle("Аудиоплеер")
 
         setupControls()
         observeViewModel()
-       // viewModel.getCurrentSong()?. let{viewModel.setCurrentSong(it)}
+
         // Скрыть плеер при открытии фрагмента
         hideActivityPlayer()
+    }
+
+    private fun updateToolbarTitle(title: String) {
+        (requireActivity() as? MainActivity)?.updateToolbarTitle(title)
     }
 
     private fun setupControls() {
@@ -297,7 +304,10 @@ class PlayerFragment : Fragment() {
     }
 
     override fun onDestroyView() {
-        // Показать плеер при закрытии фрагмента
+
+        // Сбрасываем заголовок при уходе с фрагмента
+        (requireActivity() as? MainActivity)?.resetToTabTitle()
+        // Показать нижний плеер при закрытии фрагмента
         showActivityPlayer()
         _binding = null
         super.onDestroyView()

@@ -538,6 +538,7 @@ class SharedViewModel(
     fun setSelectedPosition(position: Int) { _selectedSongPosition.value = position }
 
     fun setSelectedAlbumPosition(position: Int) { _selectedAlbumPosition.value = position }
+    fun getSelectedAlbumPosition():Int = selectedAlbumPosition.value?:0
     fun setSelectedArtistPosition(position: Int) { _selectedArtistPosition.value = position }
     fun setSelectedFolderPosition(position: Int) { _selectedFolderPosition.value = position }
     fun setSelectedPlaylistPosition(position: Int) { _selectedPlaylistPosition.value = position }

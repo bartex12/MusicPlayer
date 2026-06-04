@@ -21,6 +21,7 @@ class PreferenceHelperImpl(private  val app: Application): IPreferenceHelper {
         const val CURRENT_SONG_KEY = "CURRENT_SONG_KEY"
         const val FIRST_POSITION_FAVORITE_SONG = "FIRST_POSITION_FAVORITE_SONG"
         const val INDEX_OF_CURRENT_SONG = "INDEX_OF_CURRENT_SONG"
+        const val TOOLBAR_TITLE = "TOOLBAR_TITLE"
     }
 
     private val prefs: SharedPreferences by lazy {
@@ -171,6 +172,7 @@ class PreferenceHelperImpl(private  val app: Application): IPreferenceHelper {
         putValue(INDEX_OF_CURRENT_SONG to index )
         Log.d(TAG,"PreferenceHelper saveIndexOfCurrentSong index = $index" )
     }
+
 
     fun getSoundLevel(): Int {
         return prefs.getString("sound_level", "80")?.toInt()?: 80

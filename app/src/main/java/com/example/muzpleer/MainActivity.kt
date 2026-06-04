@@ -124,7 +124,6 @@ class MainActivity : AppCompatActivity() {
         with(binding.appBarMain.toolbar.findViewById<TextView>(R.id.main_title)){
             textSize = 16f
             setTextColor(Color.WHITE)
-            text = context.getString(R.string.app_name2)
         }
         val drawerLayout: DrawerLayout = binding.drawerLayout
         val navView: NavigationView = binding.navView
@@ -260,6 +259,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun updateToolbarTitle(title: String) {
+        Log.d(TAG, "### ### MainActivity updateToolbarTitle title = $title ")
         binding.appBarMain.mainTitle.text = title
     }
 
@@ -362,31 +362,10 @@ class MainActivity : AppCompatActivity() {
             if (savedSongId != -1L) {
                 viewModel.setCurrentSongById(savedSongId)
             }
+            //восстанавливаем заголовок тулбара
+            resetToTabTitle()
             Log.d(TAG, "###MainActivity onCreate savedSongId = $savedSongId CurrentSong =  ${ viewModel.getCurrentSong()?.title}")
         }
-        //todo потом изменить на загрузку из базы
-        viewModel.getRepositorySong {listSong->  //загрузка из базы
-            Log.d(TAG, "###MainActivity startMediaScan listSong size = ${listSong.size}")
-//            if (listSong.isEmpty()){
-//                Log.d(TAG, "###MainActivity startMediaScan viewModel.scanMedia()")
-//                viewModel.scanMedia()
-//            }else{
-//                Log.d(TAG, "###MainActivity startMediaScan viewModel.getAllMediaFiles()")
-//                viewModel.getAllMediaFiles(listSong)
-//            }
-        }
-
-
-
-//        val prefs = getSharedPreferences("app_prefs", MODE_PRIVATE)
-//        if (prefs.getBoolean("first_run", true)) {
-//            viewModel.scanMedia()
-//            Log.d(TAG, "###MainActivity startMediaScan viewModel.scanMedia()")
-//            prefs.edit { putBoolean("first_run", false) }
-//        } else {
-//            viewModel.getAllMediaFiles()
-//            Log.d(TAG, "###MainActivity startMediaScan viewModel.getAllMediaFiles()")
-//        }
     }
 
     override fun onSupportNavigateUp(): Boolean {

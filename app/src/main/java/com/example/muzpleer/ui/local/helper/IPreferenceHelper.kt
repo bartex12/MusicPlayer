@@ -36,4 +36,5 @@ interface IPreferenceHelper {
 
     fun getIndexOfCurrentSong(): Int
     fun saveIndexOfCurrentSong(index: Int)
+
 }

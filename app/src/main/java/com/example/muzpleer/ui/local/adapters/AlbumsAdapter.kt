@@ -51,7 +51,6 @@ class AlbumsAdapter(
 
     override fun onBindViewHolder(holder: AlbumViewHolder, position: Int) {
         holder.bind(albums[position])
-
         // Следим за изменениями выбранной позиции
         viewModel.selectedAlbumPosition
             .observe(holder.itemView.context as LifecycleOwner) { selectedPos ->
