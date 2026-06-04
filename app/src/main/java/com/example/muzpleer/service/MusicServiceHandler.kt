@@ -64,6 +64,12 @@ class MusicServiceHandler(
     }
 
     fun setPlaylist(tracks: List<Song>, startIndex: Int = 0) {
+        // Проверяем, не тот ли это же плейлист и тот же трек
+        if (playlist == tracks && currentIndex == startIndex && player?.isPlaying == true) {
+            // Уже играет этот же трек, ничего не делаем
+            Log.d(TAG, "@@@MusicServiceHandler setPlaylist: тот же трек уже играет, пропускаем")
+            return
+        }
         playlist = tracks
         currentIndex = startIndex
         playTrack(startIndex)
@@ -111,10 +117,6 @@ class MusicServiceHandler(
     }
 
     fun getCurrentPosition(): Long = player?.currentPosition ?: 0
-
-//    fun getDuration(): Long = player?.duration ?: 0
-//
-//    fun isPlaying(): Boolean = player?.isPlaying == true
 
     private fun startPositionUpdates() {
         positionUpdateJob?.cancel()

@@ -162,7 +162,6 @@ class PlayerFragment : Fragment() {
                     binding.artworkImageView.setImageResource(R.drawable.muz_player2)
                 }
             }
-            viewModel.setPlaylistForHandler(songAndPlaylist.playlist, indexOfTrack)
         }
 
 
