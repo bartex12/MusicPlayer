@@ -175,11 +175,18 @@ class PlayerFragment : Fragment() {
                     showImageWithGlide(binding.root.context, artUri.toUri(), binding.artworkImageView)
                 } catch (e: SecurityException) {
                     Log.e(TAG, "Security exception when loading: ${e.message}")
-                    binding.artworkImageView.setImageResource(R.drawable.muz_player2)
+                    binding.artworkImageView.setImageResource(R.drawable.muz_player3)
                 }
-            }
+            }?: binding.artworkImageView.setImageResource(R.drawable.muz_player3)
         }
 
+        // ✅ НОВЫЙ НАБЛЮДАТЕЛЬ: следим за изменением текущей песни
+        viewModel.currentSong.observe(viewLifecycleOwner) { song ->
+            if (song != null) {
+                Log.d(TAG, "currentSong changed: ${song.title}")
+                updateUI(song)
+            }
+        }
 
         viewModel.isPlaying.observe(viewLifecycleOwner) { isPlaying ->
             binding.playPauseButton.setImageResource(
@@ -203,6 +210,21 @@ class PlayerFragment : Fragment() {
                 viewModel.clearError()
             }
         }
+    }
+
+    private fun updateUI(song: Song) {
+        binding.tvTitle.text = song.title
+        binding.tvArtist.text = song.artist
+
+        song.artUri?.let{artUri->
+            // Загружаем изображение
+            try {
+                showImageWithGlide(binding.root.context, artUri.toUri(), binding.artworkImageView)
+            } catch (e: SecurityException) {
+                Log.e(TAG, "Security exception when loading: ${e.message}")
+                binding.artworkImageView.setImageResource(R.drawable.muz_player3)
+            }
+        }?: binding.artworkImageView.setImageResource(R.drawable.muz_player3)
     }
 
     private fun checkUriPermission(uri: Uri) {
@@ -252,7 +274,7 @@ class PlayerFragment : Fragment() {
             Glide.with(context)
                 .load(artUri)
                 .placeholder(R.drawable.muz_player3)
-                .error(R.drawable.muz_player2)
+                .error(R.drawable.muz_player3)
                 .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
                 .addListener(object : RequestListener<Drawable> {
                     override fun onLoadFailed(

@@ -121,22 +121,27 @@ class SongsAdapter(
                     ("content://media/external/audio/albumart").toUri(),track.albumId)
                 Log.d(TAG, "WWW 2 SongAdapter bind  track.artUri==null artUri = $artUri")
 
-                // Загрузка обложки
-                showImageWithGlide(binding.root.context, artUri, binding.trackArtwork)
+                try {
+                    // Загрузка обложки
+                    showImageWithGlide(binding.root.context, artUri, binding.trackArtwork)
+                }catch (e: Exception){
+                    Log.e(TAG, " ❌ Glide load failed in SongsAdapter for URI: $artUri", e)
+                    binding.trackArtwork.setImageResource(R.drawable.muz_player3)
+                }
+
             }else {
                 // Загрузка обложки, если заменили её на другую
                 track.artUri?.let {
                     Log.d(TAG,"WWW 3 SongAdapter bind artUri != null uri = ${it.toUri()}")
-                    // Загрузка обложки
-                    showImageWithGlide(binding.root.context, it.toUri(), binding.trackArtwork)
+                    try {
+                        // Загрузка обложки
+                        showImageWithGlide(binding.root.context, it.toUri(), binding.trackArtwork)
+                    }catch (e: Exception){
+                        Log.e(TAG, " ❌ Glide load failed in SongsAdapter for URI: $it", e)
+                        binding.trackArtwork.setImageResource(R.drawable.muz_player3)
+                    }
                 }
             }
-
-//            track.artUri?.let {
-//                Log.d(TAG,"WWW 3 SongAdapter bind artUri != null uri = ${it.toUri()}")
-//                // Загрузка обложки
-//                showImageWithGlide(binding.root.context, it.toUri(), binding.trackArtwork)
-//            }
 
             binding.root.setOnClickListener {
                 viewModel.setSelectedPosition(absoluteAdapterPosition)
@@ -163,7 +168,7 @@ class SongsAdapter(
                     target: com.bumptech.glide.request.target.Target<Drawable?>,
                     isFirstResource: Boolean
                 ): Boolean {
-                    Log.e(MainActivity.Companion.TAG, " ❌ Glide load failed in SongsAdapter for URI: $artUri", e)
+                    Log.e(TAG, " ❌ Glide load failed in SongsAdapter for URI: $artUri", e)
                     return false
                 }
 

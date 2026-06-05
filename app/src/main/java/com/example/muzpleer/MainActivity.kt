@@ -312,7 +312,7 @@ class MainActivity : AppCompatActivity() {
         Glide.with(context)
             .load(artUri)
             .placeholder(R.drawable.muz_player3)
-            .error(R.drawable.muz_player2)
+            .error(R.drawable.muz_player3)
             .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
             .addListener(object : RequestListener<Drawable> {
                 override fun onLoadFailed(
