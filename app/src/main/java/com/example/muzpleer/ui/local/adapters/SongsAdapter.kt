@@ -6,6 +6,7 @@ import android.content.ContentUris
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.util.Log
 import android.view.LayoutInflater
@@ -23,7 +24,11 @@ import androidx.navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.bumptech.glide.load.engine.GlideException
+import com.bumptech.glide.request.RequestListener
+import com.example.muzpleer.MainActivity
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.ItemMusicBinding
 import com.example.muzpleer.model.Song
@@ -102,25 +107,36 @@ class SongsAdapter(
         private lateinit var currentSong: Song
 
         fun bind(track: Song) {
+            Log.d(TAG, "WWW-1 SongAdapter track = $track  ")
             currentSong = track
 
             binding.trackTitle.text = track.title
             binding.trackArtist.text = track.artist
             binding.trackDuration.text = track.duration.formatAsTime()
 
+            Log.d(TAG, "WWW 1 SongAdapter bind track.artUri =  ${track.artUri}")
             if (track.artUri == null){
-                // Загружаем обложку, когда не меняли её
-                val albumArtUri = ContentUris.withAppendedId(
-                    "content://media/external/audio/albumart".toUri(), track.albumId)
+                // Загружаем обложку, когда не изменяли её
+                val artUri = ContentUris.withAppendedId(
+                    ("content://media/external/audio/albumart").toUri(),track.albumId)
+                Log.d(TAG, "WWW 2 SongAdapter bind  track.artUri==null artUri = $artUri")
+
                 // Загрузка обложки
-                showImageWithGlide(binding.root.context, albumArtUri, binding.trackArtwork)
+                showImageWithGlide(binding.root.context, artUri, binding.trackArtwork)
             }else {
                 // Загрузка обложки, если заменили её на другую
-                track.artUri?. let{
-                    val uri =  it.toUri()
-                    showImageWithGlide(binding.root.context, uri, binding.trackArtwork)
+                track.artUri?.let {
+                    Log.d(TAG,"WWW 3 SongAdapter bind artUri != null uri = ${it.toUri()}")
+                    // Загрузка обложки
+                    showImageWithGlide(binding.root.context, it.toUri(), binding.trackArtwork)
                 }
             }
+
+//            track.artUri?.let {
+//                Log.d(TAG,"WWW 3 SongAdapter bind artUri != null uri = ${it.toUri()}")
+//                // Загрузка обложки
+//                showImageWithGlide(binding.root.context, it.toUri(), binding.trackArtwork)
+//            }
 
             binding.root.setOnClickListener {
                 viewModel.setSelectedPosition(absoluteAdapterPosition)
@@ -133,13 +149,36 @@ class SongsAdapter(
         }
     }
 
-    fun showImageWithGlide(context:Context, artUri:Uri, imageView: ImageView){
+    fun showImageWithGlide(context:Context, artUri: Any, imageView: ImageView){
         // Загрузка обложки
         Glide.with(context)
             .load(artUri)
             .placeholder(R.drawable.muz_player3)
             .error(R.drawable.muz_player3)
-            .diskCacheStrategy(DiskCacheStrategy.ALL)
+            .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
+            .addListener(object : RequestListener<Drawable> {
+                override fun onLoadFailed(
+                    e: GlideException?,
+                    model: Any?,
+                    target: com.bumptech.glide.request.target.Target<Drawable?>,
+                    isFirstResource: Boolean
+                ): Boolean {
+                    Log.e(MainActivity.Companion.TAG, " ❌ Glide load failed in SongsAdapter for URI: $artUri", e)
+                    return false
+                }
+
+                override fun onResourceReady(
+                    resource: Drawable,
+                    model: Any,
+                    target: com.bumptech.glide.request.target.Target<Drawable?>?,
+                    dataSource: DataSource,
+                    isFirstResource: Boolean
+                ): Boolean {
+                    Log.d(TAG, "✅Glide load success in SongsAdapter  for URI: $artUri")
+                    Log.d(TAG, "✅ DataSource in SongsAdapter : $dataSource") // 👈 Важно! Покажет откуда загружено
+                    return false
+                }
+            })
             .into(imageView)
     }
 

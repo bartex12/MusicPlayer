@@ -1482,5 +1482,12 @@ class SharedViewModel(
             }
         }
     }
-
+    //принудительное обновление обложек
+    fun refreshArtworks() {
+        viewModelScope.launch {
+            repository.refreshAllArtworks(App.instance)
+            // Перезагружаем списки песен
+            loadAllSongsForAdding()
+        }
+    }
 }

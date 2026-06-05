@@ -274,19 +274,6 @@ class PlayerFragment : Fragment() {
                     ): Boolean {
                         Log.d(TAG, "✅Glide load success for URI: $artUri")
                         Log.d(TAG, "✅ DataSource: $dataSource") // 👈 Важно! Покажет откуда загружено
-                        // Если загружено не из кэша, сохраняем локальную копию
-//                        if (dataSource != DataSource.DATA_DISK_CACHE &&
-//                            dataSource != DataSource.RESOURCE_DISK_CACHE &&
-//                            dataSource != DataSource.MEMORY_CACHE) {
-//
-//                            // Конвертируем Drawable в Bitmap
-//                            val bitmap = (resource as BitmapDrawable).bitmap
-//                            val songId = viewModel.getCurrentSong()?.id ?: return false
-//
-//                            // Сохраняем локальную копию и обновляем URI в базе
-//                            val localPath = saveArtworkToCache(artUri, bitmap, songId)
-//                            viewModel.updateSongArtUri(songId, "file://$localPath")
-//                        }
                         return false
                     }
                 })

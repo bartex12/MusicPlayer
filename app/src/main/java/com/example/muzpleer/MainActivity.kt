@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
+import android.graphics.drawable.Drawable
 import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.Build
@@ -40,13 +41,17 @@ import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import androidx.viewpager.widget.ViewPager
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.bumptech.glide.load.engine.GlideException
+import com.bumptech.glide.request.RequestListener
 import com.example.muzpleer.databinding.ActivityMainBinding
 import com.example.muzpleer.model.Song
 import com.example.muzpleer.ui.local.TabLocalFragment
 import com.example.muzpleer.ui.local.helper.IPreferenceHelper
 import com.example.muzpleer.ui.local.helper.PreferenceHelperImpl
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
+import com.example.muzpleer.ui.player.PlayerFragment
 import com.example.muzpleer.util.toast
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
@@ -248,12 +253,7 @@ class MainActivity : AppCompatActivity() {
                 currentSong?.artUri?. let{
                     currentSong.artUri= uri.toString()
                     Log.d(TAG, "3*** MainActivity coverImageUri.observe currentSong.artUri =  ${currentSong.artUri}")
-                    Glide.with(binding.root.context)
-                        .load(it)
-                        .placeholder(R.drawable.muz_player3)
-                        .error(R.drawable.muz_player2)
-                        .diskCacheStrategy(DiskCacheStrategy.ALL)
-                        .into(artWork)
+                    showImageWithGlide(binding.root.context, it, artWork)
                 }
             }
         }
@@ -307,13 +307,36 @@ class MainActivity : AppCompatActivity() {
         return String.format("%02d:%02d", minutes, seconds)
     }
 
-    fun showImageWithGlide(context:Context, artUri:Uri, imageView: ImageView){
+    fun showImageWithGlide(context:Context, artUri:Any, imageView: ImageView){
         // Загрузка обложки
         Glide.with(context)
             .load(artUri)
             .placeholder(R.drawable.muz_player3)
             .error(R.drawable.muz_player2)
-            .diskCacheStrategy(DiskCacheStrategy.ALL)
+            .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
+            .addListener(object : RequestListener<Drawable> {
+                override fun onLoadFailed(
+                    e: GlideException?,
+                    model: Any?,
+                    target: com.bumptech.glide.request.target.Target<Drawable?>,
+                    isFirstResource: Boolean
+                ): Boolean {
+                    Log.e(TAG, " ❌ Glide load failed in MainActivity for URI: $artUri", e)
+                    return false
+                }
+
+                override fun onResourceReady(
+                    resource: Drawable,
+                    model: Any,
+                    target: com.bumptech.glide.request.target.Target<Drawable?>?,
+                    dataSource: DataSource,
+                    isFirstResource: Boolean
+                ): Boolean {
+                    Log.d(TAG, "✅Glide load success in MainActivity  for URI: $artUri")
+                    Log.d(TAG, "✅ DataSource in MainActivity : $dataSource") // 👈 Важно! Покажет откуда загружено
+                    return false
+                }
+            })
             .into(imageView)
     }
 
@@ -374,6 +397,9 @@ class MainActivity : AppCompatActivity() {
               val artworkUri  =  getEmbeddedArtwork(this, it.mediaUri)
                 Log.d(TAG, "### !!! MainActivity startMediaScan artworkUri = $artworkUri")
             }
+
+            //Обновляем обложки принудительно //todo
+            viewModel.refreshArtworks()
 
             //восстанавливаем заголовок тулбара
             resetToTabTitle()

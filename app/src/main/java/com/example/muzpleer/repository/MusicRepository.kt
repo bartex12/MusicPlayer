@@ -12,6 +12,7 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.content.FileProvider
 import androidx.core.net.toUri
+import com.example.muzpleer.di.App
 import com.example.muzpleer.model.Song
 import com.example.muzpleer.room.dao.SongDao
 import com.example.muzpleer.room.entity.SongFile
@@ -115,7 +116,12 @@ class MusicRepository(
                     // её нужно всё время обновлять, если она != null
                     val isCoverNotNull = existingFile.artUri != null
 
-                    if (isModified || isMoved || isTitleChanged || isArtistChanged || isAlbumChanged || isCoverNotNull) {
+                    if (isModified || isMoved || isTitleChanged || isArtistChanged || isAlbumChanged) {
+                         // При изменении файла проверяем, не появилась ли новая встроенная обложка
+                        val embeddedArtUri = getEmbeddedArtwork(context, path)
+                        Log.d(TAG, " MMM MusicRepository scanMusicApi29Plus при изменениях embeddedArtUri = $embeddedArtUri ")
+                        val finalArtUri = embeddedArtUri ?: existingFile.artUri // Если нет встроенной, оставляем старую
+                        Log.d(TAG, " MMM MusicRepository scanMusicApi29Plus при изменениях finalArtUri = $finalArtUri ")
                         filesToUpdate.add(
                             SongFile(
                                 mediaStoreId = id,
@@ -131,7 +137,7 @@ class MusicRepository(
                                 size = sizeFile,
                                 dateAdded = dateAdded,
                                 folderPath = folderPath,
-                                artUri = existingFile.artUri,
+                                artUri = finalArtUri,
                                 // Новые поля - сохраняем существующие значения, если они есть
                                 author = existingFile.author ?: getAuthorFromMetadata(context, path),
                                 genre = existingFile.genre ?: getGenreFromMetadata(context, path),
@@ -142,6 +148,9 @@ class MusicRepository(
                     }
                 } ?: run {
                     // Новый файл
+                    // Новый файл - извлекаем встроенную обложку
+                    val embeddedArtUri = getEmbeddedArtwork(context, path)
+                    //Log.d(TAG, " MMM MusicRepository scanMusicApi29Plus Новый трек embeddedArtUri = $embeddedArtUri ")
                     filesToAdd.add(
                         SongFile(
                             mediaStoreId = id,
@@ -157,7 +166,7 @@ class MusicRepository(
                             size = sizeFile,
                             dateAdded = dateAdded,
                             folderPath = folderPath,
-                            artUri = null,
+                            artUri =  embeddedArtUri, // Сохраняем URI встроенной обложки
                             // Новые поля - извлекаем из метаданных
                             author = getAuthorFromMetadata(context, path),
                             genre = getGenreFromMetadata(context, path),
@@ -346,5 +355,71 @@ class MusicRepository(
 
     suspend fun getSongFileById(songId:Long):SongFile?{
         return songDao.getById(songId)
+    }
+
+    private fun getEmbeddedArtwork(context: Context, filePath: String): String? {
+        return try {
+            val retriever = MediaMetadataRetriever()
+            retriever.setDataSource(context, Uri.fromFile(File(filePath)))
+
+            val embeddedPicture = retriever.embeddedPicture
+            retriever.release()
+
+            if (embeddedPicture != null) {
+                // Сохраняем изображение в кэш и возвращаем URI
+                saveArtworkToCache(filePath, embeddedPicture)
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ Error extracting embedded artwork: ${e.message}")
+            null
+        }
+    }
+
+    private fun saveArtworkToCache(filePath: String, imageData: ByteArray): String? {
+        return try {
+            val fileName = "embedded_${filePath.hashCode()}.jpg"
+            val cacheFile = File(App.instance.cacheDir, "album_art/$fileName")
+
+            // Создаём директорию если не существует
+            cacheFile.parentFile?.mkdirs()
+
+            // Сохраняем изображение
+            FileOutputStream(cacheFile).use { outputStream ->
+                outputStream.write(imageData)
+            }
+
+            cacheFile.absolutePath
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ Error saving artwork to cache: ${e.message}")
+            null
+        }
+    }
+
+    suspend fun refreshAllArtworks(context: Context) {
+        Log.d(TAG, "****** MusicRepository refreshAllArtworks ")
+        val allSongs = songDao.getAllFiles()
+        val songsToUpdate = mutableListOf<SongFile>()
+
+        allSongs.forEach { songFile ->
+            // Пропускаем, если уже есть artUri и он существует
+            if (songFile.artUri != null && File(songFile.artUri).exists()) {
+                //Log.d(TAG, "***** MusicRepository refreshAllArtworks пропускаем трек ${songFile.title}")
+                return@forEach
+            }
+
+            // Пытаемся извлечь встроенную обложку
+            val embeddedArtUri = getEmbeddedArtwork(context, songFile.path)
+            //Log.d(TAG, "***** ***** MusicRepository refreshAllArtworks embeddedArtUri = $embeddedArtUri")
+            if (embeddedArtUri != null) {
+                songsToUpdate.add(songFile.copy(artUri = embeddedArtUri))
+            }
+        }
+
+        if (songsToUpdate.isNotEmpty()) {
+            songDao.updateAll(songsToUpdate)
+           // Log.d(TAG, "*****MusicRepository refreshAllArtworks Updated artworks for ${songsToUpdate.size} songs")
+        }
     }
 }
