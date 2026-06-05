@@ -1,6 +1,7 @@
 package com.example.muzpleer.ui.local.viewmodel
 
 import android.content.ContentUris
+import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
@@ -12,6 +13,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.RecyclerView
+import com.example.muzpleer.MainActivity
 import com.example.muzpleer.di.App
 import com.example.muzpleer.model.Album
 import com.example.muzpleer.model.Artist
@@ -702,10 +704,34 @@ class SharedViewModel(
     fun saveCoverToDatabase(uri: Uri) {
         viewModelScope.launch {
             _selectedSong.value?.let { selectedSong ->
-//                // Сохраняем в InternalStorage //todo пока не используется
-//                val coverPath =saveCoverToInternalStorage(uri, song)
-//                _coverPath.value = coverPath
-//                  Log.d(TAG, "111*** SharedViewModel saveCoverToDatabase coverPath = $coverPath")
+
+                val coverPath =copyAlbumArtToCache( App.instance, uri)
+                Log.d(TAG, "111*** ✅SharedViewModel saveCoverToDatabase coverPath = $coverPath  uri = $uri")
+//
+//                //записываем путь к файлу обложки в базу
+//                coverPath?. let{path->
+//                    repository.updateCoverPath(selectedSong.id, path)
+//                }?: repository.updateCoverPath(selectedSong.id, uri.toString())
+//
+//                // Обновляем песню в основном списке песен - нужны оба - _songs и _filteredSongs
+//                _songs.value = _songs.value?.map {s->
+//                    if (s.id == selectedSong.id) s.copy(artUri = coverPath) else s
+//                }
+//                _filteredSongs.value = _filteredSongs.value?. map{filteredSong->
+//                    if (filteredSong.id == selectedSong.id) filteredSong.copy(artUri = coverPath) else filteredSong
+//                }
+//                // Обновляем выбранную песню
+//                _selectedSong.value = selectedSong.copy(artUri = coverPath)
+//
+//                // Обновляем текущую песню если нужно
+//                _currentSong.value?.let { current ->
+//                    if (current.id == selectedSong.id) {
+//                        _currentSong.value = current.copy(artUri = coverPath)
+//                    }
+//                }
+
+                repository.updateCoverPath(selectedSong.id, uri.toString())
+
                 // Обновляем песню в основном списке песен - нужны оба - _songs и _filteredSongs
                 _songs.value = _songs.value?.map {s->
                     if (s.id == selectedSong.id) s.copy(artUri = uri.toString()) else s
@@ -713,9 +739,6 @@ class SharedViewModel(
                 _filteredSongs.value = _filteredSongs.value?. map{filteredSong->
                     if (filteredSong.id == selectedSong.id) filteredSong.copy(artUri = uri.toString()) else filteredSong
                 }
-                //записываем путь к файлу обложки в базу
-                repository.updateCoverPath(selectedSong.id, uri.toString())
-
                 // Обновляем выбранную песню
                 _selectedSong.value = selectedSong.copy(artUri = uri.toString())
 
@@ -785,6 +808,42 @@ class SharedViewModel(
             _coverImage.postValue(bitmap)
         } ?: run {
             _coverImage.postValue(null)
+        }
+    }
+
+    fun copyAlbumArtToCache(context: Context, sourceUri: Uri): String? {
+        try {
+            // 1. Создаем директорию album_art в кэше, если её нет
+            val cacheDir = File(context.cacheDir, "album_art")
+            if (!cacheDir.exists()) {
+                cacheDir.mkdirs()
+            }
+            // 2. Генерируем уникальное имя файла на основе хэш-кода пути URI
+            val fileName = "embedded_${sourceUri.toString().hashCode()}.jpg"
+            val destinationFile = File(cacheDir, fileName)
+
+            // 3. Открываем входящий поток через ContentResolver и исходящий в файл кэша
+            context.contentResolver.openInputStream(sourceUri).use { inputStream ->
+                if (inputStream == null) return null
+
+                FileOutputStream(destinationFile).use { outputStream ->
+                    // Копируем данные пачками по 4 КБ
+                    val buffer = ByteArray(4096)
+                    var bytesRead: Int
+                    while (inputStream.read(buffer).also { bytesRead = it } != -1) {
+                        outputStream.write(buffer, 0, bytesRead)
+                    }
+                }
+            }
+
+            // 4. Возвращаем абсолютный путь для сохранения в БД
+            val absolutePath = destinationFile.absolutePath
+            Log.d(TAG, "SharedViewModel copyAlbumArtToCache Файл успешно сохранен в кэш: $absolutePath")
+            return absolutePath
+
+        } catch (e: Exception) {
+            Log.e(TAG, " ❌SharedViewModel copyAlbumArtToCache Ошибка при копировании обложки в кэш", e)
+            return null
         }
     }
 

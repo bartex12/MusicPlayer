@@ -277,7 +277,7 @@ class MusicRepository(
     }
 
     suspend fun updateCoverPath(id : Long, coverPath:String) {
-        Log.d(TAG, "5*** MusicRepository updateCoverPath id = $id coverPath = $coverPath")
+        Log.d(TAG, "5*** MusicRepository updateCoverPath in database id = $id coverPath = $coverPath")
         songDao.updateCoverPath(id, coverPath)
         Log.d(TAG, "7***MusicRepository updateCoverPath  coverPath из базы = ${songDao.getById(id)?.artUri}")
     }
@@ -411,7 +411,7 @@ class MusicRepository(
 
             // Пытаемся извлечь встроенную обложку
             val embeddedArtUri = getEmbeddedArtwork(context, songFile.path)
-            //Log.d(TAG, "***** ***** MusicRepository refreshAllArtworks embeddedArtUri = $embeddedArtUri")
+            Log.d(TAG, "***** ***** MusicRepository refreshAllArtworks embeddedArtUri = $embeddedArtUri")
             if (embeddedArtUri != null) {
                 songsToUpdate.add(songFile.copy(artUri = embeddedArtUri))
             }
@@ -421,5 +421,11 @@ class MusicRepository(
             songDao.updateAll(songsToUpdate)
            // Log.d(TAG, "*****MusicRepository refreshAllArtworks Updated artworks for ${songsToUpdate.size} songs")
         }
+    }
+
+    suspend fun refreshOneArtwork(context: Context) {
+        Log.d(TAG, "***#*** MusicRepository refreshOneArtwork ")
+
+
     }
 }

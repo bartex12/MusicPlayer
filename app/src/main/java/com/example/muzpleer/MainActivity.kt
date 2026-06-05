@@ -390,13 +390,6 @@ class MainActivity : AppCompatActivity() {
             if (savedSongId != -1L) {
                 viewModel.setCurrentSongById(savedSongId)
             }
-            //попробуем найти файл-картинку в той же папке, что и сам трек через MediaMetadataRetriever.
-            val curSong = viewModel.getCurrentSong()
-            curSong?. let{
-                Log.d(TAG, "### !!! MainActivity startMediaScan mediaUri = ${it.mediaUri}")
-              val artworkUri  =  getEmbeddedArtwork(this, it.mediaUri)
-                Log.d(TAG, "### !!! MainActivity startMediaScan artworkUri = $artworkUri")
-            }
 
             //Обновляем обложки принудительно //todo
             viewModel.refreshArtworks()
@@ -425,26 +418,6 @@ class MainActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         Log.d(TAG, "###MainActivity onDestroy currentSong id =  ${currentSong?.id} индекс = ${viewModel.getIndexOfCurrentSong()}")
-    }
-
-    private fun getEmbeddedArtwork(context: Context, filePath: String): ByteArray? {
-        return try {
-            val retriever = MediaMetadataRetriever()
-            retriever.setDataSource(context, Uri.fromFile(File(filePath)))
-
-            val embeddedPicture = retriever.embeddedPicture
-            retriever.release()
-
-            if (embeddedPicture != null) {
-                Log.d(TAG, "### !!! MainActivity getEmbeddedArtwork embeddedPicture =  ${embeddedPicture.toString()}")
-                embeddedPicture
-            } else {
-                null
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Error extracting embedded artwork: ${e.message}")
-            null
-        }
     }
 
     private fun checkPermissions() {
