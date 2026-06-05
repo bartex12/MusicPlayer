@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
+import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -50,6 +51,7 @@ import com.example.muzpleer.util.toast
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import java.io.File
 
 class MainActivity : AppCompatActivity() {
 
@@ -365,9 +367,17 @@ class MainActivity : AppCompatActivity() {
             if (savedSongId != -1L) {
                 viewModel.setCurrentSongById(savedSongId)
             }
+            //попробуем найти файл-картинку в той же папке, что и сам трек через MediaMetadataRetriever.
+            val curSong = viewModel.getCurrentSong()
+            curSong?. let{
+                Log.d(TAG, "### !!! MainActivity startMediaScan mediaUri = ${it.mediaUri}")
+              val artworkUri  =  getEmbeddedArtwork(this, it.mediaUri)
+                Log.d(TAG, "### !!! MainActivity startMediaScan artworkUri = $artworkUri")
+            }
+
             //восстанавливаем заголовок тулбара
             resetToTabTitle()
-            Log.d(TAG, "###MainActivity onCreate savedSongId = $savedSongId CurrentSong =  ${ viewModel.getCurrentSong()?.title}")
+            Log.d(TAG, "###MainActivity startMediaScan savedSongId = $savedSongId CurrentSong =  ${ viewModel.getCurrentSong()?.title}")
         }
     }
 
@@ -386,10 +396,29 @@ class MainActivity : AppCompatActivity() {
                 "currentSong id =  ${currentSong?.id} индекс = ${viewModel.getIndexOfCurrentSong()}")
     }
 
-
     override fun onDestroy() {
         super.onDestroy()
         Log.d(TAG, "###MainActivity onDestroy currentSong id =  ${currentSong?.id} индекс = ${viewModel.getIndexOfCurrentSong()}")
+    }
+
+    private fun getEmbeddedArtwork(context: Context, filePath: String): ByteArray? {
+        return try {
+            val retriever = MediaMetadataRetriever()
+            retriever.setDataSource(context, Uri.fromFile(File(filePath)))
+
+            val embeddedPicture = retriever.embeddedPicture
+            retriever.release()
+
+            if (embeddedPicture != null) {
+                Log.d(TAG, "### !!! MainActivity getEmbeddedArtwork embeddedPicture =  ${embeddedPicture.toString()}")
+                embeddedPicture
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error extracting embedded artwork: ${e.message}")
+            null
+        }
     }
 
     private fun checkPermissions() {
@@ -522,7 +551,7 @@ class MainActivity : AppCompatActivity() {
             Log.d(TAG, "MainActivity onBackPressed  это НЕ TabLocalFragment ")
             super.onBackPressed()
             // После возврата нельзя делать resetToTabTitle() - всё сделано
-        // через запоминание предыдужего заголовка
+            // через запоминание предыдущего заголовка
         }
     }
 

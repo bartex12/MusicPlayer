@@ -178,8 +178,8 @@ class MusicRepository(
         }
 
         Log.d(TAG, "#%# MusicRepository scanMusicApi29Plus " +
-                "filesToAdd.size = ${filesToAdd.size}" +
-                "filesToUpdate.size = ${filesToUpdate.size}" +
+                "filesToAdd.size = ${filesToAdd.size}  " +
+                "filesToUpdate.size = ${filesToUpdate.size}  " +
                 "filesToDelete.size = ${filesToDelete.size}")
         // Применяем изменения
         withContext(Dispatchers.IO) {
