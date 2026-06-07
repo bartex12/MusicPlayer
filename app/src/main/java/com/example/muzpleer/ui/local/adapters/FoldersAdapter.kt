@@ -1,16 +1,25 @@
 package com.example.muzpleer.ui.local.adapters
 
 import android.annotation.SuppressLint
+import android.content.Context
+import android.graphics.drawable.Drawable
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import androidx.appcompat.widget.PopupMenu
 import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.DataSource
+import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.bumptech.glide.load.engine.GlideException
+import com.bumptech.glide.request.RequestListener
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.ItemFolderBinding
 import com.example.muzpleer.model.Album
@@ -18,8 +27,11 @@ import com.example.muzpleer.model.Folder
 import com.example.muzpleer.ui.local.adapters.touch.ItemTouchHelperAdapter
 import com.example.muzpleer.ui.local.frags.CoverChangeLevelFragment.LevelType
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
+import com.example.muzpleer.ui.player.PlayerFragment
 import com.example.muzpleer.util.getTracksCountString
+import com.example.muzpleer.util.isContentProviderUri
 import com.example.muzpleer.util.showCoverImageWithGlide
+import java.io.File
 import java.util.Collections
 
 class FoldersAdapter(
@@ -71,7 +83,24 @@ class FoldersAdapter(
             binding.tvTracksCount.text = getTracksCountString(folder.songs.size)
 
             //из-за того, что обложки не отображаются, как во вкладках, приходится использовать более сложный код
-            showCoverImageWithGlide(binding.root.context, folder.artworkUri, binding.ivFolderIcon)
+            //showCoverImageWithGlide(binding.root.context, folder.artworkUri, binding.ivFolderIcon)
+
+            folder.artworkUri?.let{artUri->
+                // Загружаем изображение
+                try {
+                    if (isContentProviderUri(artUri.toString())){
+                        // Загрузка обложки из  content:/com.android.providers.downloads
+                        showImageWithGlide(binding.root.context, artUri, binding.ivFolderIcon)
+                    }else{
+                        // Загрузка обложки из кэша приложения
+                        showImageWithGlide(binding.root.context, File(artUri.toString()), binding.ivFolderIcon)
+                    }
+                } catch (e: SecurityException) {
+                    Log.e(TAG, "❌Security exception when loading: ${e.message}")
+                    binding.ivFolderIcon.setImageResource(R.drawable.muz_player2)
+                }
+            }?: binding.ivFolderIcon.setImageResource(R.drawable.muz_player2)
+
 
             binding.folderMenuButton.setOnClickListener { view ->
                 showPopupMenu(view, folder)
@@ -172,4 +201,38 @@ class FoldersAdapter(
     companion object{
         const val TAG = "33333"
     }
+
+    fun showImageWithGlide(context: Context, artUri: Any, imageView: ImageView){
+        // Загрузка обложки
+        Glide.with(context)
+            .load(artUri)
+            .placeholder(R.drawable.muz_player5)
+            .error(R.drawable.muz_player2)
+            .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
+            .addListener(object : RequestListener<Drawable> {
+                override fun onLoadFailed(
+                    e: GlideException?,
+                    model: Any?,
+                    target: com.bumptech.glide.request.target.Target<Drawable?>,
+                    isFirstResource: Boolean
+                ): Boolean {
+                    Log.e(TAG, " ❌ Glide load failed for URI: $artUri", e)
+                    return false
+                }
+
+                override fun onResourceReady(
+                    resource: Drawable,
+                    model: Any,
+                    target: com.bumptech.glide.request.target.Target<Drawable?>?,
+                    dataSource: DataSource,
+                    isFirstResource: Boolean
+                ): Boolean {
+                    Log.d(TAG, "✅Glide load success for URI: $artUri")
+                    Log.d(TAG, "✅ DataSource: $dataSource") // 👈 Важно! Покажет откуда загружено
+                    return false
+                }
+            })
+            .into(imageView)
+    }
+
 }

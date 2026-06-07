@@ -1,6 +1,8 @@
 package com.example.muzpleer.ui.local.frags
 
+import android.content.Context
 import android.content.Intent
+import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -19,10 +21,16 @@ import androidx.transition.ChangeImageTransform
 import androidx.transition.TransitionManager
 import androidx.transition.TransitionSet
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.bumptech.glide.load.engine.GlideException
+import com.bumptech.glide.request.RequestListener
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentCoverChangeLevelBinding
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
+import com.example.muzpleer.ui.player.PlayerFragment
+import com.example.muzpleer.util.isContentProviderUri
+import java.io.File
 
 class CoverChangeLevelFragment: Fragment() {
     private var _binding: FragmentCoverChangeLevelBinding? = null
@@ -68,12 +76,22 @@ class CoverChangeLevelFragment: Fragment() {
         //обеспечивает установку обложки при открытии CoverChangeFragment и замене обложки через pickImage
         viewModel.coverImageUriLevel.observe(viewLifecycleOwner) { uri ->
             Log.d(TAG, "3--- CoverChangeLevelFragment coverImageUriLevel.observe: uri = $uri ")
-            Glide.with(binding.root.context)
-                .load(uri)
-                .placeholder(R.drawable.muz_player3)
-                .error(R.drawable.muz_player2)
-                .diskCacheStrategy(DiskCacheStrategy.ALL)
-                .into(binding.coverImageViewLevel)
+
+            uri?.let{artUri->
+                // Загружаем изображение
+                try {
+                    if (isContentProviderUri(artUri.toString())){
+                        // Загрузка обложки из  content:/com.android.providers.downloads
+                        showImageWithGlide(binding.root.context, artUri, binding.coverImageViewLevel)
+                    }else{
+                        // Загрузка обложки из кэша приложения
+                        showImageWithGlide(binding.root.context, File(artUri.toString()), binding.coverImageViewLevel)
+                    }
+                } catch (e: SecurityException) {
+                    Log.e(TAG, "❌Security exception when loading: ${e.message}")
+                    binding.coverImageViewLevel.setImageResource(R.drawable.muz_player5)
+                }
+            }?: binding.coverImageViewLevel.setImageResource(R.drawable.muz_player5)
         }
 
         binding.usePhonePhotosLevel.setOnClickListener {
@@ -142,5 +160,39 @@ class CoverChangeLevelFragment: Fragment() {
     }
     companion object{
         const val  TAG = "33333"
+    }
+
+    fun showImageWithGlide(context: Context, artUri: Any, imageView: ImageView){
+        // Загрузка обложки
+        Glide.with(context)
+            .load(artUri)
+            .placeholder(R.drawable.muz_player3)
+            .error(R.drawable.muz_player3)
+            .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
+            .addListener(object : RequestListener<Drawable> {
+                override fun onLoadFailed(
+                    e: GlideException?,
+                    model: Any?,
+                    target: com.bumptech.glide.request.target.Target<Drawable?>,
+                    isFirstResource: Boolean
+                ): Boolean {
+                    binding.coverImageViewLevel.setImageResource(R.drawable.muz_player5)
+                    Log.e(TAG, " ❌ Glide load failed for URI: $artUri", e)
+                    return false
+                }
+
+                override fun onResourceReady(
+                    resource: Drawable,
+                    model: Any,
+                    target: com.bumptech.glide.request.target.Target<Drawable?>?,
+                    dataSource: DataSource,
+                    isFirstResource: Boolean
+                ): Boolean {
+                    Log.d(TAG, "✅Glide load success for URI: $artUri")
+                    Log.d(TAG, "✅ DataSource: $dataSource") // 👈 Важно! Покажет откуда загружено
+                    return false
+                }
+            })
+            .into(imageView)
     }
 }

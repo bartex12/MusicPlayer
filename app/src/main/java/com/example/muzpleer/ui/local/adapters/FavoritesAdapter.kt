@@ -6,6 +6,7 @@ import android.content.ContentUris
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.util.Log
 import android.view.LayoutInflater
@@ -25,7 +26,10 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.bumptech.glide.load.engine.GlideException
+import com.bumptech.glide.request.RequestListener
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.ItemMusicBinding
 import com.example.muzpleer.model.Song
@@ -34,6 +38,7 @@ import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 import com.example.muzpleer.util.formatAsTime
 import com.example.muzpleer.util.formatDate
 import com.example.muzpleer.util.formatFileSize
+import com.example.muzpleer.util.isContentProviderUri
 import java.io.File
 import java.util.Collections
 
@@ -105,19 +110,21 @@ class FavoritesAdapter(
             binding.trackArtist.text = track.artist
             binding.trackDuration.text = track.duration.formatAsTime()
 
-            if (track.artUri == null){
-                // Загружаем обложку, когда не меняли её
-                val albumArtUri = ContentUris.withAppendedId(
-                    "content://media/external/audio/albumart".toUri(), track.albumId)
-                // Загрузка обложки
-                showImageWithGlide(binding.root.context, albumArtUri, binding.trackArtwork)
-            }else {
-                // Загрузка обложки, если заменили её на другую
-                track.artUri?. let{
-                    val uri =  it.toUri()
-                    showImageWithGlide(binding.root.context, uri, binding.trackArtwork)
+            track.artUri?.let{artUri->
+                // Загружаем изображение
+                try {
+                    if (isContentProviderUri(artUri.toString())){
+                        // Загрузка обложки из  content:/com.android.providers.downloads
+                        showImageWithGlide(binding.root.context, artUri, binding.trackArtwork)
+                    }else{
+                        // Загрузка обложки из кэша приложения
+                        showImageWithGlide(binding.root.context, File(artUri.toString()), binding.trackArtwork)
+                    }
+                } catch (e: SecurityException) {
+                    Log.e(TAG, "❌Security exception when loading: ${e.message}")
+                    binding.trackArtwork.setImageResource(R.drawable.muz_player2)
                 }
-            }
+            }?: binding.trackArtwork.setImageResource(R.drawable.muz_player2)
 
             binding.root.setOnClickListener {
                 viewModel.setSelectedPosition(absoluteAdapterPosition)
@@ -147,16 +154,6 @@ class FavoritesAdapter(
                 binding.dragHandle.setOnTouchListener(null) // Убираем слушатель
             }
         }
-    }
-
-    fun showImageWithGlide(context:Context, artUri:Uri, imageView: ImageView){
-        // Загрузка обложки
-        Glide.with(context)
-            .load(artUri)
-            .placeholder(R.drawable.muz_player3)
-            .error(R.drawable.muz_player3)
-            .diskCacheStrategy(DiskCacheStrategy.ALL)
-            .into(imageView)
     }
 
     private fun showPopupMenu(view: View, song: Song) {
@@ -370,4 +367,36 @@ class FavoritesAdapter(
         // Не используется, но должен быть реализован
     }
 
+    fun showImageWithGlide(context: Context, artUri: Any, imageView: ImageView){
+        // Загрузка обложки
+        Glide.with(context)
+            .load(artUri)
+            .placeholder(R.drawable.muz_player5)
+            .error(R.drawable.muz_player2)
+            .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
+            .addListener(object : RequestListener<Drawable> {
+                override fun onLoadFailed(
+                    e: GlideException?,
+                    model: Any?,
+                    target: com.bumptech.glide.request.target.Target<Drawable?>,
+                    isFirstResource: Boolean
+                ): Boolean {
+                    Log.e(TAG, " ❌ Glide load failed for URI: $artUri", e)
+                    return false
+                }
+
+                override fun onResourceReady(
+                    resource: Drawable,
+                    model: Any,
+                    target: com.bumptech.glide.request.target.Target<Drawable?>?,
+                    dataSource: DataSource,
+                    isFirstResource: Boolean
+                ): Boolean {
+                    Log.d(TAG, "✅Glide load success for URI: $artUri")
+                    Log.d(TAG, "✅ DataSource: $dataSource") // 👈 Важно! Покажет откуда загружено
+                    return false
+                }
+            })
+            .into(imageView)
+    }
 }

@@ -165,18 +165,32 @@ class PlayerFragment : Fragment() {
             Log.d(TAG, "3*** PlayerFragment onViewCreated indexOfTrack = $indexOfTrack " +
                     "songAndPlaylist.playlist.size = ${songAndPlaylist.playlist.size} artUri = $trackArtUri")
 
-            //не работает - требует права доступа
             trackArtUri?.let{artUri->
-
                 // Загружаем изображение
                 try {
-                    showImageWithGlide(binding.root.context, File(artUri), binding.artworkImageView)
-                   // showImageWithGlide(binding.root.context, artUri.toUri(), binding.artworkImageView)
+                    if (isContentProviderUri(artUri)){
+                        // Загрузка обложки из  content:/com.android.providers.downloads
+                        showImageWithGlide(binding.root.context, artUri, binding.artworkImageView)
+                    }else{
+                        // Загрузка обложки из кэша приложения
+                        showImageWithGlide(binding.root.context, File(artUri), binding.artworkImageView)
+                    }
                 } catch (e: SecurityException) {
                     Log.e(TAG, "❌Security exception when loading: ${e.message}")
                     binding.artworkImageView.setImageResource(R.drawable.muz_player3)
                 }
             }?: binding.artworkImageView.setImageResource(R.drawable.muz_player3)
+
+//            trackArtUri?.let{artUri->
+//                // Загружаем изображение
+//                try {
+//                    showImageWithGlide(binding.root.context, File(artUri), binding.artworkImageView)
+//                   // showImageWithGlide(binding.root.context, artUri.toUri(), binding.artworkImageView)
+//                } catch (e: SecurityException) {
+//                    Log.e(TAG, "❌Security exception when loading: ${e.message}")
+//                    binding.artworkImageView.setImageResource(R.drawable.muz_player3)
+//                }
+//            }?: binding.artworkImageView.setImageResource(R.drawable.muz_player3)
         }
 
         // ✅ НОВЫЙ НАБЛЮДАТЕЛЬ: следим за изменением текущей песни
