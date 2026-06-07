@@ -82,20 +82,6 @@ class FoldersSelectionAdapter (
                 }
             }?: binding.albumArtSelection.setImageResource(R.drawable.muz_player2)
 
-//            // Загружаем обложку, если есть
-//            val albumArtUri = ContentUris.withAppendedId(
-//                "content://media/external/audio/albumart".toUri(),
-//                folder.songs.firstOrNull()?.albumId ?: -1
-//            )
-//
-//            // Загрузка обложки альбома
-//            Glide.with(binding.root.context)
-//                .load(albumArtUri)
-//                .placeholder(R.drawable.muz_player5)
-//                .error(R.drawable.muz_player5)
-//                .diskCacheStrategy(DiskCacheStrategy.ALL)
-//                .into(binding.albumArtSelection)
-
             itemView.setOnClickListener {
                 viewModel.setSelectedAlbumPosition(absoluteAdapterPosition)
                 onFolderClick(folder)

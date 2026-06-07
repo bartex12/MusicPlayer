@@ -138,20 +138,6 @@ class SongsPlaylistAdapter(   private val viewModel: SharedViewModel,
                 }
             }?: binding.trackArtworkPlaylist.setImageResource(R.drawable.muz_player2)
 
-//            if (track.artUri == null){
-//                // Загружаем обложку, когда не меняли её
-//                val albumArtUri = ContentUris.withAppendedId(
-//                    "content://media/external/audio/albumart".toUri(), track.albumId)
-//                // Загрузка обложки
-//                showImageWithGlide(binding.root.context, albumArtUri, binding.trackArtworkPlaylist)
-//            }else {
-//                // Загрузка обложки, если заменили её на другую
-//                track.artUri?. let{
-//                    val uri =  it.toUri()
-//                    showImageWithGlide(binding.root.context, uri, binding.trackArtworkPlaylist)
-//                }
-//            }
-
             binding.root.setOnClickListener {
                 viewModel.setSelectedPosition(absoluteAdapterPosition)
                 onItemClick(track)
@@ -181,16 +167,6 @@ class SongsPlaylistAdapter(   private val viewModel: SharedViewModel,
             }
         }
     }
-
-//    fun showImageWithGlide(context:Context, artUri:Uri, imageView: ImageView){
-//        // Загрузка обложки
-//        Glide.with(context)
-//            .load(artUri)
-//            .placeholder(R.drawable.muz_player3)
-//            .error(R.drawable.muz_player3)
-//            .diskCacheStrategy(DiskCacheStrategy.ALL)
-//            .into(imageView)
-//    }
 
     private fun showPopupMenu(view: View, song: Song) {
         val context = view.context

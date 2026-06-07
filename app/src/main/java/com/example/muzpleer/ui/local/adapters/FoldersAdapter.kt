@@ -82,9 +82,6 @@ class FoldersAdapter(
             binding.tvFolderPath.text = folder.path
             binding.tvTracksCount.text = getTracksCountString(folder.songs.size)
 
-            //из-за того, что обложки не отображаются, как во вкладках, приходится использовать более сложный код
-            //showCoverImageWithGlide(binding.root.context, folder.artworkUri, binding.ivFolderIcon)
-
             folder.artworkUri?.let{artUri->
                 // Загружаем изображение
                 try {

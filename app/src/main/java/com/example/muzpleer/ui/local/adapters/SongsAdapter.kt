@@ -107,7 +107,6 @@ class SongsAdapter(
 
         fun bind(track: Song) {
             Log.d(TAG, "WWW-1 SongAdapter track.title = ${track.title}  ")
-            //currentSong = track
 
             binding.trackTitle.text = track.title
             binding.trackArtist.text = track.artist
@@ -345,23 +344,3 @@ class SongsAdapter(
         }
     }
 }
-
-
-
-
-
-
-
-//            ///обложка имеет Uri track.artworkUri
-//            Log.d(TAG, " %%% MusicAdapter MusicViewHolder bind: albumArtUri =  $albumArtUri  title = ${track.title}")
-//            try {
-//                binding.root.context.contentResolver.openInputStream(albumArtUri)?.use { stream ->
-//                    //val bitmap = BitmapFactory.decodeStream(stream)
-//                   // Log.d(TAG, "MusicViewHolder Обложка найдена: ${bitmap.width}x${bitmap.height}")
-//                    Log.d(TAG, "MusicViewHolder Обложка найдена")
-//                } ?: {
-//                    Log.d(TAG,  "MusicViewHolder Обложка не найдена")
-//                }
-//            } catch (e: Exception) {
-//                Log.d(TAG, "MusicViewHolder Ошибка: ${e.message}")
-//            }

@@ -69,4 +69,5 @@ class AlbumSelectionFragment: Fragment() {
         //восстанавливаем позицию списка после поворота или возвращения на экран
         binding.albumSelectionRecyclerView.layoutManager?.scrollToPosition(viewModel.getPositionAlbum())
     }
+
 }

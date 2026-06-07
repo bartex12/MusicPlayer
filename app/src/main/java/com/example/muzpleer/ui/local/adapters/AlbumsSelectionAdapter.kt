@@ -36,7 +36,6 @@ class AlbumsSelectionAdapter(
             notifyDataSetChanged()
         }
 
-
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AlbumViewHolder {
         val binding = ItemAlbumSelectionBinding.inflate(
             LayoutInflater.from(parent.context),

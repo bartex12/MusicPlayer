@@ -81,8 +81,6 @@ class SongSelectionAdapter (
             binding.songArtist.text = song.artist
             binding.songDuration.text = formatDuration(song.duration)
 
-            //из-за того, что обложки не отображаются, как во вкладках, приходится использовать более сложный код
-            //showImageWithGlide(binding.root.context, song.artUri?.toUri(), binding.songArtwork)
 
             song.artUri?.let{artUri->
                 // Загружаем изображение

@@ -69,4 +69,5 @@ class FoldersSelectionFragment: Fragment() {
         //восстанавливаем позицию списка после поворота или возвращения на экран
         binding.folderSelectionRecyclerView.layoutManager?.scrollToPosition(viewModel.getPositionFolder())
     }
+
 }

@@ -142,4 +142,5 @@ class SongsSelectionFragment : Fragment() {
             Toast.makeText(requireContext(), "Выберите песни для добавления", Toast.LENGTH_SHORT).show()
         }
     }
+
 }

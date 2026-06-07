@@ -69,4 +69,5 @@ class ArtistsSelectionFragment: Fragment() {
         //восстанавливаем позицию списка после поворота или возвращения на экран
         binding.artistSelectionRecyclerView.layoutManager?.scrollToPosition(viewModel.getPositionArtist())
     }
+
 }

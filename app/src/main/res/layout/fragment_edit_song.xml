@@ -97,6 +97,5 @@
                 android:text="Сохранить"/>
 
         </LinearLayout>
-
     </LinearLayout>
 </ScrollView>

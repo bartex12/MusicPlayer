@@ -195,4 +195,5 @@ class CoverChangeLevelFragment: Fragment() {
             })
             .into(imageView)
     }
+
 }

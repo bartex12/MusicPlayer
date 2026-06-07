@@ -399,4 +399,5 @@ class FavoritesAdapter(
             })
             .into(imageView)
     }
+
 }

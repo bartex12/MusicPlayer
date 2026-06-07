@@ -58,5 +58,4 @@
         android:padding="16dp"
         android:drawableStart="@drawable/twotone_find_replace_24"
         android:drawablePadding="8dp"/>
-
 </LinearLayout>

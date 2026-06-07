@@ -73,5 +73,4 @@
         app:layout_constraintTop_toBottomOf="@id/emptyImageViewPlaylist"
         app:layout_constraintVertical_bias="0.19"
         tools:visibility="visible" />
-
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -415,4 +415,5 @@ class FavoritesFragment: Fragment() {
             .setAction("OK") {toggleEditMode() }
             .show()
     }
+
 }

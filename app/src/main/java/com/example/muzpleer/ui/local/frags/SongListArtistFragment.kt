@@ -342,4 +342,5 @@ class SongListArtistFragment:Fragment() {
             }
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
     }
+
 }

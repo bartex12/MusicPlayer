@@ -220,4 +220,5 @@ class FolderFragment : Fragment(){
             .setAction("OK") {toggleEditMode() }
             .show()
     }
+
 }

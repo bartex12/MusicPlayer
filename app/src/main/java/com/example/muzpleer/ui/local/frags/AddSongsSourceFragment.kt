@@ -97,6 +97,7 @@ class AddSongsSourceFragment : Fragment() {
     }
 }
 
+
 enum class SelectionType {
     ALL_SONGS, FAVORITES, ALBUM, ARTIST, FOLDER
 }

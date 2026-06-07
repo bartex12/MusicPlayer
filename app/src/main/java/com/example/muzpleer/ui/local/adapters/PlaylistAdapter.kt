@@ -350,5 +350,6 @@ class PlaylistAdapter(
             })
             .into(imageView)
     }
+
 }
 

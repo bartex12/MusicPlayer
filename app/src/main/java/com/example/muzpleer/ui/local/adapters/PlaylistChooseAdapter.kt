@@ -19,6 +19,7 @@ import com.example.muzpleer.model.Playlist
 import com.example.muzpleer.util.isContentProviderUri
 import java.io.File
 
+//для диалога выбора плейлиста для песни
 class PlaylistChooseAdapter(
     private val onPlaylistClick: (Playlist) -> Unit
 ) : RecyclerView.Adapter<PlaylistChooseAdapter.PlaylistViewHolder>() {
@@ -111,4 +112,5 @@ class PlaylistChooseAdapter(
     companion object{
         const val TAG = "33333"
     }
+
 }

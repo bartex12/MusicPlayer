@@ -89,9 +89,6 @@ class ArtistsAdapter(
                 append(getTracksCountString(artist.songs.size))
             }
 
-            //из-за того, что обложки не отображаются, как во вкладках, приходится использовать более сложный код
-            //showCoverImageWithGlide(binding.root.context, artist.artworkUri, binding.ivArtistArtwork)
-
             artist.artworkUri?.let{artUri->
                 // Загружаем изображение
                 try {

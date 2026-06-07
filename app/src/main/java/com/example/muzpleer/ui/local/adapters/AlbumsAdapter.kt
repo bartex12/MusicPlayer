@@ -79,9 +79,6 @@ class AlbumsAdapter(
             binding.albumArtist.text = album.artist
             binding.tracksCount.text = getTracksCountString( album.songs.size)
 
-            //из-за того, что обложки не отображаются, как во вкладках, приходится использовать более сложный код
-            //showCoverImageWithGlide(binding.root.context, album.artworkUri, binding.albumArt)
-
             album.artworkUri?.let{artUri->
                 // Загружаем изображение
                 try {

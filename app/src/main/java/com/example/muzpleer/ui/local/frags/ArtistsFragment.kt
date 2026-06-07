@@ -231,4 +231,5 @@ class ArtistsFragment:Fragment() {
             Log.d(TAG, "PlaylistFragment: Режим редактирования сброшен при уходе")
         }
     }
+
 }

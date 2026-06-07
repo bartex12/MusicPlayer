@@ -3,6 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical">
 
     <LinearLayout
@@ -40,6 +41,6 @@
         android:id="@+id/songsRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1" />
-
+        android:layout_weight="1"
+        tools:listitem="@layout/item_song_selection"/>
 </LinearLayout>

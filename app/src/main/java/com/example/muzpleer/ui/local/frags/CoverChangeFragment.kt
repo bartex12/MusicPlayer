@@ -168,4 +168,5 @@ class CoverChangeFragment : Fragment() {
             })
             .into(imageView)
     }
+
 }

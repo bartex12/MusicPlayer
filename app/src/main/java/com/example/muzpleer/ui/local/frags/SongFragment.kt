@@ -87,8 +87,6 @@ class SongFragment : Fragment() {
            }
             adapter.notifyDataSetChanged()
         }
-
-        //initMenu()
     }
 
     override fun onResume() {
@@ -192,69 +190,4 @@ class SongFragment : Fragment() {
         }
         return false
     }
-
-//    fun initMenu() {
-//        val menuHost: MenuHost = requireActivity()
-//        menuHost.addMenuProvider(object : MenuProvider {
-//
-//            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-//                menuInflater.inflate(R.menu.song_menu, menu)
-//
-//                val searchItem: MenuItem = menu.findItem(R.id.search_toolbar)
-//                val searchView =searchItem.actionView as SearchView
-//                //значок лупы слева в развёрнутом сост и сворачиваем строку поиска (true)
-//                searchView.setIconifiedByDefault(true)
-//                //пишем подсказку в строке поиска
-//                searchView.queryHint = getString(R.string.search_song)
-//                //устанавливаем в панели действий кнопку ( > )для отправки поискового запроса
-//               // searchView.isSubmitButtonEnabled = true
-//
-//                //Сохраняем состояние поиска при смене ориентации:
-//                if ( currentSearchQuery.isNotEmpty()) {
-//                    searchItem.expandActionView()
-//                    searchView.setQuery(currentSearchQuery, false)
-//                }
-//                //устанавливаем слушатель
-//                searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-//                    override fun onQueryTextSubmit(query: String?) = false
-//
-//                    override fun onQueryTextChange(newText: String?): Boolean {
-//                        viewModel.filterSongs(newText.orEmpty())
-//                        return true
-//                    }
-//                })
-//            }
-//
-//            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-//                when(menuItem.itemId){
-//                    R.id.action_to->{
-//                        Log.d(TAG, "$ SongFragment onMenuItemSelected текущая вкладка = ${viewPager.currentItem}")
-//                        viewPager.setCurrentItem(0)
-//                        Log.d(TAG, "$$ SongFragment onMenuItemSelected текущая вкладка = ${viewPager.currentItem}")
-//                        val pos = viewModel.getIndexOfCurrentSong()
-//                        Log.d(TAG, "$$$ SongFragment onMenuItemSelected pos = $pos")
-//                        (binding.localRecyclerView.layoutManager as LinearLayoutManager).let{
-//                            if(pos >=0 ) it.scrollToPositionWithOffset(pos, 0) else it.scrollToPosition(0)
-//                        }
-//                        return true
-//                    }
-//                    R.id.updateSongs->{
-//                        val currentSong = viewModel.getCurrentSong()
-//                        viewModel.scanMedia(){
-//                            //сначала сканируем телефон и собираем все музыкальные треки в базе, а потом делаем другие вкладки
-//                            viewModel.syncAlbums()
-//                            viewModel.syncArtist ()
-//                            viewModel.syncFolders()
-//                            // Восстанавливаем последнюю песню
-//                            currentSong?. let{
-//                                viewModel.setCurrentSongById(currentSong.id)
-//                            }
-//                            Log.d(TAG, "###SongFragment onMenuItemSelected currentSong = ${currentSong?.title} ")
-//                        }
-//                    }
-//                }
-//                return false
-//            }
-//        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
-//    }
 }
