@@ -26,6 +26,11 @@ fun isContentProviderUri(uriString: String): Boolean {
     return uriString.startsWith("content://com.android.providers")
 }
 
+//вариант для picker
+fun isContentProviderUriPicker(uriString: String): Boolean {
+    return uriString.startsWith("content://media/picker_get_content")
+}
+
 fun getTracksCountString(count: Int): String {
     return when {
         count % 100 in 11..14 -> "$count треков"

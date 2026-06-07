@@ -3,6 +3,7 @@ package com.example.muzpleer.ui.local.frags
 import android.content.Context
 import android.content.Intent
 import android.graphics.drawable.Drawable
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -29,6 +30,7 @@ import com.example.muzpleer.databinding.FragmentCoverChangeBinding
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 import com.example.muzpleer.ui.player.PlayerFragment
 import com.example.muzpleer.util.isContentProviderUri
+import com.example.muzpleer.util.isContentProviderUriPicker
 import java.io.File
 
 class CoverChangeFragment : Fragment() {
@@ -67,12 +69,15 @@ class CoverChangeFragment : Fragment() {
                     if (isContentProviderUri(artUri.toString())){
                         // Загрузка обложки из  content:/com.android.providers.downloads
                         showImageWithGlide(binding.root.context, artUri, binding.coverImageView)
-                    }else{
+                    }else  if (isContentProviderUriPicker(artUri.toString())){
+                        val  photoPickerUri =artUri.toString().toUri()
+                        showImageWithGlide(binding.root.context, photoPickerUri, binding.coverImageView)
+                    }else {
                         // Загрузка обложки из кэша приложения
                         showImageWithGlide(binding.root.context, File(artUri.toString()), binding.coverImageView)
                     }
                 } catch (e: SecurityException) {
-                    Log.e(TAG, "❌Security exception when loading: ${e.message}")
+                    Log.e(TAG, "❌CoverChangeFragment Security exception when loading: ${e.message}")
                     binding.coverImageView.setImageResource(R.drawable.muz_player3)
                 }
             }?: binding.coverImageView.setImageResource(R.drawable.muz_player3)
@@ -150,7 +155,7 @@ class CoverChangeFragment : Fragment() {
                     target: com.bumptech.glide.request.target.Target<Drawable?>,
                     isFirstResource: Boolean
                 ): Boolean {
-                    Log.e(PlayerFragment.Companion.TAG, " ❌ Glide load failed for URI: $artUri", e)
+                    Log.e(TAG, " ❌CoverChangeFragment Glide load failed for URI: $artUri", e)
                     return false
                 }
 

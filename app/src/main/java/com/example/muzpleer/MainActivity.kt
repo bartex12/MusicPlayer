@@ -53,6 +53,7 @@ import com.example.muzpleer.ui.local.helper.PreferenceHelperImpl
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 import com.example.muzpleer.ui.player.PlayerFragment
 import com.example.muzpleer.util.isContentProviderUri
+import com.example.muzpleer.util.isContentProviderUriPicker
 import com.example.muzpleer.util.toast
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
@@ -232,6 +233,9 @@ class MainActivity : AppCompatActivity() {
                     if (isContentProviderUri(artUri)){
                         // Загрузка обложки из  content:/com.android.providers.downloads
                         showImageWithGlide(binding.root.context, artUri, artWork)
+                    }else  if (isContentProviderUriPicker(artUri.toString())){
+                        val  photoPickerUri =artUri.toString().toUri()
+                        showImageWithGlide(binding.root.context, photoPickerUri, artWork)
                     }else{
                         // Загрузка обложки из кэша приложения
                         showImageWithGlide(binding.root.context, File(artUri), artWork)
@@ -257,13 +261,30 @@ class MainActivity : AppCompatActivity() {
                     currentSong.artUri= uri.toString()
                     Log.d(TAG, "3*** MainActivity coverImageUri.observe " +
                             "currentSong.artUri =  ${currentSong.artUri} title = ${currentSong.title}")
-                    showImageWithGlide(binding.root.context, File(currentSong.artUri!!), artWork)
-                }
+
+                    // Загружаем изображение
+                    try {
+                        if (isContentProviderUri(artUri)){
+                            // Загрузка обложки из  content:/com.android.providers.downloads
+                            showImageWithGlide(binding.root.context, artUri, artWork)
+                        }else  if (isContentProviderUriPicker(artUri.toString())){
+                            val  photoPickerUri =artUri.toString().toUri()
+                            showImageWithGlide(binding.root.context, photoPickerUri, artWork)
+                        }else{
+                            // Загрузка обложки из кэша приложения
+                            showImageWithGlide(binding.root.context, File(artUri), artWork)
+                        }
+                    } catch (e: Exception) {
+                        Log.e(TAG, "❌Security exception when loading: ${e.message}")
+                        //при ошибке грузим картинку ошибки
+                        artWork.setImageResource(R.drawable.muz_player3)
+                    }
+                }?: artWork.setImageResource(R.drawable.muz_player3)  //если artUri = null
             }
         }
+
        //initMenu() нельзя - иначе двоится меню тулбара
     }
-
     fun updateToolbarTitle(title: String) {
         Log.d(TAG, "### ### MainActivity updateToolbarTitle title = $title ")
         binding.appBarMain.mainTitle.text = title
