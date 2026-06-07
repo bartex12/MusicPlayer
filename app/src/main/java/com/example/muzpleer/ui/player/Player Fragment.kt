@@ -30,6 +30,7 @@ import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentPlayerBinding
 import com.example.muzpleer.model.Song
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
+import com.example.muzpleer.util.isContentProviderUri
 import com.google.android.material.snackbar.Snackbar
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 import java.io.File
@@ -167,14 +168,12 @@ class PlayerFragment : Fragment() {
             //не работает - требует права доступа
             trackArtUri?.let{artUri->
 
-                // 🔍 ДИАГНОСТИКА - проверяем URI перед загрузкой
-                checkUriPermission(artUri.toUri())
-
                 // Загружаем изображение
                 try {
-                    showImageWithGlide(binding.root.context, artUri.toUri(), binding.artworkImageView)
+                    showImageWithGlide(binding.root.context, File(artUri), binding.artworkImageView)
+                   // showImageWithGlide(binding.root.context, artUri.toUri(), binding.artworkImageView)
                 } catch (e: SecurityException) {
-                    Log.e(TAG, "Security exception when loading: ${e.message}")
+                    Log.e(TAG, "❌Security exception when loading: ${e.message}")
                     binding.artworkImageView.setImageResource(R.drawable.muz_player3)
                 }
             }?: binding.artworkImageView.setImageResource(R.drawable.muz_player3)
@@ -183,7 +182,7 @@ class PlayerFragment : Fragment() {
         // ✅ НОВЫЙ НАБЛЮДАТЕЛЬ: следим за изменением текущей песни
         viewModel.currentSong.observe(viewLifecycleOwner) { song ->
             if (song != null) {
-                Log.d(TAG, "currentSong changed: ${song.title}")
+                Log.d(TAG, "5*** PlayerFragment currentSong.observe song.title: ${song.title}")
                 updateUI(song)
             }
         }
@@ -219,57 +218,21 @@ class PlayerFragment : Fragment() {
         song.artUri?.let{artUri->
             // Загружаем изображение
             try {
-                showImageWithGlide(binding.root.context, artUri.toUri(), binding.artworkImageView)
+                if (isContentProviderUri(artUri)){
+                    // Загрузка обложки из  content:/com.android.providers.downloads
+                    showImageWithGlide(binding.root.context, artUri, binding.artworkImageView)
+                }else{
+                    // Загрузка обложки из кэша приложения
+                    showImageWithGlide(binding.root.context, File(artUri), binding.artworkImageView)
+                }
             } catch (e: SecurityException) {
-                Log.e(TAG, "Security exception when loading: ${e.message}")
+                Log.e(TAG, "❌Security exception when loading: ${e.message}")
                 binding.artworkImageView.setImageResource(R.drawable.muz_player3)
             }
         }?: binding.artworkImageView.setImageResource(R.drawable.muz_player3)
     }
 
-    private fun checkUriPermission(uri: Uri) {
-        try {
-            Log.d(TAG, "=== Checking URI permission ===")
-            Log.d(TAG, "URI: $uri  Scheme: ${uri.scheme}  Authority: ${uri.authority}")
-
-            // Проверяем persisted permissions
-            val perms = requireContext().contentResolver.persistedUriPermissions
-            Log.d(TAG, "Persisted permissions count: ${perms.size}")
-            perms.forEach { perm ->
-                Log.d(TAG, "  Permission: ${perm.uri}, read: ${perm.isReadPermission}, write: ${perm.isWritePermission}")
-                if (perm.uri.toString() == uri.toString()) {
-                    Log.d(TAG, "  ✅ Found matching permission!")
-                }
-            }
-
-            // Проверяем, можем ли открыть InputStream
-            try {
-                val inputStream = requireContext().contentResolver.openInputStream(uri)
-                if (inputStream != null) {
-                    Log.d(TAG, "✅ Can open InputStream successfully!")
-                    inputStream.close()
-                } else {
-                    Log.d(TAG, "❌ Cannot open InputStream (null)")
-                }
-            } catch (e: SecurityException) {
-                Log.e(TAG, "❌ SecurityException: ${e.message}")
-                throw e
-            }
-
-            // Проверяем, существует ли файл
-            try {
-                val file = File(uri.path ?: "")
-                Log.d(TAG, "File exists: ${file.exists()}, can read: ${file.canRead()}")
-            } catch (e: Exception) {
-                Log.d(TAG, "Cannot check file: ${e.message}")
-            }
-
-        } catch (e: Exception) {
-            Log.e(TAG, "❌ Error in diagnostic: ${e.message}")
-        }
-    }
-
-    fun showImageWithGlide(context: Context, artUri: Uri, imageView: ImageView){
+    fun showImageWithGlide(context: Context, artUri: Any, imageView: ImageView){
         // Загрузка обложки
             Glide.with(context)
                 .load(artUri)
@@ -302,18 +265,6 @@ class PlayerFragment : Fragment() {
                 .into(imageView)
     }
 
-    private fun saveArtworkToCache(uri: Uri, bitmap: Bitmap, songId: Long): String {
-        val cacheDir = File(requireContext().cacheDir, "album_art")
-        if (!cacheDir.exists()) cacheDir.mkdirs()
-
-        val cacheFile = File(cacheDir, "song_$songId.jpg")
-        FileOutputStream(cacheFile).use { out ->
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out)
-        }
-
-        return cacheFile.absolutePath
-    }
-
     @SuppressLint("DefaultLocale")
     private fun formatTime(millis: Long): String {
         val seconds = (millis / 1000) % 60
@@ -322,9 +273,6 @@ class PlayerFragment : Fragment() {
     }
 
     override fun onDestroyView() {
-
-        // Сбрасываем заголовок при уходе с фрагмента
-        //(requireActivity() as? MainActivity)?.resetToTabTitle()
 
         // Восстанавливаем предыдущий заголовок при уходе с фрагмента
         restorePreviousTitle()

@@ -36,6 +36,7 @@ import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 import com.example.muzpleer.util.formatAsTime
 import com.example.muzpleer.util.formatDate
 import com.example.muzpleer.util.formatFileSize
+import com.example.muzpleer.util.isContentProviderUri
 import java.io.File
 
 
@@ -104,44 +105,33 @@ class SongsAdapter(
     inner class MusicViewHolder(private val binding: ItemMusicBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
-        private lateinit var currentSong: Song
+        //private lateinit var currentSong: Song
 
         fun bind(track: Song) {
-            Log.d(TAG, "WWW-1 SongAdapter track = $track  ")
-            currentSong = track
+            Log.d(TAG, "WWW-1 SongAdapter track.title = ${track.title}  ")
+            //currentSong = track
 
             binding.trackTitle.text = track.title
             binding.trackArtist.text = track.artist
             binding.trackDuration.text = track.duration.formatAsTime()
 
             Log.d(TAG, "WWW 1 SongAdapter bind track.artUri =  ${track.artUri}")
-            if (track.artUri == null){
-                // Загружаем обложку, когда не изменяли её
-                val artUri = ContentUris.withAppendedId(
-                    ("content://media/external/audio/albumart").toUri(),track.albumId)
-                Log.d(TAG, "WWW 2 SongAdapter bind  track.artUri==null artUri = $artUri")
-
+            // Загрузка обложки, если заменили её на другую
+            track.artUri?.let {artUri->
+                Log.d(TAG,"WWW 3 SongAdapter bind  artUri = $artUri")
                 try {
-                    // Загрузка обложки
-                    showImageWithGlide(binding.root.context, artUri, binding.trackArtwork)
+                    if (isContentProviderUri(artUri)){
+                        // Загрузка обложки из  content:/com.android.providers.downloads
+                        showImageWithGlide(binding.root.context, artUri, binding.trackArtwork)
+                    }else{
+                        // Загрузка обложки из кэша приложения
+                        showImageWithGlide(binding.root.context, File(artUri), binding.trackArtwork)
+                    }
                 }catch (e: Exception){
                     Log.e(TAG, " ❌ Glide load failed in SongsAdapter for URI: $artUri", e)
                     binding.trackArtwork.setImageResource(R.drawable.muz_player3)
                 }
-
-            }else {
-                // Загрузка обложки, если заменили её на другую
-                track.artUri?.let {
-                    Log.d(TAG,"WWW 3 SongAdapter bind artUri != null uri = ${it.toUri()}")
-                    try {
-                        // Загрузка обложки
-                        showImageWithGlide(binding.root.context, it.toUri(), binding.trackArtwork)
-                    }catch (e: Exception){
-                        Log.e(TAG, " ❌ Glide load failed in SongsAdapter for URI: $it", e)
-                        binding.trackArtwork.setImageResource(R.drawable.muz_player3)
-                    }
-                }
-            }
+            }?: binding.trackArtwork.setImageResource(R.drawable.muz_player3)
 
             binding.root.setOnClickListener {
                 viewModel.setSelectedPosition(absoluteAdapterPosition)

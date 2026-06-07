@@ -21,6 +21,11 @@ import java.util.Locale
 
 const val TAG = "33333"
 
+//вариант для всех провайдеров
+fun isContentProviderUri(uriString: String): Boolean {
+    return uriString.startsWith("content://com.android.providers")
+}
+
 fun getTracksCountString(count: Int): String {
     return when {
         count % 100 in 11..14 -> "$count треков"

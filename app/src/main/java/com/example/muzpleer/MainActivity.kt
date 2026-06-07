@@ -52,6 +52,7 @@ import com.example.muzpleer.ui.local.helper.IPreferenceHelper
 import com.example.muzpleer.ui.local.helper.PreferenceHelperImpl
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 import com.example.muzpleer.ui.player.PlayerFragment
+import com.example.muzpleer.util.isContentProviderUri
 import com.example.muzpleer.util.toast
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
@@ -218,27 +219,29 @@ class MainActivity : AppCompatActivity() {
 
         viewModel.currentSong.observe(this) {songCurrent->
             currentSong = songCurrent
+
             songCurrent?. let {
                 title.text=songCurrent.title
                 artist.text=songCurrent.artist
-                Log.d(TAG, "###MainActivity currentSong.observe songCurrent.artUri =  ${songCurrent.artUri}")
-                if (songCurrent.artUri == null){
-                    // Загружаем обложку, когда не изменяли её
-                    val artUri = ContentUris.withAppendedId(
-                        ("content://media/external/audio/albumart").toUri(),
-                        songCurrent.albumId)
-                    Log.d(TAG, "###MainActivity currentSong.observe songCurrent.artUri==null artUri = $artUri")
-                    // Загрузка обложки
-                    showImageWithGlide(binding.root.context, artUri, artWork)
-                }else {
-                    // Загрузка обложки, если заменили её на другую
-                    songCurrent.artUri?.let {
-                        Log.d(TAG,"###MainActivity currentSong.observe artUri != null uri = ${it.toUri()}")
-                        // Загрузка обложки
-                        showImageWithGlide(binding.root.context, it.toUri(), artWork)
-                    }
-                }
             }
+
+            songCurrent?.artUri?.let{artUri->
+                Log.d(TAG,"### MainActivity currentSong.observe uri = $artUri")
+                // Загружаем изображение
+                try {
+                    if (isContentProviderUri(artUri)){
+                        // Загрузка обложки из  content:/com.android.providers.downloads
+                        showImageWithGlide(binding.root.context, artUri, artWork)
+                    }else{
+                        // Загрузка обложки из кэша приложения
+                        showImageWithGlide(binding.root.context, File(artUri), artWork)
+                    }
+                } catch (e: SecurityException) {
+                    Log.e(TAG, "❌Security exception when loading: ${e.message}")
+                    //при ошибке грузим картинку ошибки
+                    artWork.setImageResource(R.drawable.muz_player3)
+                }
+            }?: artWork.setImageResource(R.drawable.muz_player3)  //если artUri = null
         }
            //управление видимостью нижнего плеера из фрагмента:
             viewModel.playerVisibility.observe(this) { isVisible ->
@@ -250,10 +253,11 @@ class MainActivity : AppCompatActivity() {
             val currentSong = viewModel.getCurrentSong()
             if (currentSong?.id == selectedSong?.id){
                 // Загрузка обложки
-                currentSong?.artUri?. let{
+                currentSong?.artUri?. let{artUri->
                     currentSong.artUri= uri.toString()
-                    Log.d(TAG, "3*** MainActivity coverImageUri.observe currentSong.artUri =  ${currentSong.artUri}")
-                    showImageWithGlide(binding.root.context, it, artWork)
+                    Log.d(TAG, "3*** MainActivity coverImageUri.observe " +
+                            "currentSong.artUri =  ${currentSong.artUri} title = ${currentSong.title}")
+                    showImageWithGlide(binding.root.context, File(currentSong.artUri!!), artWork)
                 }
             }
         }
@@ -333,7 +337,7 @@ class MainActivity : AppCompatActivity() {
                     isFirstResource: Boolean
                 ): Boolean {
                     Log.d(TAG, "✅Glide load success in MainActivity  for URI: $artUri")
-                    Log.d(TAG, "✅ DataSource in MainActivity : $dataSource") // 👈 Важно! Покажет откуда загружено
+                    Log.d(TAG, "✅ DataSource in MainActivity : $dataSource target = ${target.toString()}") // 👈 Важно! Покажет откуда загружено
                     return false
                 }
             })

@@ -219,63 +219,6 @@ class MusicRepository(
         return listOf()
     }
 
-    private var cachedArtworkUri: Uri? = null
-
-    fun getArtworkUri(context: Context, albumId:Long, mediaUri:String): Uri {
-        return cachedArtworkUri ?: run {
-            val uri = when {
-                albumId != -1L -> getArtworkUriFromMediaStore(albumId)
-                else -> tryExtractFromFile(context, mediaUri)
-            }
-            cachedArtworkUri = uri
-            uri
-        }
-    }
-
-    fun getArtworkUriFromMediaStore(albumId: Long): Uri {
-        return ContentUris.withAppendedId(
-            "content://media/external/audio/albumart".toUri(),
-            albumId
-        )
-    }
-
-    private fun tryExtractFromFile(context: Context, mediaUri: String): Uri {
-        return getEmbeddedArtwork(mediaUri)?.let { bitmap ->
-            saveBitmapAndGetUri(context, bitmap)
-        } ?: getDefaultArtworkUri(context)
-    }
-
-    fun getEmbeddedArtwork(path: String): Bitmap? {
-        val retriever = MediaMetadataRetriever()
-        return try {
-            retriever.setDataSource(path)
-            val art = retriever.embeddedPicture
-            if (art != null) BitmapFactory.decodeByteArray(art, 0, art.size)
-            else null
-        } catch (e: Exception) {
-            null
-        } finally {
-            retriever.release()
-        }
-    }
-
-    private fun saveBitmapAndGetUri(context: Context, bitmap: Bitmap): Uri {
-        val file = File(context.cacheDir, "artwork_${System.currentTimeMillis()}.jpg")
-        FileOutputStream(file).use { out ->
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 85, out)
-        }
-        return FileProvider.getUriForFile(
-            context,
-            "${context.packageName}.provider",
-            file
-        )
-    }
-
-    private fun getDefaultArtworkUri(context: Context): Uri{
-        // Возвращаем дефолтную обложку
-        return "android.resource://${context.packageName}/drawable/gimme.png".toUri()
-    }
-
     suspend fun updateCoverPath(id : Long, coverPath:String) {
         Log.d(TAG, "5*** MusicRepository updateCoverPath in database id = $id coverPath = $coverPath")
         songDao.updateCoverPath(id, coverPath)
@@ -340,19 +283,6 @@ class MusicRepository(
         }
     }
 
-    private fun getComposerFromMetadata(context: Context, filePath: String): String? {
-        return try {
-            val retriever = MediaMetadataRetriever()
-            retriever.setDataSource(filePath)
-            val composer = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_COMPOSER)
-            retriever.release()
-            composer
-        } catch (e: Exception) {
-            Log.d(TAG, "Failed to extract composer metadata from $filePath error = ${e.message}")
-            null
-        }
-    }
-
     suspend fun getSongFileById(songId:Long):SongFile?{
         return songDao.getById(songId)
     }
@@ -401,31 +331,34 @@ class MusicRepository(
         Log.d(TAG, "****** MusicRepository refreshAllArtworks ")
         val allSongs = songDao.getAllFiles()
         val songsToUpdate = mutableListOf<SongFile>()
+        val songsToChangeCoverSave = mutableListOf<SongFile>()
 
         allSongs.forEach { songFile ->
             // Пропускаем, если уже есть artUri и он существует
             if (songFile.artUri != null && File(songFile.artUri).exists()) {
-                //Log.d(TAG, "***** MusicRepository refreshAllArtworks пропускаем трек ${songFile.title}")
+                //Log.d(TAG, "***** MusicRepository refreshAllArtworks пропускаем трек ${songFile.title}  File = ${File(songFile.artUri).absolutePath}")
                 return@forEach
             }
 
-            // Пытаемся извлечь встроенную обложку
+            //если начинается с content://com.android.providers, переписываем в кэш приложения,
+            // получаем новый адрес и помещаем в список songsToChangeCoverSave
+            songFile.artUri?. let{artUriPro->
+                if (artUriPro.startsWith("content://com.android.providers")){
+                    songsToChangeCoverSave.add(songFile.copy(artUri = artUriPro))
+                    Log.d(TAG, "***** ***** MusicRepository refreshAllArtworks songFile.title = ${songFile.title}")
+                }
+            }
+
+            // Пытаемся извлечь встроенную обложку, если успешно- в список songsToUpdate
             val embeddedArtUri = getEmbeddedArtwork(context, songFile.path)
-            Log.d(TAG, "***** ***** MusicRepository refreshAllArtworks embeddedArtUri = $embeddedArtUri")
+            //Log.d(TAG, "***** ***** MusicRepository refreshAllArtworks embeddedArtUri = $embeddedArtUri")
             if (embeddedArtUri != null) {
                 songsToUpdate.add(songFile.copy(artUri = embeddedArtUri))
             }
         }
-
         if (songsToUpdate.isNotEmpty()) {
             songDao.updateAll(songsToUpdate)
-           // Log.d(TAG, "*****MusicRepository refreshAllArtworks Updated artworks for ${songsToUpdate.size} songs")
+            //Log.d(TAG, "*****MusicRepository refreshAllArtworks Updated artworks for ${songsToUpdate.size} songs")
         }
-    }
-
-    suspend fun refreshOneArtwork(context: Context) {
-        Log.d(TAG, "***#*** MusicRepository refreshOneArtwork ")
-
-
     }
 }
