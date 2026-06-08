@@ -14,6 +14,7 @@ import android.widget.EditText
 import android.widget.ImageView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.PopupMenu
+import androidx.core.net.toUri
 import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
@@ -32,6 +33,7 @@ import com.example.muzpleer.ui.local.frags.CoverChangeLevelFragment.LevelType
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 import com.example.muzpleer.util.getTracksCountString
 import com.example.muzpleer.util.isContentProviderUri
+import com.example.muzpleer.util.isContentProviderUriPicker
 import com.google.android.material.textfield.TextInputLayout
 import java.io.File
 import java.util.Collections
@@ -89,12 +91,16 @@ class PlaylistAdapter(
                     if (isContentProviderUri(artUri.toString())){
                         // Загрузка обложки из  content:/com.android.providers.downloads
                         showImageWithGlide(binding.root.context, artUri, binding.playlistArtwork)
+                    }else  if (isContentProviderUriPicker(artUri.toString())){
+                        // Загрузка обложки из picker
+                        val  photoPickerUri =artUri.toString().toUri()
+                        showImageWithGlide(binding.root.context, photoPickerUri, binding.playlistArtwork)
                     }else{
                         // Загрузка обложки из кэша приложения
                         showImageWithGlide(binding.root.context, File(artUri.toString()), binding.playlistArtwork)
                     }
-                } catch (e: SecurityException) {
-                    Log.e(TAG, "❌PlaylistAdapter Security exception when loading: ${e.message}")
+                } catch (e: Exception) {
+                    Log.e(TAG, "❌PlaylistAdapter exception when loading: ${e.message}")
                     binding.playlistArtwork.setImageResource(R.drawable.muz_player2)
                 }
             }?: binding.playlistArtwork.setImageResource(R.drawable.muz_player2)
@@ -332,7 +338,7 @@ class PlaylistAdapter(
                     target: com.bumptech.glide.request.target.Target<Drawable?>,
                     isFirstResource: Boolean
                 ): Boolean {
-                    Log.e(TAG, " ❌ Glide load failed for URI: $artUri", e)
+                    Log.e(TAG, " ❌ playlistArtwork Glide load failed for URI: $artUri", e)
                     return false
                 }
 
@@ -343,8 +349,8 @@ class PlaylistAdapter(
                     dataSource: DataSource,
                     isFirstResource: Boolean
                 ): Boolean {
-                    Log.d(TAG, "✅Glide load success for URI: $artUri")
-                    Log.d(TAG, "✅ DataSource: $dataSource") // 👈 Важно! Покажет откуда загружено
+                    Log.d(TAG, "✅ playlistArtwork Glide load success for URI: $artUri")
+                    Log.d(TAG, "✅ playlistArtwork DataSource: $dataSource") // 👈 Важно! Покажет откуда загружено
                     return false
                 }
             })

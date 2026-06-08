@@ -7,6 +7,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.ImageView
+import androidx.core.net.toUri
 import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -20,6 +21,7 @@ import com.example.muzpleer.model.Album
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 import com.example.muzpleer.util.getTracksCountString
 import com.example.muzpleer.util.isContentProviderUri
+import com.example.muzpleer.util.isContentProviderUriPicker
 import java.io.File
 
 class AlbumsSelectionAdapter(
@@ -69,12 +71,16 @@ class AlbumsSelectionAdapter(
                     if (isContentProviderUri(artUri.toString())){
                         // Загрузка обложки из  content:/com.android.providers.downloads
                         showImageWithGlide(binding.root.context, artUri, binding.albumArtSelection)
+                    }else  if (isContentProviderUriPicker(artUri.toString())){
+                        // Загрузка обложки из picker
+                        val  photoPickerUri =artUri.toString().toUri()
+                        showImageWithGlide(binding.root.context, photoPickerUri, binding.albumArtSelection)
                     }else{
                         // Загрузка обложки из кэша приложения
                         showImageWithGlide(binding.root.context, File(artUri.toString()), binding.albumArtSelection)
                     }
-                } catch (e: SecurityException) {
-                    Log.e(TAG, "❌AlbumsSelectionAdapter Security exception when loading: ${e.message}")
+                } catch (e: Exception) {
+                    Log.e(TAG, "❌AlbumsSelectionAdapter exception when loading: ${e.message}")
                     binding.albumArtSelection.setImageResource(R.drawable.muz_player2)
                 }
             }?: binding.albumArtSelection.setImageResource(R.drawable.muz_player2)
@@ -104,7 +110,7 @@ class AlbumsSelectionAdapter(
                     target: com.bumptech.glide.request.target.Target<Drawable?>,
                     isFirstResource: Boolean
                 ): Boolean {
-                    Log.e(TAG, " ❌ Glide load failed for URI: $artUri", e)
+                    Log.e(TAG, " ❌AlbumsSelectionAdapter Glide load failed for URI: $artUri", e)
                     return false
                 }
 
@@ -115,8 +121,8 @@ class AlbumsSelectionAdapter(
                     dataSource: DataSource,
                     isFirstResource: Boolean
                 ): Boolean {
-                    Log.d(TAG, "✅Glide load success for URI: $artUri")
-                    Log.d(TAG, "✅ DataSource: $dataSource") // 👈 Важно! Покажет откуда загружено
+                    Log.d(TAG, "✅AlbumsSelectionAdapter Glide load success for URI: $artUri")
+                    Log.d(TAG, "✅AlbumsSelectionAdapter DataSource: $dataSource") // 👈 Важно! Покажет откуда загружено
                     return false
                 }
             })

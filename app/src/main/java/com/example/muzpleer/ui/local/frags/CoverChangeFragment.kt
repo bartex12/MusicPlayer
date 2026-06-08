@@ -76,8 +76,8 @@ class CoverChangeFragment : Fragment() {
                         // Загрузка обложки из кэша приложения
                         showImageWithGlide(binding.root.context, File(artUri.toString()), binding.coverImageView)
                     }
-                } catch (e: SecurityException) {
-                    Log.e(TAG, "❌ CoverChangeFragment Security exception when loading: ${e.message}")
+                } catch (e: Exception) {
+                    Log.e(TAG, "❌ CoverChangeFragment exception when loading: ${e.message}")
                     binding.coverImageView.setImageResource(R.drawable.muz_player3)
                 }
             }?: binding.coverImageView.setImageResource(R.drawable.muz_player3)
@@ -166,8 +166,8 @@ class CoverChangeFragment : Fragment() {
                     dataSource: DataSource,
                     isFirstResource: Boolean
                 ): Boolean {
-                    Log.d(PlayerFragment.Companion.TAG, "✅Glide load success for URI: $artUri")
-                    Log.d(PlayerFragment.Companion.TAG, "✅ DataSource: $dataSource") // 👈 Важно! Покажет откуда загружено
+                    Log.d(PlayerFragment.Companion.TAG, "✅CoverChangeFragment Glide load success for URI: $artUri")
+                    Log.d(PlayerFragment.Companion.TAG, "✅CoverChangeFragment DataSource: $dataSource") // 👈 Важно! Покажет откуда загружено
                     return false
                 }
             })

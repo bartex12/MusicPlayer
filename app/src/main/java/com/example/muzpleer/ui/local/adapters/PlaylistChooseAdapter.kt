@@ -7,6 +7,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.ImageView
+import androidx.core.net.toUri
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
@@ -17,6 +18,7 @@ import com.example.muzpleer.R
 import com.example.muzpleer.databinding.ItemPlaylistChooseBinding
 import com.example.muzpleer.model.Playlist
 import com.example.muzpleer.util.isContentProviderUri
+import com.example.muzpleer.util.isContentProviderUriPicker
 import java.io.File
 
 //для диалога выбора плейлиста для песни
@@ -60,12 +62,16 @@ class PlaylistChooseAdapter(
                     if (isContentProviderUri(artUri.toString())){
                         // Загрузка обложки из  content:/com.android.providers.downloads
                         showImageWithGlide(binding.root.context, artUri, binding.ivPlaylistArt)
+                    }else  if (isContentProviderUriPicker(artUri.toString())){
+                        // Загрузка обложки из picker
+                        val  photoPickerUri =artUri.toString().toUri()
+                        showImageWithGlide(binding.root.context, photoPickerUri, binding.ivPlaylistArt)
                     }else{
                         // Загрузка обложки из кэша приложения
                         showImageWithGlide(binding.root.context, File(artUri.toString()), binding.ivPlaylistArt)
                     }
-                } catch (e: SecurityException) {
-                    Log.e(TAG, "❌PlaylistChooseAdapter Security exception when loading: ${e.message}")
+                } catch (e: Exception) {
+                    Log.e(TAG, "❌PlaylistChooseAdapter exception when loading: ${e.message}")
                     binding.ivPlaylistArt.setImageResource(R.drawable.muz_player2)
                 }
             }?: binding.ivPlaylistArt.setImageResource(R.drawable.muz_player2)
@@ -90,7 +96,7 @@ class PlaylistChooseAdapter(
                     target: com.bumptech.glide.request.target.Target<Drawable?>,
                     isFirstResource: Boolean
                 ): Boolean {
-                    Log.e(TAG, " ❌ Glide load failed for URI: $artUri", e)
+                    Log.e(TAG, " ❌PlaylistChooseAdapter Glide load failed for URI: $artUri", e)
                     return false
                 }
 
@@ -101,8 +107,8 @@ class PlaylistChooseAdapter(
                     dataSource: DataSource,
                     isFirstResource: Boolean
                 ): Boolean {
-                    Log.d(TAG, "✅Glide load success for URI: $artUri")
-                    Log.d(TAG, "✅ DataSource: $dataSource") // 👈 Важно! Покажет откуда загружено
+                    Log.d(TAG, "✅PlaylistChooseAdapter Glide load success for URI: $artUri")
+                    Log.d(TAG, "✅PlaylistChooseAdapter DataSource: $dataSource") // 👈 Важно! Покажет откуда загружено
                     return false
                 }
             })

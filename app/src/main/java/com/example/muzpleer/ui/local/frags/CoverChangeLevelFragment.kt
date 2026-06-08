@@ -29,6 +29,7 @@ import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentCoverChangeLevelBinding
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 import com.example.muzpleer.util.isContentProviderUri
+import com.example.muzpleer.util.isContentProviderUriPicker
 import java.io.File
 
 class CoverChangeLevelFragment: Fragment() {
@@ -82,15 +83,19 @@ class CoverChangeLevelFragment: Fragment() {
                     if (isContentProviderUri(artUri.toString())){
                         // Загрузка обложки из  content:/com.android.providers.downloads
                         showImageWithGlide(binding.root.context, artUri, binding.coverImageViewLevel)
+                    }else  if (isContentProviderUriPicker(artUri.toString())){
+                        // Загрузка обложки из picker
+                        val  photoPickerUri =artUri.toString().toUri()
+                        showImageWithGlide(binding.root.context, photoPickerUri, binding.coverImageViewLevel)
                     }else{
                         // Загрузка обложки из кэша приложения
                         showImageWithGlide(binding.root.context, File(artUri.toString()), binding.coverImageViewLevel)
                     }
-                } catch (e: SecurityException) {
-                    Log.e(TAG, "❌Security exception when loading: ${e.message}")
-                    binding.coverImageViewLevel.setImageResource(R.drawable.muz_player5)
+                } catch (e: Exception) {
+                    Log.e(TAG, "❌ CoverChangeLevelFragment exception when loading: ${e.message}")
+                    binding.coverImageViewLevel.setImageResource(R.drawable.muz_player2)
                 }
-            }?: binding.coverImageViewLevel.setImageResource(R.drawable.muz_player5)
+            }?: binding.coverImageViewLevel.setImageResource(R.drawable.muz_player2)
         }
 
         binding.usePhonePhotosLevel.setOnClickListener {
@@ -165,8 +170,8 @@ class CoverChangeLevelFragment: Fragment() {
         // Загрузка обложки
         Glide.with(context)
             .load(artUri)
-            .placeholder(R.drawable.muz_player3)
-            .error(R.drawable.muz_player3)
+            .placeholder(R.drawable.muz_player5)
+            .error(R.drawable.muz_player2)
             .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
             .addListener(object : RequestListener<Drawable> {
                 override fun onLoadFailed(
@@ -176,7 +181,7 @@ class CoverChangeLevelFragment: Fragment() {
                     isFirstResource: Boolean
                 ): Boolean {
                     binding.coverImageViewLevel.setImageResource(R.drawable.muz_player5)
-                    Log.e(TAG, " ❌ Glide load failed for URI: $artUri", e)
+                    Log.e(TAG, " ❌ CoverChangeLevelFragment Glide load failed for URI: $artUri", e)
                     return false
                 }
 
@@ -187,8 +192,8 @@ class CoverChangeLevelFragment: Fragment() {
                     dataSource: DataSource,
                     isFirstResource: Boolean
                 ): Boolean {
-                    Log.d(TAG, "✅Glide load success for URI: $artUri")
-                    Log.d(TAG, "✅ DataSource: $dataSource") // 👈 Важно! Покажет откуда загружено
+                    Log.d(TAG, "✅ CoverChangeLevelFragment Glide load success for URI: $artUri")
+                    Log.d(TAG, "✅ CoverChangeLevelFragment DataSource: $dataSource") // 👈 Важно! Покажет откуда загружено
                     return false
                 }
             })

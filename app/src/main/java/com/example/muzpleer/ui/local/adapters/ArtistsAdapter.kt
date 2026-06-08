@@ -11,6 +11,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.appcompat.widget.PopupMenu
+import androidx.core.net.toUri
 import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
@@ -29,6 +30,7 @@ import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 import com.example.muzpleer.util.getAlbumsCountString
 import com.example.muzpleer.util.getTracksCountString
 import com.example.muzpleer.util.isContentProviderUri
+import com.example.muzpleer.util.isContentProviderUriPicker
 import java.io.File
 import java.util.Collections
 
@@ -93,14 +95,18 @@ class ArtistsAdapter(
                     if (isContentProviderUri(artUri.toString())){
                         // Загрузка обложки из  content:/com.android.providers.downloads
                         showImageWithGlide(binding.root.context, artUri, binding.ivArtistArtwork)
-                        Log.d(TAG, "✅✅Glide load success for URI: $artUri")
-                    }else{
+                        Log.d(TAG, "✅✅ ArtistsAdapter Glide load success for URI: $artUri")
+                    }else  if (isContentProviderUriPicker(artUri.toString())){
+                        // Загрузка обложки из picker
+                        val  photoPickerUri =artUri.toString().toUri()
+                        showImageWithGlide(binding.root.context, photoPickerUri, binding.ivArtistArtwork)}
+                    else{
                         // Загрузка обложки из кэша приложения
                         showImageWithGlide(binding.root.context, File(artUri.toString()), binding.ivArtistArtwork)
-                        Log.d(TAG, "✅✅✅Glide load success for URI: $artUri")
+                        Log.d(TAG, "✅✅✅ ArtistsAdapter Glide load success for URI: $artUri")
                     }
                 } catch (e: Exception) {
-                    Log.e(TAG, "❌ArtistsAdapter Security exception when loading: ${e.message}")
+                    Log.e(TAG, "❌ArtistsAdapter exception when loading: ${e.message}")
                     binding.ivArtistArtwork.setImageResource(R.drawable.muz_player2)
                 }
             }?: binding.ivArtistArtwork.setImageResource(R.drawable.muz_player2)
@@ -221,7 +227,7 @@ class ArtistsAdapter(
                     target: com.bumptech.glide.request.target.Target<Drawable?>,
                     isFirstResource: Boolean
                 ): Boolean {
-                    Log.e(TAG, " ❌ Glide load failed for URI: $artUri", e)
+                    Log.e(TAG, " ❌ ArtistsAdapter Glide load failed for URI: $artUri", e)
                     return false
                 }
 
@@ -232,8 +238,8 @@ class ArtistsAdapter(
                     dataSource: DataSource,
                     isFirstResource: Boolean
                 ): Boolean {
-                    Log.d(TAG, "✅Glide load success for URI: $artUri")
-                    Log.d(TAG, "✅ DataSource: $dataSource") // 👈 Важно! Покажет откуда загружено
+                    Log.d(TAG, "✅ ArtistsAdapter Glide load success for URI: $artUri")
+                    Log.d(TAG, "✅ ArtistsAdapter DataSource: $dataSource") // 👈 Важно! Покажет откуда загружено
                     return false
                 }
             })

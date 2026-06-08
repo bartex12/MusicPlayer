@@ -18,6 +18,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.widget.PopupMenu
 import androidx.core.content.FileProvider
+import androidx.core.net.toUri
 import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
@@ -36,6 +37,7 @@ import com.example.muzpleer.util.formatAsTime
 import com.example.muzpleer.util.formatDate
 import com.example.muzpleer.util.formatFileSize
 import com.example.muzpleer.util.isContentProviderUri
+import com.example.muzpleer.util.isContentProviderUriPicker
 import java.io.File
 import java.util.Collections
 
@@ -125,12 +127,16 @@ class SongsPlaylistAdapter(   private val viewModel: SharedViewModel,
                     if (isContentProviderUri(artUri.toString())){
                         // Загрузка обложки из  content:/com.android.providers.downloads
                         showImageWithGlide(binding.root.context, artUri, binding.trackArtworkPlaylist)
+                    }else  if (isContentProviderUriPicker(artUri.toString())){
+                        // Загрузка обложки из picker
+                        val  photoPickerUri =artUri.toString().toUri()
+                        showImageWithGlide(binding.root.context, photoPickerUri, binding.trackArtworkPlaylist)
                     }else{
                         // Загрузка обложки из кэша приложения
                         showImageWithGlide(binding.root.context, File(artUri.toString()), binding.trackArtworkPlaylist)
                     }
-                } catch (e: SecurityException) {
-                    Log.e(TAG, "❌SongsPlaylistAdapter Security exception when loading: ${e.message}")
+                } catch (e: Exception) {
+                    Log.e(TAG, "❌SongsPlaylistAdapter exception when loading: ${e.message}")
                     binding.trackArtworkPlaylist.setImageResource(R.drawable.muz_player2)
                 }
             }?: binding.trackArtworkPlaylist.setImageResource(R.drawable.muz_player2)
@@ -360,7 +366,7 @@ class SongsPlaylistAdapter(   private val viewModel: SharedViewModel,
                     target: com.bumptech.glide.request.target.Target<Drawable?>,
                     isFirstResource: Boolean
                 ): Boolean {
-                    Log.e(TAG, " ❌ Glide load failed for URI: $artUri", e)
+                    Log.e(TAG, " ❌SongsPlaylistAdapter Glide load failed for URI: $artUri", e)
                     return false
                 }
 
@@ -371,8 +377,8 @@ class SongsPlaylistAdapter(   private val viewModel: SharedViewModel,
                     dataSource: DataSource,
                     isFirstResource: Boolean
                 ): Boolean {
-                    Log.d(TAG, "✅Glide load success for URI: $artUri")
-                    Log.d(TAG, "✅ DataSource: $dataSource") // 👈 Важно! Покажет откуда загружено
+                    Log.d(TAG, "✅SongsPlaylistAdapter Glide load success for URI: $artUri")
+                    Log.d(TAG, "✅SongsPlaylistAdapter DataSource: $dataSource") // 👈 Важно! Покажет откуда загружено
                     return false
                 }
             })

@@ -17,6 +17,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.widget.PopupMenu
 import androidx.core.content.FileProvider
+import androidx.core.net.toUri
 import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -34,6 +35,7 @@ import com.example.muzpleer.util.formatAsTime
 import com.example.muzpleer.util.formatDate
 import com.example.muzpleer.util.formatFileSize
 import com.example.muzpleer.util.isContentProviderUri
+import com.example.muzpleer.util.isContentProviderUriPicker
 import java.io.File
 
 
@@ -117,12 +119,16 @@ class SongsAdapter(
                     if (isContentProviderUri(artUri)){
                         // Загрузка обложки из  content:/com.android.providers.downloads
                         showImageWithGlide(binding.root.context, artUri, binding.trackArtwork)
+                    }else  if (isContentProviderUriPicker(artUri.toString())){
+                        // Загрузка обложки из picker
+                        val  photoPickerUri =artUri.toString().toUri()
+                        showImageWithGlide(binding.root.context, photoPickerUri, binding.trackArtwork)
                     }else{
                         // Загрузка обложки из кэша приложения
                         showImageWithGlide(binding.root.context, File(artUri), binding.trackArtwork)
                     }
                 }catch (e: Exception){
-                    Log.e(TAG, " ❌ Glide load failed in SongsAdapter for URI: $artUri", e)
+                    Log.e(TAG, " ❌SongsAdapter Glide load failed in SongsAdapter for URI: $artUri", e)
                     binding.trackArtwork.setImageResource(R.drawable.muz_player2)
                 }
             }?: binding.trackArtwork.setImageResource(R.drawable.muz_player2)
@@ -322,7 +328,7 @@ class SongsAdapter(
                     target: com.bumptech.glide.request.target.Target<Drawable?>,
                     isFirstResource: Boolean
                 ): Boolean {
-                    Log.e(TAG, " ❌ Glide load failed in SongsAdapter for URI: $artUri", e)
+                    Log.e(TAG, " ❌SongsAdapter Glide load failed in SongsAdapter for URI: $artUri", e)
                     return false
                 }
 
@@ -333,8 +339,8 @@ class SongsAdapter(
                     dataSource: DataSource,
                     isFirstResource: Boolean
                 ): Boolean {
-                    Log.d(TAG, "✅Glide load success in SongsAdapter  for URI: $artUri")
-                    Log.d(TAG, "✅ DataSource in SongsAdapter : $dataSource") // 👈 Важно! Покажет откуда загружено
+                    Log.d(TAG, "✅SongsAdapter Glide load success in SongsAdapter  for URI: $artUri")
+                    Log.d(TAG, "✅SongsAdapter DataSource in SongsAdapter : $dataSource") // 👈 Важно! Покажет откуда загружено
                     return false
                 }
             })

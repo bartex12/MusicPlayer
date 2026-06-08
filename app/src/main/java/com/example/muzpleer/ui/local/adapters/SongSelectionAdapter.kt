@@ -7,6 +7,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.ImageView
+import androidx.core.net.toUri
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
@@ -18,6 +19,7 @@ import com.example.muzpleer.databinding.ItemSongSelectionBinding
 import com.example.muzpleer.model.Song
 import com.example.muzpleer.util.formatDuration
 import com.example.muzpleer.util.isContentProviderUri
+import com.example.muzpleer.util.isContentProviderUriPicker
 import java.io.File
 
 //адаптер для песен, из которых будут выбираться песни для добавления в плейлист
@@ -86,12 +88,16 @@ class SongSelectionAdapter (
                     if (isContentProviderUri(artUri.toString())){
                         // Загрузка обложки из  content:/com.android.providers.downloads
                         showImageWithGlide(binding.root.context, artUri, binding.songArtwork)
+                    }else  if (isContentProviderUriPicker(artUri.toString())){
+                        // Загрузка обложки из picker
+                        val  photoPickerUri =artUri.toString().toUri()
+                        showImageWithGlide(binding.root.context, photoPickerUri, binding.songArtwork)
                     }else{
                         // Загрузка обложки из кэша приложения
                         showImageWithGlide(binding.root.context, File(artUri.toString()), binding.songArtwork)
                     }
-                } catch (e: SecurityException) {
-                    Log.e(TAG, "❌SongSelectionAdapter Security exception when loading: ${e.message}")
+                } catch (e: Exception) {
+                    Log.e(TAG, "❌SongSelectionAdapter exception when loading: ${e.message}")
                     binding.songArtwork.setImageResource(R.drawable.muz_player2)
                 }
             }?: binding.songArtwork.setImageResource(R.drawable.muz_player2)
@@ -115,66 +121,6 @@ class SongSelectionAdapter (
         }
     }
 
-//    fun showImageWithGlide(context: Context, artUri: Uri?, imageView: ImageView) {
-//        when {
-//            artUri == null -> {
-//                // Загрузка стандартной обложки
-//                Glide.with(context)
-//                    .load(R.drawable.muz_player3)
-//                    .into(imageView)
-//            }
-//            artUri.scheme == "content" && artUri.authority == "com.android.providers.downloads.documents" -> {
-//                // Обработка специальных content URI
-//                loadDownloadDocumentUri(context, artUri, imageView)
-//            }
-//            artUri.toString().contains("albumart") -> {
-//                // Стандартные album art URI
-//                Glide.with(context)
-//                    .load(artUri)
-//                    .placeholder(R.drawable.muz_player3)
-//                    .error(R.drawable.muz_player3)
-//                    .diskCacheStrategy(DiskCacheStrategy.ALL)
-//                    .into(imageView)
-//            }
-//            else -> {
-//                // Все остальные URI
-//                Glide.with(context)
-//                    .load(artUri)
-//                    .placeholder(R.drawable.muz_player3)
-//                    .error(R.drawable.muz_player3)
-//                    .diskCacheStrategy(DiskCacheStrategy.ALL)
-//                    .into(imageView)
-//            }
-//        }
-//    }
-
-//    private fun loadDownloadDocumentUri(context: Context, uri: Uri, imageView: ImageView) {
-//        try {
-//            // Пытаемся получить реальный путь файла
-//            val filePath = getFilePathFromUri(context, uri)
-//            if (filePath != null) {
-//                Glide.with(context)
-//                    .load(File(filePath))
-//                    .placeholder(R.drawable.muz_player3)
-//                    .error(R.drawable.muz_player3)
-//                    .diskCacheStrategy(DiskCacheStrategy.ALL)
-//                    .into(imageView)
-//            } else {
-//                // Fallback: пытаемся загрузить через ContentResolver
-//                Glide.with(context)
-//                    .load(uri)
-//                    .placeholder(R.drawable.muz_player3)
-//                    .error(R.drawable.muz_player3)
-//                    .diskCacheStrategy(DiskCacheStrategy.ALL)
-//                    .into(imageView)
-//            }
-//        } catch (e: Exception) {
-//            Log.e(TAG, "Error loading download document URI: ${e.message}")
-//            Glide.with(context)
-//                .load(R.drawable.muz_player3)
-//                .into(imageView)
-//        }
-//    }
 fun showImageWithGlide(context: Context, artUri: Any, imageView: ImageView){
     // Загрузка обложки
     Glide.with(context)
@@ -189,7 +135,7 @@ fun showImageWithGlide(context: Context, artUri: Any, imageView: ImageView){
                 target: com.bumptech.glide.request.target.Target<Drawable?>,
                 isFirstResource: Boolean
             ): Boolean {
-                Log.e(TAG, " ❌ Glide load failed for URI: $artUri", e)
+                Log.e(TAG, " ❌SongSelectionAdapter Glide load failed for URI: $artUri", e)
                 return false
             }
 
@@ -200,8 +146,8 @@ fun showImageWithGlide(context: Context, artUri: Any, imageView: ImageView){
                 dataSource: DataSource,
                 isFirstResource: Boolean
             ): Boolean {
-                Log.d(TAG, "✅Glide load success for URI: $artUri")
-                Log.d(TAG, "✅ DataSource: $dataSource") // 👈 Важно! Покажет откуда загружено
+                Log.d(TAG, "✅SongSelectionAdapter Glide load success for URI: $artUri")
+                Log.d(TAG, "✅SongSelectionAdapter DataSource: $dataSource") // 👈 Важно! Покажет откуда загружено
                 return false
             }
         })
