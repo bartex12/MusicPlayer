@@ -11,6 +11,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.SeekBar
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.net.toUri
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.transition.ChangeBounds
@@ -28,6 +29,7 @@ import com.example.muzpleer.databinding.FragmentPlayerBinding
 import com.example.muzpleer.model.Song
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 import com.example.muzpleer.util.isContentProviderUri
+import com.example.muzpleer.util.isContentProviderUriPicker
 import com.google.android.material.snackbar.Snackbar
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 import java.io.File
@@ -167,26 +169,20 @@ class PlayerFragment : Fragment() {
                     if (isContentProviderUri(artUri)){
                         // Загрузка обложки из  content:/com.android.providers.downloads
                         showImageWithGlide(binding.root.context, artUri, binding.artworkImageView)
+                    }else  if (isContentProviderUriPicker(artUri.toString())){
+                        // Загрузка обложки из picker
+                        val  photoPickerUri =artUri.toString().toUri()
+                        showImageWithGlide(binding.root.context, photoPickerUri, binding.artworkImageView)
                     }else{
                         // Загрузка обложки из кэша приложения
                         showImageWithGlide(binding.root.context, File(artUri), binding.artworkImageView)
                     }
-                } catch (e: SecurityException) {
-                    Log.e(TAG, "❌Security exception when loading: ${e.message}")
-                    binding.artworkImageView.setImageResource(R.drawable.muz_player3)
+                } catch (e: Exception) {
+                    Log.e(TAG, "❌ PlayerFragment observeViewModel exception when loading: ${e.message}")
+                    binding.artworkImageView.setImageResource(R.drawable.muz_player2)
                 }
-            }?: binding.artworkImageView.setImageResource(R.drawable.muz_player3)
+            }?: binding.artworkImageView.setImageResource(R.drawable.muz_player2)
 
-//            trackArtUri?.let{artUri->
-//                // Загружаем изображение
-//                try {
-//                    showImageWithGlide(binding.root.context, File(artUri), binding.artworkImageView)
-//                   // showImageWithGlide(binding.root.context, artUri.toUri(), binding.artworkImageView)
-//                } catch (e: SecurityException) {
-//                    Log.e(TAG, "❌Security exception when loading: ${e.message}")
-//                    binding.artworkImageView.setImageResource(R.drawable.muz_player3)
-//                }
-//            }?: binding.artworkImageView.setImageResource(R.drawable.muz_player3)
         }
 
         // ✅ НОВЫЙ НАБЛЮДАТЕЛЬ: следим за изменением текущей песни
@@ -231,48 +227,19 @@ class PlayerFragment : Fragment() {
                 if (isContentProviderUri(artUri)){
                     // Загрузка обложки из  content:/com.android.providers.downloads
                     showImageWithGlide(binding.root.context, artUri, binding.artworkImageView)
+                }else  if (isContentProviderUriPicker(artUri.toString())){
+                    // Загрузка обложки из picker
+                    val  photoPickerUri =artUri.toString().toUri()
+                    showImageWithGlide(binding.root.context, photoPickerUri, binding.artworkImageView)
                 }else{
                     // Загрузка обложки из кэша приложения
                     showImageWithGlide(binding.root.context, File(artUri), binding.artworkImageView)
                 }
-            } catch (e: SecurityException) {
-                Log.e(TAG, "❌Security exception when loading: ${e.message}")
-                binding.artworkImageView.setImageResource(R.drawable.muz_player3)
+            } catch (e: Exception) {
+                Log.e(TAG, "❌PlayerFragment updateUI exception when loading: ${e.message}")
+                binding.artworkImageView.setImageResource(R.drawable.muz_player2)
             }
-        }?: binding.artworkImageView.setImageResource(R.drawable.muz_player3)
-    }
-
-    fun showImageWithGlide(context: Context, artUri: Any, imageView: ImageView){
-        // Загрузка обложки
-            Glide.with(context)
-                .load(artUri)
-                .placeholder(R.drawable.muz_player3)
-                .error(R.drawable.muz_player3)
-                .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
-                .addListener(object : RequestListener<Drawable> {
-                    override fun onLoadFailed(
-                        e: GlideException?,
-                        model: Any?,
-                        target: com.bumptech.glide.request.target.Target<Drawable?>,
-                        isFirstResource: Boolean
-                    ): Boolean {
-                        Log.e(TAG, " ❌ Glide load failed for URI: $artUri", e)
-                        return false
-                    }
-
-                    override fun onResourceReady(
-                        resource: Drawable,
-                        model: Any,
-                        target: com.bumptech.glide.request.target.Target<Drawable?>?,
-                        dataSource: DataSource,
-                        isFirstResource: Boolean
-                    ): Boolean {
-                        Log.d(TAG, "✅Glide load success for URI: $artUri")
-                        Log.d(TAG, "✅ DataSource: $dataSource") // 👈 Важно! Покажет откуда загружено
-                        return false
-                    }
-                })
-                .into(imageView)
+        }?: binding.artworkImageView.setImageResource(R.drawable.muz_player2)
     }
 
     @SuppressLint("DefaultLocale")
@@ -319,5 +286,38 @@ class PlayerFragment : Fragment() {
 
     private fun showActivityPlayer() {
         viewModel.setPlayerVisibility(true)
+    }
+
+    fun showImageWithGlide(context: Context, artUri: Any, imageView: ImageView){
+        // Загрузка обложки
+        Glide.with(context)
+            .load(artUri)
+            .placeholder(R.drawable.muz_player3)
+            .error(R.drawable.muz_player2)
+            .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
+            .addListener(object : RequestListener<Drawable> {
+                override fun onLoadFailed(
+                    e: GlideException?,
+                    model: Any?,
+                    target: com.bumptech.glide.request.target.Target<Drawable?>,
+                    isFirstResource: Boolean
+                ): Boolean {
+                    Log.e(TAG, " ❌PlayerFragment Glide load failed for URI: $artUri", e)
+                    return false
+                }
+
+                override fun onResourceReady(
+                    resource: Drawable,
+                    model: Any,
+                    target: com.bumptech.glide.request.target.Target<Drawable?>?,
+                    dataSource: DataSource,
+                    isFirstResource: Boolean
+                ): Boolean {
+                    Log.d(TAG, "✅PlayerFragment Glide load success for URI: $artUri")
+                    Log.d(TAG, "✅PlayerFragment DataSource: $dataSource") // 👈 Важно! Покажет откуда загружено
+                    return false
+                }
+            })
+            .into(imageView)
     }
 }
