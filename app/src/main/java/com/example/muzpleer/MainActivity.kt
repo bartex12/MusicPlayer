@@ -240,12 +240,12 @@ class MainActivity : AppCompatActivity() {
                         // Загрузка обложки из кэша приложения
                         showImageWithGlide(binding.root.context, File(artUri), artWork)
                     }
-                } catch (e: SecurityException) {
-                    Log.e(TAG, "❌Security exception when loading: ${e.message}")
+                } catch (e: Exception) {
+                    Log.e(TAG, "❌ MainActivity exception when loading: ${e.message}")
                     //при ошибке грузим картинку ошибки
-                    artWork.setImageResource(R.drawable.muz_player3)
+                    artWork.setImageResource(R.drawable.muz_player2)
                 }
-            }?: artWork.setImageResource(R.drawable.muz_player3)  //если artUri = null
+            }?: artWork.setImageResource(R.drawable.muz_player2)  //если artUri = null
         }
            //управление видимостью нижнего плеера из фрагмента:
             viewModel.playerVisibility.observe(this) { isVisible ->
@@ -330,39 +330,6 @@ class MainActivity : AppCompatActivity() {
         val seconds = (millis / 1000) % 60
         val minutes = (millis / (1000 * 60)) % 60
         return String.format("%02d:%02d", minutes, seconds)
-    }
-
-    fun showImageWithGlide(context:Context, artUri:Any, imageView: ImageView){
-        // Загрузка обложки
-        Glide.with(context)
-            .load(artUri)
-            .placeholder(R.drawable.muz_player3)
-            .error(R.drawable.muz_player3)
-            .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
-            .addListener(object : RequestListener<Drawable> {
-                override fun onLoadFailed(
-                    e: GlideException?,
-                    model: Any?,
-                    target: com.bumptech.glide.request.target.Target<Drawable?>,
-                    isFirstResource: Boolean
-                ): Boolean {
-                    Log.e(TAG, " ❌ Glide load failed in MainActivity for URI: $artUri", e)
-                    return false
-                }
-
-                override fun onResourceReady(
-                    resource: Drawable,
-                    model: Any,
-                    target: com.bumptech.glide.request.target.Target<Drawable?>?,
-                    dataSource: DataSource,
-                    isFirstResource: Boolean
-                ): Boolean {
-                    Log.d(TAG, "✅Glide load success in MainActivity  for URI: $artUri")
-                    Log.d(TAG, "✅ DataSource in MainActivity : $dataSource target = ${target.toString()}") // 👈 Важно! Покажет откуда загружено
-                    return false
-                }
-            })
-            .into(imageView)
     }
 
     private fun initViews() {
@@ -622,5 +589,39 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, "Ошибка при открытии магазина", Toast.LENGTH_SHORT).show()
             Log.e(TAG, "Ошибка при открытии магазина: ${e.message}")
         }
+    }
+
+
+    fun showImageWithGlide(context:Context, artUri:Any, imageView: ImageView){
+        // Загрузка обложки
+        Glide.with(context)
+            .load(artUri)
+            .placeholder(R.drawable.muz_player3)
+            .error(R.drawable.muz_player2)
+            .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
+            .addListener(object : RequestListener<Drawable> {
+                override fun onLoadFailed(
+                    e: GlideException?,
+                    model: Any?,
+                    target: com.bumptech.glide.request.target.Target<Drawable?>,
+                    isFirstResource: Boolean
+                ): Boolean {
+                    Log.e(TAG, " ❌ Glide load failed in MainActivity for URI: $artUri", e)
+                    return false
+                }
+
+                override fun onResourceReady(
+                    resource: Drawable,
+                    model: Any,
+                    target: com.bumptech.glide.request.target.Target<Drawable?>?,
+                    dataSource: DataSource,
+                    isFirstResource: Boolean
+                ): Boolean {
+                    Log.d(TAG, "✅Glide load success in MainActivity  for URI: $artUri")
+                    Log.d(TAG, "✅ DataSource in MainActivity : $dataSource target = ${target.toString()}") // 👈 Важно! Покажет откуда загружено
+                    return false
+                }
+            })
+            .into(imageView)
     }
 }

@@ -126,7 +126,7 @@ class SongsAdapter(
                     }
                 }catch (e: Exception){
                     Log.e(TAG, " ❌ Glide load failed in SongsAdapter for URI: $artUri", e)
-                    binding.trackArtwork.setImageResource(R.drawable.muz_player3)
+                    binding.trackArtwork.setImageResource(R.drawable.muz_player2)
                 }
             }?: binding.trackArtwork.setImageResource(R.drawable.muz_player2)
 
@@ -139,39 +139,6 @@ class SongsAdapter(
                 showPopupMenu(view, track)
             }
         }
-    }
-
-    fun showImageWithGlide(context:Context, artUri: Any, imageView: ImageView){
-        // Загрузка обложки
-        Glide.with(context)
-            .load(artUri)
-            .placeholder(R.drawable.muz_player3)
-            .error(R.drawable.muz_player2)
-            .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
-            .addListener(object : RequestListener<Drawable> {
-                override fun onLoadFailed(
-                    e: GlideException?,
-                    model: Any?,
-                    target: com.bumptech.glide.request.target.Target<Drawable?>,
-                    isFirstResource: Boolean
-                ): Boolean {
-                    Log.e(TAG, " ❌ Glide load failed in SongsAdapter for URI: $artUri", e)
-                    return false
-                }
-
-                override fun onResourceReady(
-                    resource: Drawable,
-                    model: Any,
-                    target: com.bumptech.glide.request.target.Target<Drawable?>?,
-                    dataSource: DataSource,
-                    isFirstResource: Boolean
-                ): Boolean {
-                    Log.d(TAG, "✅Glide load success in SongsAdapter  for URI: $artUri")
-                    Log.d(TAG, "✅ DataSource in SongsAdapter : $dataSource") // 👈 Важно! Покажет откуда загружено
-                    return false
-                }
-            })
-            .into(imageView)
     }
 
     private fun showPopupMenu(view: View, song: Song) {
@@ -201,7 +168,7 @@ class SongsAdapter(
                 R.id.action_change_cover -> {  //сменить обложку
                     Log.d(TAG, "!!!SongsAdapter showPopupMenu action_change_cover:" +
                             "song title = ${song.title} song artUri =  ${song.artUri}")
-                    //запоминаем во ViewModel выбранную песню
+                    //запоминаем во ViewModel выбранную песню  - потом в CoverChange Fragment понадобится
                     viewModel.setSelectedSong(song)
                     //идём во фрагмент замены обложки с источником вызова адаптера
                     view.findNavController().navigate(R.id.coverChangeFragment)
@@ -342,5 +309,38 @@ class SongsAdapter(
             Log.d(SharedViewModel.Companion.TAG, "SongsAdapter shareSong Ошибка при отправке песни: ${e.message}")
             Toast.makeText(context, "Не удалось поделиться песней", Toast.LENGTH_SHORT).show()
         }
+    }
+
+    fun showImageWithGlide(context:Context, artUri: Any, imageView: ImageView){
+        // Загрузка обложки
+        Glide.with(context)
+            .load(artUri)
+            .placeholder(R.drawable.muz_player3)
+            .error(R.drawable.muz_player2)
+            .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
+            .addListener(object : RequestListener<Drawable> {
+                override fun onLoadFailed(
+                    e: GlideException?,
+                    model: Any?,
+                    target: com.bumptech.glide.request.target.Target<Drawable?>,
+                    isFirstResource: Boolean
+                ): Boolean {
+                    Log.e(TAG, " ❌ Glide load failed in SongsAdapter for URI: $artUri", e)
+                    return false
+                }
+
+                override fun onResourceReady(
+                    resource: Drawable,
+                    model: Any,
+                    target: com.bumptech.glide.request.target.Target<Drawable?>?,
+                    dataSource: DataSource,
+                    isFirstResource: Boolean
+                ): Boolean {
+                    Log.d(TAG, "✅Glide load success in SongsAdapter  for URI: $artUri")
+                    Log.d(TAG, "✅ DataSource in SongsAdapter : $dataSource") // 👈 Важно! Покажет откуда загружено
+                    return false
+                }
+            })
+            .into(imageView)
     }
 }

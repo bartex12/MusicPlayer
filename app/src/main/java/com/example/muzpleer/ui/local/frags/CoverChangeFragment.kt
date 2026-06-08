@@ -70,6 +70,7 @@ class CoverChangeFragment : Fragment() {
                         // Загрузка обложки из  content:/com.android.providers.downloads
                         showImageWithGlide(binding.root.context, artUri, binding.coverImageView)
                     }else  if (isContentProviderUriPicker(artUri.toString())){
+                        // Загрузка обложки из picker
                         val  photoPickerUri =artUri.toString().toUri()
                         showImageWithGlide(binding.root.context, photoPickerUri, binding.coverImageView)
                     }else {
@@ -77,7 +78,7 @@ class CoverChangeFragment : Fragment() {
                         showImageWithGlide(binding.root.context, File(artUri.toString()), binding.coverImageView)
                     }
                 } catch (e: SecurityException) {
-                    Log.e(TAG, "❌CoverChangeFragment Security exception when loading: ${e.message}")
+                    Log.e(TAG, "❌ CoverChangeFragment Security exception when loading: ${e.message}")
                     binding.coverImageView.setImageResource(R.drawable.muz_player3)
                 }
             }?: binding.coverImageView.setImageResource(R.drawable.muz_player3)
