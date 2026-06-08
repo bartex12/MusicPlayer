@@ -1,17 +1,12 @@
 package com.example.muzpleer.repository
 
-import android.content.ContentUris
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
 import android.util.Log
 import androidx.annotation.RequiresApi
-import androidx.core.content.FileProvider
-import androidx.core.net.toUri
 import com.example.muzpleer.di.App
 import com.example.muzpleer.model.Song
 import com.example.muzpleer.room.dao.SongDao

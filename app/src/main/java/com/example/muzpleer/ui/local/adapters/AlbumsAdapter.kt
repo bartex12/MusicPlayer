@@ -28,7 +28,6 @@ import com.example.muzpleer.ui.local.frags.CoverChangeLevelFragment.LevelType
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 import com.example.muzpleer.util.getTracksCountString
 import com.example.muzpleer.util.isContentProviderUri
-import com.example.muzpleer.util.showCoverImageWithGlide
 import java.io.File
 import java.util.Collections
 

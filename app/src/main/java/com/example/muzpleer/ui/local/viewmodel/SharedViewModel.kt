@@ -1,9 +1,7 @@
 package com.example.muzpleer.ui.local.viewmodel
 
-import android.content.ContentUris
 import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.net.Uri
 import android.util.Log
 import android.widget.Toast
@@ -13,7 +11,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.RecyclerView
-import com.example.muzpleer.MainActivity
 import com.example.muzpleer.R
 import com.example.muzpleer.di.App
 import com.example.muzpleer.model.Album

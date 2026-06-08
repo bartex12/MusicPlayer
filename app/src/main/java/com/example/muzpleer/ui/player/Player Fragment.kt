@@ -2,9 +2,7 @@ package com.example.muzpleer.ui.player
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
-import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -13,7 +11,6 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.SeekBar
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.net.toUri
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.transition.ChangeBounds
@@ -34,7 +31,6 @@ import com.example.muzpleer.util.isContentProviderUri
 import com.google.android.material.snackbar.Snackbar
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 import java.io.File
-import java.io.FileOutputStream
 
 class PlayerFragment : Fragment() {
     private var _binding: FragmentPlayerBinding? = null
