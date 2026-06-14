@@ -107,9 +107,9 @@ class ArtistsAdapter(
                     }
                 } catch (e: Exception) {
                     Log.e(TAG, "❌ArtistsAdapter exception when loading: ${e.message}")
-                    binding.ivArtistArtwork.setImageResource(R.drawable.muz_player2)
+                    binding.ivArtistArtwork.setImageResource(R.drawable.muz_player3)
                 }
-            }?: binding.ivArtistArtwork.setImageResource(R.drawable.muz_player2)
+            }?: binding.ivArtistArtwork.setImageResource(R.drawable.muz_player3)
 
             binding.artistMenuButton.setOnClickListener { view ->
                 showPopupMenu(view, artist)
@@ -222,8 +222,8 @@ class ArtistsAdapter(
         // Загрузка обложки
         Glide.with(context)
             .load(artUri)
-            .placeholder(R.drawable.muz_player5)
-            .error(R.drawable.muz_player2)
+            .placeholder(R.drawable.muz_player3)
+            .error(R.drawable.muz_player3)
             .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
             .addListener(object : RequestListener<Drawable> {
                 override fun onLoadFailed(

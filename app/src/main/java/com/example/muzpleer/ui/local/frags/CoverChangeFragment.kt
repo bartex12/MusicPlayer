@@ -78,9 +78,9 @@ class CoverChangeFragment : Fragment() {
                     }
                 } catch (e: Exception) {
                     Log.e(TAG, "❌ CoverChangeFragment exception when loading: ${e.message}")
-                    binding.coverImageView.setImageResource(R.drawable.muz_player2)
+                    binding.coverImageView.setImageResource(R.drawable.muz_player3)
                 }
-            }?: binding.coverImageView.setImageResource(R.drawable.muz_player2)
+            }?: binding.coverImageView.setImageResource(R.drawable.muz_player3)
         }
 
         binding.usePhonePhotos.setOnClickListener {
@@ -146,7 +146,7 @@ class CoverChangeFragment : Fragment() {
         Glide.with(context)
             .load(artUri)
             .placeholder(R.drawable.muz_player3)
-            .error(R.drawable.muz_player2)
+            .error(R.drawable.muz_player3)
             .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
             .addListener(object : RequestListener<Drawable> {
                 override fun onLoadFailed(

@@ -137,9 +137,9 @@ class SongsPlaylistAdapter(   private val viewModel: SharedViewModel,
                     }
                 } catch (e: Exception) {
                     Log.e(TAG, "❌SongsPlaylistAdapter exception when loading: ${e.message}")
-                    binding.trackArtworkPlaylist.setImageResource(R.drawable.muz_player2)
+                    binding.trackArtworkPlaylist.setImageResource(R.drawable.muz_player3)
                 }
-            }?: binding.trackArtworkPlaylist.setImageResource(R.drawable.muz_player2)
+            }?: binding.trackArtworkPlaylist.setImageResource(R.drawable.muz_player3)
 
             binding.root.setOnClickListener {
                 viewModel.setSelectedPosition(absoluteAdapterPosition)
@@ -356,8 +356,8 @@ class SongsPlaylistAdapter(   private val viewModel: SharedViewModel,
         // Загрузка обложки
         Glide.with(context)
             .load(artUri)
-            .placeholder(R.drawable.muz_player5)
-            .error(R.drawable.muz_player2)
+            .placeholder(R.drawable.muz_player3)
+            .error(R.drawable.muz_player3)
             .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
             .addListener(object : RequestListener<Drawable> {
                 override fun onLoadFailed(

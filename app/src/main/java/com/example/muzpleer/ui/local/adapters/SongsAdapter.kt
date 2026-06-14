@@ -129,9 +129,9 @@ class SongsAdapter(
                     }
                 }catch (e: Exception){
                     Log.e(TAG, " ❌SongsAdapter Glide load failed in SongsAdapter for URI: $artUri", e)
-                    binding.trackArtwork.setImageResource(R.drawable.muz_player2)
+                    binding.trackArtwork.setImageResource(R.drawable.muz_player3)
                 }
-            }?: binding.trackArtwork.setImageResource(R.drawable.muz_player2)
+            }?: binding.trackArtwork.setImageResource(R.drawable.muz_player3)
 
             binding.root.setOnClickListener {
                 viewModel.setSelectedPosition(absoluteAdapterPosition)
@@ -319,7 +319,7 @@ class SongsAdapter(
         Glide.with(context)
             .load(artUri)
             .placeholder(R.drawable.muz_player3)
-            .error(R.drawable.muz_player2)
+            .error(R.drawable.muz_player3)
             .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
             .addListener(object : RequestListener<Drawable> {
                 override fun onLoadFailed(

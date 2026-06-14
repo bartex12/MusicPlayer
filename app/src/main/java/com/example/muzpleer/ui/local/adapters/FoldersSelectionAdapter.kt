@@ -82,9 +82,9 @@ class FoldersSelectionAdapter (
                     }
                 } catch (e: Exception) {
                     Log.e(TAG, "❌FoldersSelectionAdapter exception when loading: ${e.message}")
-                    binding.albumArtSelection.setImageResource(R.drawable.muz_player2)
+                    binding.albumArtSelection.setImageResource(R.drawable.muz_player3)
                 }
-            }?: binding.albumArtSelection.setImageResource(R.drawable.muz_player2)
+            }?: binding.albumArtSelection.setImageResource(R.drawable.muz_player3)
 
             itemView.setOnClickListener {
                 viewModel.setSelectedAlbumPosition(absoluteAdapterPosition)
@@ -101,8 +101,8 @@ class FoldersSelectionAdapter (
         // Загрузка обложки
         Glide.with(context)
             .load(artUri)
-            .placeholder(R.drawable.muz_player5)
-            .error(R.drawable.muz_player2)
+            .placeholder(R.drawable.muz_player3)
+            .error(R.drawable.muz_player3)
             .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
             .addListener(object : RequestListener<Drawable> {
                 override fun onLoadFailed(

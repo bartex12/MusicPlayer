@@ -98,9 +98,9 @@ class SongSelectionAdapter (
                     }
                 } catch (e: Exception) {
                     Log.e(TAG, "❌SongSelectionAdapter exception when loading: ${e.message}")
-                    binding.songArtwork.setImageResource(R.drawable.muz_player2)
+                    binding.songArtwork.setImageResource(R.drawable.muz_player3)
                 }
-            }?: binding.songArtwork.setImageResource(R.drawable.muz_player2)
+            }?: binding.songArtwork.setImageResource(R.drawable.muz_player3)
 
             // Устанавливаем состояние чекбокса БЕЗ вызова слушателя
             binding.checkbox.setOnCheckedChangeListener(null) // Сначала удаляем слушатель
@@ -125,8 +125,8 @@ fun showImageWithGlide(context: Context, artUri: Any, imageView: ImageView){
     // Загрузка обложки
     Glide.with(context)
         .load(artUri)
-        .placeholder(R.drawable.muz_player5)
-        .error(R.drawable.muz_player2)
+        .placeholder(R.drawable.muz_player3)
+        .error(R.drawable.muz_player3)
         .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
         .addListener(object : RequestListener<Drawable> {
             override fun onLoadFailed(

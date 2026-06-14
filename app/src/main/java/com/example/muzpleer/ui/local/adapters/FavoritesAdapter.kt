@@ -125,9 +125,9 @@ class FavoritesAdapter(
                     }
                 } catch (e: Exception) {
                     Log.e(TAG, "❌FavoritesAdapter exception when loading: ${e.message}")
-                    binding.trackArtwork.setImageResource(R.drawable.muz_player2)
+                    binding.trackArtwork.setImageResource(R.drawable.muz_player3)
                 }
-            }?: binding.trackArtwork.setImageResource(R.drawable.muz_player2)
+            }?: binding.trackArtwork.setImageResource(R.drawable.muz_player3)
 
             binding.root.setOnClickListener {
                 viewModel.setSelectedPosition(absoluteAdapterPosition)
@@ -374,8 +374,8 @@ class FavoritesAdapter(
         // Загрузка обложки
         Glide.with(context)
             .load(artUri)
-            .placeholder(R.drawable.muz_player5)
-            .error(R.drawable.muz_player2)
+            .placeholder(R.drawable.muz_player3)
+            .error(R.drawable.muz_player3)
             .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
             .addListener(object : RequestListener<Drawable> {
                 override fun onLoadFailed(

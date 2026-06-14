@@ -101,9 +101,9 @@ class PlaylistAdapter(
                     }
                 } catch (e: Exception) {
                     Log.e(TAG, "❌PlaylistAdapter exception when loading: ${e.message}")
-                    binding.playlistArtwork.setImageResource(R.drawable.muz_player2)
+                    binding.playlistArtwork.setImageResource(R.drawable.muz_player3)
                 }
-            }?: binding.playlistArtwork.setImageResource(R.drawable.muz_player2)
+            }?: binding.playlistArtwork.setImageResource(R.drawable.muz_player3)
 
             binding.playlistMenuButton.setOnClickListener { view ->
                 showPopupMenu(view, playlist)
@@ -328,8 +328,8 @@ class PlaylistAdapter(
         // Загрузка обложки
         Glide.with(context)
             .load(artUri)
-            .placeholder(R.drawable.muz_player5)
-            .error(R.drawable.muz_player2)
+            .placeholder(R.drawable.muz_player3)
+            .error(R.drawable.muz_player3)
             .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
             .addListener(object : RequestListener<Drawable> {
                 override fun onLoadFailed(

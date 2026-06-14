@@ -241,9 +241,9 @@ class MainActivity : AppCompatActivity() {
                 } catch (e: Exception) {
                     Log.e(TAG, "❌ MainActivity exception when loading: ${e.message}")
                     //при ошибке грузим картинку ошибки
-                    artWork.setImageResource(R.drawable.muz_player2)
+                    artWork.setImageResource(R.drawable.muz_player3)
                 }
-            }?: artWork.setImageResource(R.drawable.muz_player2)  //если artUri = null
+            }?: artWork.setImageResource(R.drawable.muz_player3)  //если artUri = null
         }
            //управление видимостью нижнего плеера из фрагмента:
             viewModel.playerVisibility.observe(this) { isVisible ->
@@ -605,7 +605,7 @@ class MainActivity : AppCompatActivity() {
         Glide.with(context)
             .load(artUri)
             .placeholder(R.drawable.muz_player3)
-            .error(R.drawable.muz_player2)
+            .error(R.drawable.muz_player3)
             .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
             .addListener(object : RequestListener<Drawable> {
                 override fun onLoadFailed(
