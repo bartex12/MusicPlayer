@@ -290,6 +290,10 @@ class SharedViewModel(
         _errorMessage.value = null
     }
 
+    fun getAllSongs():List<Song>{
+        return songs.value
+    }
+
     fun setCurrentSong(song: Song) {
         Log.d(TAG, "SharedViewModel setCurrentSong song = $song")
         _currentSong.value = song
@@ -1460,5 +1464,17 @@ class SharedViewModel(
             // Перезагружаем списки песен
             loadAllSongsForAdding()
         }
+    }
+
+    fun getSongListFromDatabase(autoLoadFromDb:()->Unit){
+        viewModelScope.launch {
+            val listSongs = repository.getSongsFromDatabase()
+            if (listSongs.size > 0){
+                _songs.value = listSongs
+                _filteredSongs.value = listSongs
+            }
+            autoLoadFromDb.invoke()
+        }
+
     }
 }

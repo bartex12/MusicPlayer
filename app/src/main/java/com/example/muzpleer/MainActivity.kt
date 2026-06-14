@@ -45,6 +45,7 @@ import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.example.muzpleer.databinding.ActivityMainBinding
 import com.example.muzpleer.model.Song
+import com.example.muzpleer.room.utils.fromSongFileListToSongList
 import com.example.muzpleer.ui.local.TabLocalFragment
 import com.example.muzpleer.ui.local.helper.IPreferenceHelper
 import com.example.muzpleer.ui.local.helper.PreferenceHelperImpl
@@ -367,6 +368,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun startMediaScan() {
+        viewModel.getSongListFromDatabase(){
+            if (viewModel.getAllSongs().isNotEmpty()){
+                Log.d(TAG, " @@##@@ MainActivity  startMediaScan songs.size = ${viewModel.getAllSongs().size}  ")
+            }else{
+                Log.d(TAG, " @@##@@ MainActivity  startMediaScan songs.size = 0  songs.size = ${viewModel.getAllSongs().size}")
+            }
+        }
+
         viewModel.scanMedia(){
             //сначала сканируем телефон и собираем все музыкальные треки в базе, а потом делаем другие вкладки
             viewModel.syncAlbums()
