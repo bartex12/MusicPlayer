@@ -198,7 +198,7 @@ class SharedViewModel(
 
      fun scanMedia(afterLoad:()->Unit) {
         viewModelScope.launch {
-            initParamsSong(repository.loadMusic())
+            initParamsSong(repository.loadMusicFromMemory())
             afterLoad.invoke()
         }
     }
@@ -1057,17 +1057,18 @@ class SharedViewModel(
 
     fun updateAlbumsOrder(orderedAlbums: List<Album>) {
         viewModelScope.launch {
-            val albums:List<AlbumFile> = albumRepository.getAllAlbumSongs()
+            val albums:List<AlbumFile> = albumRepository.getAllAlbumSongs() //альбомы из базы
             val updatedAlbums: MutableList<AlbumFile> = mutableListOf<AlbumFile>()
 
-            orderedAlbums.forEachIndexed { index, album ->
+            orderedAlbums.forEachIndexed { index, album ->  //смотрим пришедшие альбомы
+                //при совпадении id из базы и пришедших альбомов добавляем в список с обновлением индекса для сортировки
                 val album1 = albums.find { it.albumId == album.albumId }
                 album1?.let {
                     updatedAlbums.add(it.copy(sortOrder = index))
                 }
             }
             Log.d(TAG,"--#**# SharedViewModel updateAlbumsOrder orderedAlbums size = ${orderedAlbums.size} " +
-                    "orderedAlbums ids = ${updatedAlbums.map{it.id}} orderedAlbums albumIds= ${updatedAlbums.map{it.albumId}}")
+                    "orderedAlbums ids = ${orderedAlbums.map{it.albumId}} albums albumIds= ${albums.map{it.albumId}}")
             Log.d(TAG,"--#**# SharedViewModel updateAlbumsOrder updatedAlbums size = ${updatedAlbums.size} " +
                     "updatedAlbums sortOrder = ${updatedAlbums.map{it.sortOrder}  }")
 
@@ -1084,19 +1085,17 @@ class SharedViewModel(
             val artists:List<ArtistFile> = artistsRepository.getAllArtistsSongs()
             val updatedArtists: MutableList<ArtistFile> = mutableListOf<ArtistFile>()
 
-            orderedArtist.forEachIndexed { index, artist ->
-                val artist1 = artists.find { it.id == artist.id }
+            orderedArtist.forEachIndexed { index, orderedArtist ->
+                val artist1 = artists.find { it.artistId == orderedArtist.artistId }
                 artist1?.let {
                     updatedArtists.add(it.copy(sortOrder = index))
                 }
             }
-            val artistIds = artists.map{ it.id}
-            val artistArtistIds = artists.map{ it.artistId}
+            //val artistIds = artists.map{ it.id}
+            val artistArtistIds = artists.map{ it.artistId} //это хэши имени
 
-            Log.d(TAG,"--#**# SharedViewModel updateArtistsOrder artistIds = $artistIds " +
-                    "хэш имени artistArtistIds = $artistArtistIds ")
-            Log.d(TAG,"--#**# SharedViewModel updateArtistsOrder orderedArtist size = ${orderedArtist.size} " +
-                    "orderedArtist ids = ${orderedArtist.map{it.id}} ")
+            Log.d(TAG,"--#**# SharedViewModel updateArtistsOrder orderedArtist artistId = ${orderedArtist.map{it.artistId}}")
+            Log.d(TAG,"--#**# SharedViewModel updateArtistsOrder artistArtistIds = $artistArtistIds")
             Log.d(TAG,"--#**# SharedViewModel updateArtistsOrder updatedArtists size = ${updatedArtists.size} " +
                     "updatedArtists sortOrder = ${updatedArtists.map{it.sortOrder}  }")
 

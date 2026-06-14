@@ -176,6 +176,7 @@ class ArtistsFragment:Fragment() {
         when(item.itemId){
             R.id.action_edit_order -> {
                 toggleEditMode()
+                viewModel.syncArtist ()
                 true
             }
         }
@@ -191,6 +192,7 @@ class ArtistsFragment:Fragment() {
             itemTouchHelper.attachToRecyclerView(binding.singersRecyclerView)
         } else {
             itemTouchHelper.attachToRecyclerView(null) // Отключаем перетаскивание
+            adapter.onDrop()  // 🔧 СОХРАНЯЕМ ПРИ ВЫХОДЕ
         }
 
         // Обновляем меню
@@ -214,6 +216,7 @@ class ArtistsFragment:Fragment() {
             isEditMode = false
             adapter.setEditMode(false)
             itemTouchHelper.attachToRecyclerView(null) // Отключаем перетаскивание
+            adapter.onDrop()  // 🔧 СОХРАНЯЕМ ПРИ СБРОСЕ
             Log.d(TAG, "PlaylistFragment: Режим редактирования сброшен при открытии")
         }
     }
@@ -226,7 +229,7 @@ class ArtistsFragment:Fragment() {
             itemTouchHelper.attachToRecyclerView(null)
 
             // Сохраняем изменения порядка
-            adapter.onDrop() // Сохраняем порядок в БД
+           // adapter.onDrop() // Сохраняем порядок в БД
 
             Log.d(TAG, "PlaylistFragment: Режим редактирования сброшен при уходе")
         }

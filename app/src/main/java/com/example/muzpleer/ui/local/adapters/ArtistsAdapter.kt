@@ -200,9 +200,14 @@ class ArtistsAdapter(
     }
 
     override fun onDrop() {
-        // Сохраняем окончательный порядок
-        artists = dragData.toList()
-        viewModel.updateArtistsOrder(artists)
+        // Сохраняем окончательный порядок, только если были изменения
+        if (dragData.isNotEmpty() && dragData != artists) {
+            artists = dragData.toList()
+            viewModel.updateArtistsOrder(artists)
+            Log.d(TAG, " !! ArtistsAdapter onDrop() - порядок сохранён")
+        } else {
+            Log.d(TAG, " !! ArtistsAdapter onDrop() - изменений нет")
+        }
     }
 
     override fun onItemDismiss(position: Int) {

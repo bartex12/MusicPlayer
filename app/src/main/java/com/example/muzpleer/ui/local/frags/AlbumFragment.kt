@@ -173,6 +173,7 @@ class AlbumFragment: Fragment() {
         when(item.itemId){
             R.id.action_edit_order -> {
                 toggleEditMode()
+                viewModel.syncAlbums()
                 true
             }
         }
@@ -199,7 +200,7 @@ class AlbumFragment: Fragment() {
         }
     }
     private fun showEditModeHint() {
-        Snackbar.make(binding.root, "Перетаскивайте песни для изменения порядка",
+        Snackbar.make(binding.root, "Перетаскивайте альбомы для изменения порядка",
             Snackbar.LENGTH_LONG)
             .setAction("OK") {toggleEditMode() }
             .show()

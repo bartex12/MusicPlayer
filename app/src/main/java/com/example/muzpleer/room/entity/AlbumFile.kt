@@ -9,7 +9,8 @@ import androidx.room.PrimaryKey
     indices = [Index(value = ["albumId"], unique = true)] // Уникальность только в таблице albums
 )
 data class AlbumFile(
-    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    @PrimaryKey(autoGenerate = true)
+    val id: Long = 0,
     val albumId: Long, //  val albumId: Long, // Уникальный только в рамках таблицы albums
     val title: String,
     val artist: String,

@@ -10,7 +10,8 @@ import com.example.muzpleer.model.Song
     indices = [Index(value = ["folderPath"], unique = true)]
 )
 data class FolderFile(
-    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    @PrimaryKey(autoGenerate = true)
+    val id: Long = 0,
     val folderPath: String, // Полный путь к папке
     val folderName: String, // Имя папки (последний сегмент пути)
     val songCount: Int,

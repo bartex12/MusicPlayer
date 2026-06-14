@@ -28,7 +28,7 @@ class MusicRepository(
 
     private var songs = mutableListOf<Song>()
 
-     suspend fun loadMusic():List<Song> {
+     suspend fun loadMusicFromMemory():List<Song> {
         return (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             scanMusicApi29Plus(context)
         } else {
@@ -340,7 +340,7 @@ class MusicRepository(
             songFile.artUri?. let{artUriPro->
                 if (artUriPro.startsWith("content://com.android.providers")){
                     songsToChangeCoverSave.add(songFile.copy(artUri = artUriPro))
-                    Log.d(TAG, "***** ***** MusicRepository refreshAllArtworks songFile.title = ${songFile.title}")
+                    //Log.d(TAG, "***** ***** MusicRepository refreshAllArtworks songFile.title = ${songFile.title}")
                 }
             }
 

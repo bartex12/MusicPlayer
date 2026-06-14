@@ -368,13 +368,15 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun startMediaScan() {
-        viewModel.getSongListFromDatabase(){
-            if (viewModel.getAllSongs().isNotEmpty()){
-                Log.d(TAG, " @@##@@ MainActivity  startMediaScan songs.size = ${viewModel.getAllSongs().size}  ")
-            }else{
-                Log.d(TAG, " @@##@@ MainActivity  startMediaScan songs.size = 0  songs.size = ${viewModel.getAllSongs().size}")
-            }
-        }
+
+        //Видимо, было для проверки чего-то
+//        viewModel.getSongListFromDatabase(){
+//            if (viewModel.getAllSongs().isNotEmpty()){
+//                Log.d(TAG, " @@##@@ MainActivity  startMediaScan songs.size = ${viewModel.getAllSongs().size}  ")
+//            }else{
+//                Log.d(TAG, " @@##@@ MainActivity  startMediaScan songs.size = 0  songs.size = ${viewModel.getAllSongs().size}")
+//            }
+//        }
 
         viewModel.scanMedia(){
             //сначала сканируем телефон и собираем все музыкальные треки в базе, а потом делаем другие вкладки
@@ -389,7 +391,7 @@ class MainActivity : AppCompatActivity() {
                 viewModel.setCurrentSongById(savedSongId)
             }
 
-            //Обновляем обложки принудительно //todo
+            //Обновляем обложки принудительно очень медленно грузится всё//todo
             //viewModel.refreshArtworks()
 
             //восстанавливаем заголовок тулбара

@@ -4,6 +4,11 @@ import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
 
+/**
+ * @property id - Внутренний ID Room (автоинкремент, не использовать для сравнения)
+ * @property artistId - Стабильный ID на основе хэша имени (использовать для связей)
+ */
+
 @Entity(
     tableName = "artists",
     indices = [Index(value = ["id"], unique = true)] // Уникальность только в таблице artists
