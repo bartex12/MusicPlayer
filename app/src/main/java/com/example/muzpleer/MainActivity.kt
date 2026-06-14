@@ -390,7 +390,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             //Обновляем обложки принудительно //todo
-            viewModel.refreshArtworks()
+            //viewModel.refreshArtworks()
 
             //восстанавливаем заголовок тулбара
             resetToTabTitle()

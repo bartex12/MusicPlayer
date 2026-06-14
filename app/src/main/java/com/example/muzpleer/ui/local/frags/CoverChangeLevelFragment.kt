@@ -180,7 +180,7 @@ class CoverChangeLevelFragment: Fragment() {
                     target: com.bumptech.glide.request.target.Target<Drawable?>,
                     isFirstResource: Boolean
                 ): Boolean {
-                    binding.coverImageViewLevel.setImageResource(R.drawable.muz_player5)
+                    binding.coverImageViewLevel.setImageResource(R.drawable.muz_player2)
                     Log.e(TAG, " ❌ CoverChangeLevelFragment Glide load failed for URI: $artUri", e)
                     return false
                 }
