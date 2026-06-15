@@ -113,7 +113,7 @@ class MusicRepository(
 
                     if (isModified || isMoved || isTitleChanged || isArtistChanged || isAlbumChanged) {
                          // При изменении файла проверяем, не появилась ли новая встроенная обложка
-                        val embeddedArtUri = getEmbeddedArtwork(context, path)
+                        val embeddedArtUri = getEmbeddedArtworkAndSave(context, path)
                         Log.d(TAG, " MMM MusicRepository scanMusicApi29Plus при изменениях embeddedArtUri = $embeddedArtUri ")
                         val finalArtUri = embeddedArtUri ?: existingFile.artUri // Если нет встроенной, оставляем старую
                         Log.d(TAG, " MMM MusicRepository scanMusicApi29Plus при изменениях finalArtUri = $finalArtUri ")
@@ -144,7 +144,7 @@ class MusicRepository(
                 } ?: run {
                     // Новый файл
                     // Новый файл - извлекаем встроенную обложку
-                    val embeddedArtUri = getEmbeddedArtwork(context, path)
+                    val embeddedArtUri = getEmbeddedArtworkAndSave(context, path)
                     //Log.d(TAG, " MMM MusicRepository scanMusicApi29Plus Новый трек embeddedArtUri = $embeddedArtUri ")
                     filesToAdd.add(
                         SongFile(
@@ -282,7 +282,7 @@ class MusicRepository(
         return songDao.getById(songId)
     }
 
-    private fun getEmbeddedArtwork(context: Context, filePath: String): String? {
+    private fun getEmbeddedArtworkAndSave(context: Context, filePath: String): String? {
         return try {
             val retriever = MediaMetadataRetriever()
             retriever.setDataSource(context, Uri.fromFile(File(filePath)))
@@ -345,7 +345,7 @@ class MusicRepository(
             }
 
             // Пытаемся извлечь встроенную обложку, если успешно- в список songsToUpdate
-            val embeddedArtUri = getEmbeddedArtwork(context, songFile.path)
+            val embeddedArtUri = getEmbeddedArtworkAndSave(context, songFile.path)
             //Log.d(TAG, "***** ***** MusicRepository refreshAllArtworks embeddedArtUri = $embeddedArtUri")
             if (embeddedArtUri != null) {
                 songsToUpdate.add(songFile.copy(artUri = embeddedArtUri))
