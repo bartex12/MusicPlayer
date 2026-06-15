@@ -369,15 +369,6 @@ class MainActivity : AppCompatActivity() {
 
     private fun startMediaScan() {
 
-        //Видимо, было для проверки чего-то
-//        viewModel.getSongListFromDatabase(){
-//            if (viewModel.getAllSongs().isNotEmpty()){
-//                Log.d(TAG, " @@##@@ MainActivity  startMediaScan songs.size = ${viewModel.getAllSongs().size}  ")
-//            }else{
-//                Log.d(TAG, " @@##@@ MainActivity  startMediaScan songs.size = 0  songs.size = ${viewModel.getAllSongs().size}")
-//            }
-//        }
-
         viewModel.scanMedia(){
             //сначала сканируем телефон и собираем все музыкальные треки в базе, а потом делаем другие вкладки
             viewModel.syncAlbums()
