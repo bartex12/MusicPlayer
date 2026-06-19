@@ -367,4 +367,8 @@ class MusicRepository(
             //Log.d(TAG, "*****MusicRepository refreshAllArtworks Updated artworks for ${songsToUpdate.size} songs")
         }
     }
+
+    suspend fun  updateSongArtUri(songId: Long, newArtUri: String?){
+        songDao.updateCoverPath(songId, newArtUri)
+   }
 }

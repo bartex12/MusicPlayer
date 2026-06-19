@@ -640,14 +640,13 @@ class SharedViewModel(
     fun updateCoverImageAndSave(uri: Uri) {
         Log.d(TAG, "2*** SharedViewModel updateCoverImageAndSave uri = $uri")
         val currentSong = _selectedSong.value ?: return
-
         // Проверяем, не тот же ли это URI
         if (currentSong.artUri == uri.toString()) {
             Log.d(TAG, "  --##-- SharedViewModel updateCoverImageAndSave Same URI, skipping update")
             return // Не обновляем, если URI не изменился
         }
-        _coverImageUri.value = uri
-        saveCoverToDatabase(uri)
+        _coverImageUri.value = uri  //обновляем на экране
+        saveCoverToDatabase(uri)  //обновляем в базе
     }
 
     //для плейлистов
@@ -1475,5 +1474,78 @@ class SharedViewModel(
             autoLoadFromDb.invoke()
         }
 
+    }
+
+    fun updateSongArtUri(context: Context, track:Song) {
+        viewModelScope.launch {
+            //сохраняем картинку из ресурсов в кэш и получаем ссылку
+            val newArtUri = saveResourceToCache(context)
+            track.artUri = newArtUri
+            // Обновляем песню
+            _songs.value = _songs.value?.map {s->
+                if (s.id == track.id) s.copy(artUri = newArtUri) else s
+            }
+            // Обновляем песню
+            _filteredSongs.value = _filteredSongs.value?. map{filteredSong->
+                if (filteredSong.id == track.id) filteredSong.copy(artUri = newArtUri) else filteredSong
+            }
+            // Обновляем выбранную песню
+            _selectedSong.value?. let{selectedSong->
+                if (selectedSong.id == track.id)
+                    _selectedSong.value = selectedSong.copy(artUri = newArtUri)
+            }
+
+            // Обновляем текущую песню если нужно
+            _currentSong.value?.let { current ->
+                if (current.id == track.id) {
+                    _currentSong.value = current.copy(artUri = newArtUri)
+                }
+            }
+
+            Log.d(TAG, " **??** SharedViewModel updateSongArtUri newArtUri $newArtUri")
+            try {
+                repository.updateSongArtUri(track.id, newArtUri)
+                Log.d(TAG, "✅SharedViewModel updateSongArtUri Обновлён artUri для песни ${track.id}")
+            } catch (e: Exception) {
+                Log.e(TAG, "❌SharedViewModel updateSongArtUri Ошибка обновления artUri: ${e.message}")
+            }
+        }
+    }
+
+    //для сохранения картинки из ресурсов в кэш диска
+    fun saveResourceToCache(context: Context): String? {
+        // 1. Формируем правильный Uri для ресурса R.drawable.muz_player3
+        val resId = R.drawable.muz_player3
+        val sourceUri ="android.resource://${context.packageName}/$resId".toUri()
+
+        // 2. Создаем директорию album_art в кэше, если её нет
+        val cacheDir = File(context.cacheDir, "album_art")
+        if (!cacheDir.exists()) {
+            cacheDir.mkdirs()
+        }
+
+        // 3. Формируем имя и итоговый файл по вашему условию
+        val fileName = "embedded_${sourceUri.toString().hashCode()}.jpg"
+        val destinationFile = File(cacheDir, fileName)
+
+        // Если файл уже был сохранен ранее, просто возвращаем путь
+        if (destinationFile.exists()) {
+            return destinationFile.absolutePath
+        }
+
+        // 4. Читаем ресурс и записываем его на диск
+        return try {
+            context.contentResolver.openInputStream(sourceUri).use { inputStream ->
+                if (inputStream == null) return null
+
+                FileOutputStream(destinationFile).use { outputStream ->
+                    inputStream.copyTo(outputStream)
+                }
+            }
+            destinationFile.absolutePath
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null // Возвращаем null в случае ошибки ввода-вывода
+        }
     }
 }

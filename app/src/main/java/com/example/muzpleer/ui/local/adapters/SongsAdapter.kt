@@ -117,15 +117,30 @@ class SongsAdapter(
                 try {
                     if (isContentProviderUri(artUri)){
                         // Загрузка обложки из  content:/com.android.providers.downloads
-                        showImageWithGlide(binding.root.context, artUri, binding.trackArtwork, track.title)
+                        showImageWithGlide(binding.root.context, artUri, binding.trackArtwork, track.title) {
+                            // При ошибке сбрасываем в БД
+                            //viewModel.updateSongArtUri(track.id, null)
+                            //viewModel.saveResourceToCache(binding.root.context)
+                            viewModel.updateSongArtUri(binding.root.context, track)
+                        }
                         Log.d(TAG,"WWW 3 SongAdapter bind  title = ${track.title}")
                     }else  if (isContentProviderUriPicker(artUri.toString())){
                         // Загрузка обложки из picker
                         val  photoPickerUri =artUri.toString().toUri()
-                        showImageWithGlide(binding.root.context, photoPickerUri, binding.trackArtwork, track.title)
+                        showImageWithGlide(binding.root.context, photoPickerUri, binding.trackArtwork, track.title){
+                            // При ошибке сбрасываем в БД
+                            //viewModel.updateSongArtUri(track.id, null)
+                            //viewModel.saveResourceToCache(binding.root.context)
+                            viewModel.updateSongArtUri(binding.root.context, track)
+                        }
                     }else{
                         // Загрузка обложки из кэша приложения
-                        showImageWithGlide(binding.root.context, File(artUri), binding.trackArtwork, track.title)
+                        showImageWithGlide(binding.root.context, File(artUri), binding.trackArtwork, track.title){
+                            // При ошибке сбрасываем в БД
+                            //viewModel.updateSongArtUri(track.id, null)
+                            //viewModel.saveResourceToCache(binding.root.context)
+                            viewModel.updateSongArtUri(binding.root.context, track)
+                        }
                     }
                 }catch (e: Exception){
                     Log.e(TAG, " ❌SongsAdapter Glide load failed in SongsAdapter for URI: $artUri", e)
@@ -314,7 +329,7 @@ class SongsAdapter(
         }
     }
 
-    fun showImageWithGlide(context:Context, artUri: Any, imageView: ImageView, title:String){
+    fun showImageWithGlide(context:Context, artUri: Any, imageView: ImageView, title:String, onError:((Exception?)-> Unit)?= null){
         // Загрузка обложки
         Glide.with(context)
             .load(artUri)
@@ -329,6 +344,7 @@ class SongsAdapter(
                     isFirstResource: Boolean
                 ): Boolean {
                     Log.e(TAG, " ❌SongsAdapter Glide load failed in SongsAdapter for title: $title URI: $artUri", e)
+                    onError?.invoke(e)
                     return false
                 }
 
