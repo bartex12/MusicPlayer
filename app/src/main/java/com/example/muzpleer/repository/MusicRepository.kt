@@ -7,6 +7,7 @@ import android.os.Build
 import android.provider.MediaStore
 import android.util.Log
 import androidx.annotation.RequiresApi
+import com.example.muzpleer.R
 import com.example.muzpleer.di.App
 import com.example.muzpleer.model.Song
 import com.example.muzpleer.room.dao.SongDao
@@ -96,9 +97,10 @@ class MusicRepository(
                 val dateAdded = cursor.getLong(addedColumn) * 1000
                 val folderPath = File(path).parent ?: ""
 
-                //берём id существующих в базе файлов
+                //берём id просканированных в памяти телефона файлов
                 songDao.getById(id)?.let { existingFile ->
-                    // Файл существует в базе
+
+                    // Файл с таким id существует в базе
                     dbIds.remove(id)  //удаляем запись с этой id из списка всех id
 
                     // Проверяем и дату изменения, путь, и тд
@@ -111,41 +113,49 @@ class MusicRepository(
                     // её нужно всё время обновлять, если она != null
                     val isCoverNotNull = existingFile.artUri != null
 
-                    if (isModified || isMoved || isTitleChanged || isArtistChanged || isAlbumChanged) {
-                         // При изменении файла проверяем, не появилась ли новая встроенная обложка
-                        val embeddedArtUri = getEmbeddedArtworkAndSave(context, path)
-                        Log.d(TAG, " MMM MusicRepository scanMusicApi29Plus при изменениях embeddedArtUri = $embeddedArtUri ")
-                        val finalArtUri = embeddedArtUri ?: existingFile.artUri // Если нет встроенной, оставляем старую
-                        Log.d(TAG, " MMM MusicRepository scanMusicApi29Plus при изменениях finalArtUri = $finalArtUri ")
-                        filesToUpdate.add(
-                            SongFile(
-                                mediaStoreId = id,
-                                path = path,
-                                lastModified = lastModified,
-                                title = title,
-                                artist = artist,
-                                artistId = artist.hashCode().toLong(),
-                                album = album,
-                                albumId = albumId,
-                                duration = duration,
-                                isLocal = true,
-                                size = sizeFile,
-                                dateAdded = dateAdded,
-                                folderPath = folderPath,
-                                artUri = finalArtUri,
-                                // Новые поля - сохраняем существующие значения, если они есть
-                                author = existingFile.author ?: getAuthorFromMetadata(context, path),
-                                genre = existingFile.genre ?: getGenreFromMetadata(context, path),
-                                year = existingFile.year ?: getYearFromMetadata(context, path)
+                   //обложка ==null?
+                    if (isCoverNotNull){
+                        //если обложка не равна null,то
+                        //смотрим- был ли файл модифицирован по сравнению с файлом в базе
+                        if (isModified || isMoved || isTitleChanged || isArtistChanged || isAlbumChanged) {
+                            // При изменении файла проверяем, не появилась ли новая встроенная обложка
+                            // Если появилась,сохраняем изображение в кэш и возвращаем URI в строковом виде
+                            val embeddedArtUri = getEmbeddedArtworkAndSave(context, path)
+                            Log.d(TAG, " #%# MusicRepository scanMusicApi29Plus при изменениях embeddedArtUri = $embeddedArtUri ")
+                            val finalArtUri = embeddedArtUri ?: existingFile.artUri // Если нет встроенной, оставляем старую
+                            Log.d(TAG, " #%# MusicRepository scanMusicApi29Plus при изменениях finalArtUri = $finalArtUri ")
+                            filesToUpdate.add(
+                                SongFile(
+                                    mediaStoreId = id,
+                                    path = path,
+                                    lastModified = lastModified,
+                                    title = title,
+                                    artist = artist,
+                                    artistId = artist.hashCode().toLong(),
+                                    album = album,
+                                    albumId = albumId,
+                                    duration = duration,
+                                    isLocal = true,
+                                    size = sizeFile,
+                                    dateAdded = dateAdded,
+                                    folderPath = folderPath,
+                                    artUri = finalArtUri,
+                                    // Новые поля - сохраняем существующие значения, если они есть
+                                    author = existingFile.author ?: getAuthorFromMetadata(context, path),
+                                    genre = existingFile.genre ?: getGenreFromMetadata(context, path),
+                                    year = existingFile.year ?: getYearFromMetadata(context, path)
+                                )
                             )
-                        )
-                        //Log.d(TAG, "#%# File updated: $path (changes: modified=$isModified, moved=$isMoved, title=$isTitleChanged, artist=$isArtistChanged, album=$isAlbumChanged)")
+                            Log.d(TAG, "#%# File updated: $path (changes: modified=$isModified, moved=$isMoved, title=$isTitleChanged, artist=$isArtistChanged, album=$isAlbumChanged)")
+                        }
+                    }else{
+                        //если обложка ==null, ничего не делаем
+                        Log.d(TAG, " #%# MusicRepository scanMusicApi29Plus existingFile.artUri == null")
                     }
                 } ?: run {
-                    // Новый файл
-                    // Новый файл - извлекаем встроенную обложку
+                    // Новый файл - пытаемся извлечь встроенную обложку, если есть, сохраняем в кэше
                     val embeddedArtUri = getEmbeddedArtworkAndSave(context, path)
-                    //Log.d(TAG, " MMM MusicRepository scanMusicApi29Plus Новый трек embeddedArtUri = $embeddedArtUri ")
+                    Log.d(TAG, " #%# MusicRepository scanMusicApi29Plus Новый трек embeddedArtUri = $embeddedArtUri ")
                     filesToAdd.add(
                         SongFile(
                             mediaStoreId = id,
@@ -185,6 +195,7 @@ class MusicRepository(
                 "filesToAdd.size = ${filesToAdd.size}  " +
                 "filesToUpdate.size = ${filesToUpdate.size}  " +
                 "filesToDelete.size = ${filesToDelete.size}")
+
         // Применяем изменения
         withContext(Dispatchers.IO) {
             // Вставляем новые файлы списком

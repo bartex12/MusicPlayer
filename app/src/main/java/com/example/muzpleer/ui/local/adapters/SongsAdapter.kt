@@ -114,18 +114,18 @@ class SongsAdapter(
             Log.d(TAG, "WWW 1 SongAdapter bind track.artUri =  ${track.artUri}")
             // Загрузка обложки, если заменили её на другую
             track.artUri?.let {artUri->
-                Log.d(TAG,"WWW 3 SongAdapter bind  artUri = $artUri")
                 try {
                     if (isContentProviderUri(artUri)){
                         // Загрузка обложки из  content:/com.android.providers.downloads
-                        showImageWithGlide(binding.root.context, artUri, binding.trackArtwork)
+                        showImageWithGlide(binding.root.context, artUri, binding.trackArtwork, track.title)
+                        Log.d(TAG,"WWW 3 SongAdapter bind  title = ${track.title}")
                     }else  if (isContentProviderUriPicker(artUri.toString())){
                         // Загрузка обложки из picker
                         val  photoPickerUri =artUri.toString().toUri()
-                        showImageWithGlide(binding.root.context, photoPickerUri, binding.trackArtwork)
+                        showImageWithGlide(binding.root.context, photoPickerUri, binding.trackArtwork, track.title)
                     }else{
                         // Загрузка обложки из кэша приложения
-                        showImageWithGlide(binding.root.context, File(artUri), binding.trackArtwork)
+                        showImageWithGlide(binding.root.context, File(artUri), binding.trackArtwork, track.title)
                     }
                 }catch (e: Exception){
                     Log.e(TAG, " ❌SongsAdapter Glide load failed in SongsAdapter for URI: $artUri", e)
@@ -314,7 +314,7 @@ class SongsAdapter(
         }
     }
 
-    fun showImageWithGlide(context:Context, artUri: Any, imageView: ImageView){
+    fun showImageWithGlide(context:Context, artUri: Any, imageView: ImageView, title:String){
         // Загрузка обложки
         Glide.with(context)
             .load(artUri)
@@ -328,7 +328,7 @@ class SongsAdapter(
                     target: com.bumptech.glide.request.target.Target<Drawable?>,
                     isFirstResource: Boolean
                 ): Boolean {
-                    Log.e(TAG, " ❌SongsAdapter Glide load failed in SongsAdapter for URI: $artUri", e)
+                    Log.e(TAG, " ❌SongsAdapter Glide load failed in SongsAdapter for title: $title URI: $artUri", e)
                     return false
                 }
 
