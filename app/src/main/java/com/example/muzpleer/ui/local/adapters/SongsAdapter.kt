@@ -119,8 +119,6 @@ class SongsAdapter(
                         // Загрузка обложки из  content:/com.android.providers.downloads
                         showImageWithGlide(binding.root.context, artUri, binding.trackArtwork, track.title) {
                             // При ошибке сбрасываем в БД
-                            //viewModel.updateSongArtUri(track.id, null)
-                            //viewModel.saveResourceToCache(binding.root.context)
                             viewModel.updateSongArtUri(binding.root.context, track)
                         }
                         Log.d(TAG,"WWW 3 SongAdapter bind  title = ${track.title}")
@@ -129,16 +127,12 @@ class SongsAdapter(
                         val  photoPickerUri =artUri.toString().toUri()
                         showImageWithGlide(binding.root.context, photoPickerUri, binding.trackArtwork, track.title){
                             // При ошибке сбрасываем в БД
-                            //viewModel.updateSongArtUri(track.id, null)
-                            //viewModel.saveResourceToCache(binding.root.context)
                             viewModel.updateSongArtUri(binding.root.context, track)
                         }
                     }else{
                         // Загрузка обложки из кэша приложения
                         showImageWithGlide(binding.root.context, File(artUri), binding.trackArtwork, track.title){
                             // При ошибке сбрасываем в БД
-                            //viewModel.updateSongArtUri(track.id, null)
-                            //viewModel.saveResourceToCache(binding.root.context)
                             viewModel.updateSongArtUri(binding.root.context, track)
                         }
                     }

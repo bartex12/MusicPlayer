@@ -1473,7 +1473,6 @@ class SharedViewModel(
             }
             autoLoadFromDb.invoke()
         }
-
     }
 
     fun updateSongArtUri(context: Context, track:Song) {
