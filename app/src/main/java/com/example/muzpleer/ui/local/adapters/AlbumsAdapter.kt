@@ -85,14 +85,23 @@ class AlbumsAdapter(
                 try {
                     if (isContentProviderUri(artUri.toString())){
                         // Загрузка обложки из  content:/com.android.providers.downloads
-                        showImageWithGlide(binding.root.context, artUri, binding.albumArt)
+                        showImageWithGlide(binding.root.context, artUri, binding.albumArt, album.title){
+                            // При ошибке сбрасываем в БД
+                            viewModel.updateAlbumArtUri(binding.root.context, album)
+                        }
                     }else  if (isContentProviderUriPicker(artUri.toString())){
                         // Загрузка обложки из picker
                         val  photoPickerUri =artUri.toString().toUri()
-                        showImageWithGlide(binding.root.context, photoPickerUri, binding.albumArt)
+                        showImageWithGlide(binding.root.context, photoPickerUri, binding.albumArt, album.title){
+                            // При ошибке сбрасываем в БД
+                            viewModel.updateAlbumArtUri(binding.root.context, album)
+                        }
                     }else{
                         // Загрузка обложки из кэша приложения
-                        showImageWithGlide(binding.root.context, File(artUri.toString()), binding.albumArt)
+                        showImageWithGlide(binding.root.context, File(artUri.toString()), binding.albumArt, album.title){
+                            // При ошибке сбрасываем в БД
+                            viewModel.updateAlbumArtUri(binding.root.context, album)
+                        }
                     }
                 } catch (e: Exception) {
                     Log.e(TAG, "❌AlbumsAdapter exception when loading: ${e.message}")
@@ -203,7 +212,7 @@ class AlbumsAdapter(
         const val TAG = "33333"
     }
 
-    fun showImageWithGlide(context: Context, artUri: Any, imageView: ImageView){
+    fun showImageWithGlide(context: Context, artUri: Any, imageView: ImageView, title:String, onError:((Exception?)-> Unit)?= null){
         // Загрузка обложки
         Glide.with(context)
             .load(artUri)
@@ -217,7 +226,8 @@ class AlbumsAdapter(
                     target: com.bumptech.glide.request.target.Target<Drawable?>,
                     isFirstResource: Boolean
                 ): Boolean {
-                    Log.e(TAG, " ❌ AlbumsAdapter Glide load failed for URI: $artUri", e)
+                    Log.e(TAG, " ❌ AlbumsAdapter Glide load failed for title = $title URI: $artUri", e)
+                    onError?.invoke(e)
                     return false
                 }
 

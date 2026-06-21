@@ -12,6 +12,6 @@ data class Artist(
     val name: String,
     val artistId:Long = name.hashCode().toLong(),
     val songs: List<Song>,
-    val artworkUri: Uri? = null,
+    var artworkUri: Uri? = null,
     val albums: List<Album> // Добавляем список альбомов
 )

@@ -139,7 +139,7 @@ class SharedViewModel(
     private val _errorMessage = MutableLiveData<String?>()
     val errorMessage: LiveData<String?> = _errorMessage
 
-    //выделенная строка в адаптере песни при щелчке но ней
+    //выделенная строка в адаптере песни при щелчке по ней
     private val _selectedSongPosition = MutableLiveData<Int>(RecyclerView.NO_POSITION)
     val selectedSongPosition: LiveData<Int> = _selectedSongPosition
 
@@ -1547,4 +1547,128 @@ class SharedViewModel(
             null // Возвращаем null в случае ошибки ввода-вывода
         }
     }
+
+    fun updateAlbumArtUri(context: Context, album: Album) {
+        viewModelScope.launch {
+            //сохраняем картинку из ресурсов в кэш и получаем ссылку
+            val newArtUriString = saveResourceToCache(context)
+            val newArtUri = newArtUriString?.toUri()
+            album.artworkUri = newArtUri
+            // Обновляем альбом
+            _albums.value = _albums.value?.map {a->
+                if (a.albumId == album.albumId) a.copy(artworkUri =newArtUri) else a
+            }
+            // Обновляем альбом
+            _filteredAlbums.value = _filteredAlbums.value?. map{fa->
+                if (fa.albumId == album.albumId) fa.copy(artworkUri =newArtUri) else fa
+            }
+
+            // Обновляем текущий альбом если нужно
+            _currentAlbum.value?.let { current ->
+                if (current.albumId == album.albumId) {
+                    _currentAlbum.value = current.copy(artworkUri = newArtUri)
+                }
+            }
+            Log.d(TAG, " **??** SharedViewModel updateAlbumArtUri newArtUri $newArtUri")
+            try {
+                albumRepository.updateAlbumArtUriByAlbumId(album.albumId, newArtUriString)
+                Log.d(TAG, "✅SharedViewModel updateAlbumArtUri Обновлён artUri для альбома с title = ${album.title}  id =  ${album.id} albumId = ${album.albumId}")
+            } catch (e: Exception) {
+                Log.e(TAG, "❌SharedViewModel updateAlbumArtUri Ошибка обновления artUri: ${e.message}")
+            }
+        }
+    }
+
+    fun updatePlaylistArtUri(context: Context,  playlist: Playlist){
+        viewModelScope.launch {
+            //сохраняем картинку из ресурсов в кэш и получаем ссылку
+            val newArtUriString = saveResourceToCache(context)
+            val newArtUri = newArtUriString?.toUri()
+            playlist.playlistArtUri = newArtUri
+            // Обновляем плейлист
+            _playlists.value = _playlists.value?.map {p->
+                if (p.id == playlist.id) p.copy(playlistArtUri = newArtUri) else p
+            }
+            // Обновляем фильтрованный плейлист
+            _filteredPlaylists.value = _filteredPlaylists.value?. map{fp->
+                if (fp.id == playlist.id) fp.copy(playlistArtUri = newArtUri) else fp
+            }
+
+            // Обновляем текущий плейлист если нужно
+            _currentPlaylist.value?.let { current ->
+                if (current.id == playlist.id) {
+                    _currentPlaylist.value = current.copy(playlistArtUri = newArtUri)
+                }
+            }
+            Log.d(TAG, " **??** SharedViewModel updatePlaylistArtUri newArtUri $newArtUri")
+            try {
+                playlistRepository.updatePlaylistArtUri(playlist.id, newArtUriString)
+                Log.d(TAG, "✅SharedViewModel updatePlaylistArtUri Обновлён artUri для плейлиста = ${playlist.playlistName}  id = ${playlist.id} }")
+            } catch (e: Exception) {
+                Log.e(TAG, "❌SharedViewModel updatePlaylistArtUri Ошибка обновления для плейлиста = ${playlist.playlistName}  artUri: ${e.message}")
+            }
+        }
+    }
+
+    fun updateArtistArtUri(context: Context, artist: Artist){
+        viewModelScope.launch {
+            //сохраняем картинку из ресурсов в кэш и получаем ссылку
+            val newArtUriString = saveResourceToCache(context)
+            val newArtUri = newArtUriString?.toUri()
+            artist.artworkUri = newArtUri
+            // Обновляем артиста
+            _artists.value = _artists.value?.map {a->
+                if (a.id == artist.id) a.copy(artworkUri = newArtUri) else a
+            }
+            // Обновляем артиста
+            _filteredArtists.value = _filteredArtists.value?. map{fa->
+                if (fa.id == artist.id) fa.copy(artworkUri =newArtUri) else fa
+            }
+
+            // Обновляем текущего артиста если нужно
+            _currentArtist.value?.let { current ->
+                if (current.id == artist.id) {
+                    _currentArtist.value = current.copy(artworkUri = newArtUri)
+                }
+            }
+            Log.d(TAG, " **??** SharedViewModel updateArtistArtUri newArtUri $newArtUri")
+            try {
+                artistsRepository.updateArtistArtUriById(artist.id, newArtUriString)
+                Log.d(TAG, "✅SharedViewModel updateArtistArtUri Обновлён artUri для артиста с ${artist.name}  id =  ${artist.id} }")
+            } catch (e: Exception) {
+                Log.e(TAG, "❌SharedViewModel updateArtistArtUri Ошибка обновления artUri: ${e.message}")
+            }
+        }
+    }
+
+   fun updateFolderArtUri(context: Context, folder: Folder){
+       viewModelScope.launch {
+           //сохраняем картинку из ресурсов в кэш и получаем ссылку
+           val newArtUriString = saveResourceToCache(context)
+           val newArtUri = newArtUriString?.toUri()
+           folder.artworkUri = newArtUri
+           // Обновляем папку
+           _folders.value = _folders.value?.map {f->
+               if (f.id == folder.id) f.copy(artworkUri = newArtUri) else f
+           }
+           // Обновляем папку
+           _filteredFolders.value = _filteredFolders.value?. map{ff->
+               if (ff.id == folder.id) ff.copy(artworkUri =newArtUri) else ff
+           }
+
+           // Обновляем текущую папку если нужно
+           _currentFolder.value?.let { current ->
+               if (current.id == folder.id) {
+                   _currentFolder.value = current.copy(artworkUri = newArtUri)
+               }
+           }
+           Log.d(TAG, " **??** SharedViewModel updateFolderArtUri newArtUri $newArtUri")
+           try {
+              folderRepository.updateFolderArtUri(folder.id, newArtUriString)
+               Log.d(TAG, "✅SharedViewModel updateFolderArtUri Обновлён artUri для папки  ${folder.name}  id = ${folder.id} }")
+           } catch (e: Exception) {
+               Log.e(TAG, "❌SharedViewModel updateFolderArtUri Ошибка обновления artUri для папки ${folder.name}: ${e.message}")
+           }
+       }
+   }
 }

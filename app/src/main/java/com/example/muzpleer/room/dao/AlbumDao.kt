@@ -42,6 +42,9 @@ interface AlbumDao {
     @Query("UPDATE albums SET coverPath = :artUri WHERE id = :albumId")
     suspend fun updateAlbumArtUri(albumId: Long, artUri: String?)
 
+    @Query("UPDATE albums SET coverPath = :artUri WHERE albumId = :albumId")
+    suspend fun updateAlbumArtUriByAlbumId(albumId: Long, artUri: String?)
+
     @Query("UPDATE albums SET sortOrder = :newOrder WHERE id = :id")
     suspend fun updateAlbumsSortOrder(id: Long, newOrder: Int)
 

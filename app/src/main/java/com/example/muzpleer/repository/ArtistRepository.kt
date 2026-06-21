@@ -159,6 +159,10 @@ class ArtistRepository (private val artistDao: ArtistDao,
         artistDao.updateArtistArtUri(artistId, artUri)
     }
 
+    suspend fun updateArtistArtUriById(id: Long, artUri: String?) {
+        artistDao.updateArtistArtUriById(id, artUri)
+    }
+
     suspend fun updateArtistsOrder(artists: List<ArtistFile>) {
         artists.forEachIndexed { index, artist ->
             artistDao.updateArtistsSortOrder(artist.id, index)

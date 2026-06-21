@@ -5,7 +5,7 @@ import android.net.Uri
 data class Playlist(
     val id: Long = 0,  //id
     val playlistName: String,  //имя плейлиста
-    val playlistArtUri : Uri? = null, //обложка
+    var playlistArtUri : Uri? = null, //обложка
     val playlistSongs: List<Song> = emptyList(),  //список песен
     val songCount: Int = 0,
     val createdAt: Long = System.currentTimeMillis(),

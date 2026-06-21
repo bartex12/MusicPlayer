@@ -86,17 +86,29 @@ class FoldersAdapter(
                 try {
                     if (isContentProviderUri(artUri.toString())){
                         // Загрузка обложки из  content:/com.android.providers.downloads
-                        showImageWithGlide(binding.root.context, artUri, binding.ivFolderIcon)
+                        showImageWithGlide(binding.root.context, artUri, binding.ivFolderIcon, folder.name){
+                            // При ошибке сбрасываем в БД
+                            viewModel.updateFolderArtUri(binding.root.context, folder)
+                        }
+                        Log.d(TAG, "✅ FoldersAdapter bind Glide load success for folder = ${folder.name} URI: $artUri")
                     }else  if (isContentProviderUriPicker(artUri.toString())){
                         // Загрузка обложки из picker
                         val  photoPickerUri =artUri.toString().toUri()
-                        showImageWithGlide(binding.root.context, photoPickerUri, binding.ivFolderIcon)
+                        showImageWithGlide(binding.root.context, photoPickerUri, binding.ivFolderIcon, folder.name){
+                            // При ошибке сбрасываем в БД
+                            viewModel.updateFolderArtUri(binding.root.context, folder)
+                        }
+                        Log.d(TAG, "✅✅ FoldersAdapter bind Glide load success for folder = ${folder.name} URI: $artUri")
                     }else{
                         // Загрузка обложки из кэша приложения
-                        showImageWithGlide(binding.root.context, File(artUri.toString()), binding.ivFolderIcon)
+                        showImageWithGlide(binding.root.context, File(artUri.toString()), binding.ivFolderIcon, folder.name){
+                            // При ошибке сбрасываем в БД
+                            viewModel.updateFolderArtUri(binding.root.context, folder)
+                        }
+                        Log.d(TAG, "✅✅✅ FoldersAdapter bind Glide load success for folder = ${folder.name} URI: $artUri")
                     }
                 } catch (e: Exception) {
-                    Log.e(TAG, "❌ FoldersAdapter exception when loading: ${e.message}")
+                    Log.e(TAG, "❌ FoldersAdapter exception when loading  folder name = ${folder.name}   ${e.message}")
                     binding.ivFolderIcon.setImageResource(R.drawable.muz_player3)
                 }
             }?: binding.ivFolderIcon.setImageResource(R.drawable.muz_player3)
@@ -202,7 +214,7 @@ class FoldersAdapter(
         const val TAG = "33333"
     }
 
-    fun showImageWithGlide(context: Context, artUri: Any, imageView: ImageView){
+    fun showImageWithGlide(context: Context, artUri: Any, imageView: ImageView, title:String, onError:((Exception?)->Unit)? = null){
         // Загрузка обложки
         Glide.with(context)
             .load(artUri)
@@ -216,7 +228,8 @@ class FoldersAdapter(
                     target: com.bumptech.glide.request.target.Target<Drawable?>,
                     isFirstResource: Boolean
                 ): Boolean {
-                    Log.e(TAG, " ❌ FoldersAdapter Glide load failed for URI: $artUri", e)
+                    Log.e(TAG, " ❌ FoldersAdapter Glide load failed for title =$title URI: $artUri", e)
+                    onError?.invoke(e)
                     return false
                 }
 
@@ -227,7 +240,7 @@ class FoldersAdapter(
                     dataSource: DataSource,
                     isFirstResource: Boolean
                 ): Boolean {
-                    Log.d(TAG, "✅ FoldersAdapter Glide load success for URI: $artUri")
+                    Log.d(TAG, "✅ FoldersAdapter Glide load success for title =$title  URI: $artUri")
                     Log.d(TAG, "✅ FoldersAdapter DataSource: $dataSource") // 👈 Важно! Покажет откуда загружено
                     return false
                 }

@@ -94,15 +94,25 @@ class ArtistsAdapter(
                 try {
                     if (isContentProviderUri(artUri.toString())){
                         // Загрузка обложки из  content:/com.android.providers.downloads
-                        showImageWithGlide(binding.root.context, artUri, binding.ivArtistArtwork)
-                        Log.d(TAG, "✅✅ ArtistsAdapter Glide load success for URI: $artUri")
+                        showImageWithGlide(binding.root.context, artUri, binding.ivArtistArtwork, artist.name){
+                            // При ошибке сбрасываем в БД
+                            viewModel.updateArtistArtUri(binding.root.context, artist)
+                        }
+                        Log.d(TAG, "✅ ArtistsAdapter Glide load success for URI: $artUri")
                     }else  if (isContentProviderUriPicker(artUri.toString())){
                         // Загрузка обложки из picker
                         val  photoPickerUri =artUri.toString().toUri()
-                        showImageWithGlide(binding.root.context, photoPickerUri, binding.ivArtistArtwork)}
-                    else{
+                        showImageWithGlide(binding.root.context, photoPickerUri, binding.ivArtistArtwork, artist.name){
+                            // При ошибке сбрасываем в БД
+                            viewModel.updateArtistArtUri(binding.root.context, artist)
+                        }
+                        Log.d(TAG, "✅✅ ArtistsAdapter Glide load success for URI: $artUri")
+                    }else{
                         // Загрузка обложки из кэша приложения
-                        showImageWithGlide(binding.root.context, File(artUri.toString()), binding.ivArtistArtwork)
+                        showImageWithGlide(binding.root.context, File(artUri.toString()), binding.ivArtistArtwork, artist.name){
+                            // При ошибке сбрасываем в БД
+                            viewModel.updateArtistArtUri(binding.root.context, artist)
+                        }
                         Log.d(TAG, "✅✅✅ ArtistsAdapter Glide load success for URI: $artUri")
                     }
                 } catch (e: Exception) {
@@ -218,7 +228,7 @@ class ArtistsAdapter(
         const val TAG = "33333"
     }
 
-    fun showImageWithGlide(context: Context, artUri: Any, imageView: ImageView){
+    fun showImageWithGlide(context: Context, artUri: Any, imageView: ImageView, title:String, onError:((Exception?)->Unit)? = null){
         // Загрузка обложки
         Glide.with(context)
             .load(artUri)
@@ -232,7 +242,8 @@ class ArtistsAdapter(
                     target: com.bumptech.glide.request.target.Target<Drawable?>,
                     isFirstResource: Boolean
                 ): Boolean {
-                    Log.e(TAG, " ❌ ArtistsAdapter Glide load failed for URI: $artUri", e)
+                    Log.e(TAG, " ❌ ArtistsAdapter Glide load failed for title $title   URI: $artUri", e)
+                    onError?.invoke(e)
                     return false
                 }
 

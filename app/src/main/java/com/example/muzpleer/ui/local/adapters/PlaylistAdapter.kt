@@ -90,14 +90,23 @@ class PlaylistAdapter(
                 try {
                     if (isContentProviderUri(artUri.toString())){
                         // Загрузка обложки из  content:/com.android.providers.downloads
-                        showImageWithGlide(binding.root.context, artUri, binding.playlistArtwork)
+                        showImageWithGlide(binding.root.context, artUri, binding.playlistArtwork, playlist.playlistName){
+                            // При ошибке сбрасываем в БД
+                            viewModel.updatePlaylistArtUri(binding.root.context, playlist)
+                        }
                     }else  if (isContentProviderUriPicker(artUri.toString())){
                         // Загрузка обложки из picker
                         val  photoPickerUri =artUri.toString().toUri()
-                        showImageWithGlide(binding.root.context, photoPickerUri, binding.playlistArtwork)
+                        showImageWithGlide(binding.root.context, photoPickerUri, binding.playlistArtwork, playlist.playlistName){
+                            // При ошибке сбрасываем в БД
+                            viewModel.updatePlaylistArtUri(binding.root.context, playlist)
+                        }
                     }else{
                         // Загрузка обложки из кэша приложения
-                        showImageWithGlide(binding.root.context, File(artUri.toString()), binding.playlistArtwork)
+                        showImageWithGlide(binding.root.context, File(artUri.toString()), binding.playlistArtwork, playlist.playlistName){
+                            // При ошибке сбрасываем в БД
+                            viewModel.updatePlaylistArtUri(binding.root.context, playlist)
+                        }
                     }
                 } catch (e: Exception) {
                     Log.e(TAG, "❌PlaylistAdapter exception when loading: ${e.message}")
@@ -324,7 +333,7 @@ class PlaylistAdapter(
         const val TAG = "33333"
     }
 
-    fun showImageWithGlide(context: Context, artUri: Any, imageView: ImageView){
+    fun showImageWithGlide(context: Context, artUri: Any, imageView: ImageView, playlistName:String, onError:((Exception?)-> Unit)?= null){
         // Загрузка обложки
         Glide.with(context)
             .load(artUri)
@@ -338,7 +347,8 @@ class PlaylistAdapter(
                     target: com.bumptech.glide.request.target.Target<Drawable?>,
                     isFirstResource: Boolean
                 ): Boolean {
-                    Log.e(TAG, " ❌ playlistArtwork Glide load failed for URI: $artUri", e)
+                    Log.e(TAG, "❌ PlaylistAdapter   showImageWithGlide Glide load failed for playlistName $playlistName   URI: $artUri", e)
+                    onError?.invoke(e)
                     return false
                 }
 
@@ -349,8 +359,8 @@ class PlaylistAdapter(
                     dataSource: DataSource,
                     isFirstResource: Boolean
                 ): Boolean {
-                    Log.d(TAG, "✅ playlistArtwork Glide load success for URI: $artUri")
-                    Log.d(TAG, "✅ playlistArtwork DataSource: $dataSource") // 👈 Важно! Покажет откуда загружено
+                    Log.d(TAG, "✅PlaylistAdapter   showImageWithGlide Glide load success for playlistName $playlistName   URI: $artUri")
+                    Log.d(TAG, "✅PlaylistAdapter  showImageWithGlide DataSource: $dataSource") // 👈 Важно! Покажет откуда загружено
                     return false
                 }
             })

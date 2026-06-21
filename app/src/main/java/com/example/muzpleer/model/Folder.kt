@@ -7,5 +7,5 @@ data class Folder(
     val path: String,
     val name: String,
     val songs: List<Song>,
-    val artworkUri : Uri? = null
+    var artworkUri : Uri? = null
 )

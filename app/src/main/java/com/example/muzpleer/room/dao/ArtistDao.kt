@@ -39,6 +39,9 @@ interface ArtistDao {
     @Query("UPDATE artists SET coverPath = :artUri WHERE id = :artistId")
     suspend fun updateArtistArtUri(artistId: Long, artUri: String?)
 
+    @Query("UPDATE artists SET coverPath = :artUri WHERE id = :id")
+    suspend fun updateArtistArtUriById(id: Long, artUri: String?)
+
     @Query("UPDATE artists SET sortOrder = :newOrder WHERE id = :id")
     suspend fun updateArtistsSortOrder(id: Long, newOrder: Int)
 

@@ -1,5 +1,6 @@
 package com.example.muzpleer.repository
 
+import android.net.Uri
 import android.util.Log
 import androidx.core.net.toUri
 import com.example.muzpleer.model.Album
@@ -125,7 +126,12 @@ class AlbumRepository(
         albumDao.updateAlbumArtUri(albumId, artUri)
     }
 
+    suspend fun updateAlbumArtUriByAlbumId(albumId: Long, artUri: String?){
+        albumDao.updateAlbumArtUriByAlbumId(albumId, artUri)
+    }
+
     suspend fun getAlbumById(albumId:Long): AlbumFile?{
         return albumDao.getAlbumById(albumId)
     }
+
 }
