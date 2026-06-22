@@ -216,7 +216,11 @@ class SongsPlaylistAdapter(   private val viewModel: SharedViewModel,
                     true
                 }
                 R.id.action_send_playlist -> {
-                    shareSong(context, song) // Вызов функции для отправки песни
+                    viewModel.getSongById(song.id){song->
+                     song?. let{
+                         shareSong(context, it) // Вызов функции для отправки песни
+                     }  ?: Log.d(TAG, "!!!SongsAdapter showPopupMenu action_change_cover Песня не найдена: = ${song?.title} ")
+                    }
                     true
                 }
                 R.id.  action_song_info_playlist -> {

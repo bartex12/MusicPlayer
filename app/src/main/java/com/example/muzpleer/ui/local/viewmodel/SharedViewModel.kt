@@ -30,6 +30,7 @@ import com.example.muzpleer.room.entity.ArtistFile
 import com.example.muzpleer.room.entity.FavoriteSong
 import com.example.muzpleer.room.entity.FolderFile
 import com.example.muzpleer.room.entity.SongFile
+import com.example.muzpleer.room.utils.fromSongFileToSong
 import com.example.muzpleer.service.MusicServiceHandler
 import com.example.muzpleer.ui.local.helper.IPreferenceHelper
 import com.example.muzpleer.util.getSortedDataSong
@@ -1693,6 +1694,15 @@ class SharedViewModel(
                 Log.d(TAG, "✅SharedViewModel updateFavoriteArtUri Обновлён artUri для папки  ${track.title}  id = ${track.id} }")
             } catch (e: Exception) {
                 Log.e(TAG, "❌SharedViewModel updateFavoriteArtUri Ошибка обновления artUri для папки  ${track.title} : ${e.message}")
+            }
+        }
+    }
+
+    fun getSongById(songId: Long, callback: (Song?) -> Unit) {
+        viewModelScope.launch {
+            val songFile = repository.getById(songId)
+            songFile?. let{songFile->
+                callback(fromSongFileToSong(songFile))
             }
         }
     }
