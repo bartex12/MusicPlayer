@@ -71,4 +71,8 @@ class FavoriteRepository(
         }
         return fromSongFileListToSongList(songsFile)
     }
+
+    suspend  fun updateFavoriteAtrUri(favoriteId: Long, newArtUriString:String){
+        favoriteDao.updateCoverPath(favoriteId, newArtUriString)
+    }
 }

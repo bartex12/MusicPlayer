@@ -37,6 +37,9 @@ interface FavoriteDao {
     @Query("UPDATE favorite_songs SET sortOrder = :newOrder WHERE id = :id")
     suspend fun updateSortOrder(id: Long, newOrder: Int)
 
+    @Query("UPDATE favorite_songs SET artUri = :coverPath WHERE id = :songId")
+    suspend fun updateCoverPath(songId: Long, coverPath: String?)
+
     @Query("SELECT * FROM favorite_songs ORDER BY sortOrder ASC")
     suspend fun getAllOrdered(): List<FavoriteSong>
 

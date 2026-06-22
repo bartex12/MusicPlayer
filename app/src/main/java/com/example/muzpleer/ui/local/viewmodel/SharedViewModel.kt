@@ -1671,4 +1671,29 @@ class SharedViewModel(
            }
        }
    }
+
+    fun updateFavoriteArtUri(context: Context, track: Song){
+        viewModelScope.launch {
+            //сохраняем картинку из ресурсов в кэш и получаем ссылку
+            val newArtUriString = saveResourceToCache(context)
+            track.artUri = newArtUriString
+            // Обновляем  избранное
+            _favoriteSongs.value = _favoriteSongs.value?.map {fav->
+                if (fav.id == track.id) fav.copy(artUri = newArtUriString) else fav
+            }
+            // Обновляем  фильтрованное избранное
+            _filteredFavoriteSongs.value = _filteredFavoriteSongs.value?. map{ff->
+                if (ff.id == track.id) ff.copy(artUri =newArtUriString) else ff
+            }
+            Log.d(TAG, " **??** SharedViewModel updateFavoriteArtUri newArtUriString $newArtUriString")
+            try {
+                newArtUriString?. let{
+                    favoriteRepository.updateFavoriteAtrUri(track.id, it)
+                }
+                Log.d(TAG, "✅SharedViewModel updateFavoriteArtUri Обновлён artUri для папки  ${track.title}  id = ${track.id} }")
+            } catch (e: Exception) {
+                Log.e(TAG, "❌SharedViewModel updateFavoriteArtUri Ошибка обновления artUri для папки  ${track.title} : ${e.message}")
+            }
+        }
+    }
 }

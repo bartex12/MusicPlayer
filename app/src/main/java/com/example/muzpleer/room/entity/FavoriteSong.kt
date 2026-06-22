@@ -22,5 +22,6 @@ data class FavoriteSong(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val songId: Long, // ID песни из таблицы songs
     val addedAt: Long = System.currentTimeMillis(),
-    var sortOrder: Int = 0 // Новое поле для порядка сортировки
+    var sortOrder: Int = 0,  // Новое поле для порядка сортировки
+    var artUri: String? = null  // путь к обложке для треков из local
 )
