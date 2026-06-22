@@ -349,7 +349,7 @@ class SongsAdapter(
                     dataSource: DataSource,
                     isFirstResource: Boolean
                 ): Boolean {
-                    Log.d(TAG, "✅SongsAdapter Glide load success in SongsAdapter  for URI: $artUri")
+                    Log.d(TAG, "✅SongsAdapter Glide load success in SongsAdapter  for title: $title URI: $artUri")
                     Log.d(TAG, "✅SongsAdapter DataSource in SongsAdapter : $dataSource") // 👈 Важно! Покажет откуда загружено
                     return false
                 }

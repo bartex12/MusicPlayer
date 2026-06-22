@@ -254,7 +254,7 @@ class ArtistsAdapter(
                     dataSource: DataSource,
                     isFirstResource: Boolean
                 ): Boolean {
-                    Log.d(TAG, "✅ ArtistsAdapter Glide load success for URI: $artUri")
+                    Log.d(TAG, "✅ ArtistsAdapter Glide load success for title = $title URI: $artUri")
                     Log.d(TAG, "✅ ArtistsAdapter DataSource: $dataSource") // 👈 Важно! Покажет откуда загружено
                     return false
                 }

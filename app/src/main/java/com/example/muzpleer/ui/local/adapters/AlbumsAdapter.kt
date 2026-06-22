@@ -238,7 +238,7 @@ class AlbumsAdapter(
                     dataSource: DataSource,
                     isFirstResource: Boolean
                 ): Boolean {
-                    Log.d(TAG, "✅ AlbumsAdapter Glide load success for URI: $artUri")
+                    Log.d(TAG, "✅ AlbumsAdapter Glide load success for for title = $title URI: $artUri")
                     Log.d(TAG, "✅ AlbumsAdapter DataSource: $dataSource") // 👈 Важно! Покажет откуда загружено
                     return false
                 }
