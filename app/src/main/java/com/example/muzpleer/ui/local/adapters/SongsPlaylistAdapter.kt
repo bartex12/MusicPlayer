@@ -303,7 +303,7 @@ class SongsPlaylistAdapter(   private val viewModel: SharedViewModel,
 
             // Запускаем chooser
             context.startActivity(chooserIntent)
-
+            Log.d(TAG, "SongsPlaylistAdapter shareSong песня отправляется: song = ${song.title}")
         } catch (e: Exception) {
             Log.d(TAG, "SongsPlaylistAdapter shareSong Ошибка при отправке песни: ${e.message}")
             Toast.makeText(context, "Не удалось поделиться песней", Toast.LENGTH_SHORT).show()

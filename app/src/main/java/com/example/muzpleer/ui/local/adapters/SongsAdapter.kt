@@ -316,9 +316,9 @@ class SongsAdapter(
 
             // Запускаем chooser
             context.startActivity(chooserIntent)
-
+            Log.d(TAG, "SongsAdapter shareSong песня отправлена: song = ${song.title}")
         } catch (e: Exception) {
-            Log.d(SharedViewModel.Companion.TAG, "SongsAdapter shareSong Ошибка при отправке песни: ${e.message}")
+            Log.d(TAG, "SongsAdapter shareSong Ошибка при отправке песни: ${e.message}")
             Toast.makeText(context, "Не удалось поделиться песней", Toast.LENGTH_SHORT).show()
         }
     }
