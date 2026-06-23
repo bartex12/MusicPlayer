@@ -44,17 +44,11 @@ class RemoveSongsFromPlaylistFragment : Fragment() {
         playlistId = args.playlistId
         playlistName = args.playlistName
 
-        setupUI()
+        viewModel.setAppBarTitle("Удалить песни из плейлиста: $playlistName") //заголовок тулбара
+
         setupRecyclerView()
         loadPlaylistSongs()
         setupButtons()
-    }
-
-    private fun setupUI() {
-        binding.toolbar.title = "Удалить из: $playlistName"
-        binding.toolbar.setNavigationOnClickListener {
-            findNavController().navigateUp()
-        }
     }
 
     private fun setupRecyclerView() {
