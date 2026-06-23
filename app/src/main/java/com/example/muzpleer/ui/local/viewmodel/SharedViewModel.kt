@@ -196,6 +196,12 @@ class SharedViewModel(
     private val _currentFilteredPlaylistSongs = MutableLiveData<List<Song>?>()  //отфильтрованный поиском список песен конкретного плейлиста
     val currentFilteredPlaylistSongs: LiveData<List<Song>?> = _currentFilteredPlaylistSongs
 
+    private val _appBarTitle = MutableLiveData<String>()  //отфильтрованный поиском список песен конкретного плейлиста
+    val appBarTitle: LiveData<String> = _appBarTitle
+
+    fun setAppBarTitle(title:String){
+        _appBarTitle.value = title
+    }
 
      fun scanMedia(afterLoad:()->Unit) {
         viewModelScope.launch {

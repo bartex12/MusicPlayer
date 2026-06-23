@@ -280,6 +280,10 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        viewModel.appBarTitle.observe(this){title->
+           binding.appBarMain.mainTitle.text = title
+        }
+
        //initMenu() нельзя - иначе двоится меню тулбара
     }
     fun updateToolbarTitle(title: String) {

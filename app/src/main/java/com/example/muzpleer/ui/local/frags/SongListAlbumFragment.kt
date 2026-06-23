@@ -58,6 +58,7 @@ class SongListAlbumFragment:Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        //viewModel.setAppBarTitle("Альбом: $albumName") //можно и так
         // Устанавливаем заголовок
         updateToolbarTitle("Альбом: $albumName")
 
