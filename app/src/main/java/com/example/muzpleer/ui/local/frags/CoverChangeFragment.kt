@@ -24,6 +24,7 @@ import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
+import com.example.muzpleer.MainActivity
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentCoverChangeBinding
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
@@ -36,6 +37,7 @@ class CoverChangeFragment : Fragment() {
     private var _binding: FragmentCoverChangeBinding? = null
     private val binding get() = _binding!!
     private var isExpanded = false
+    private var previousTitle: String = "" // Сохраняем предыдущий заголовок
 
     private val viewModel: SharedViewModel by activityViewModels()
     private val pickImage =
@@ -57,6 +59,10 @@ class CoverChangeFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        // Сохраняем текущий заголовок перед сменой
+        previousTitle = (requireActivity() as? MainActivity)?.getCurrentTitle() ?: "Музыка на ладони"
+        Log.d(TAG, "5*** CoverChangeFragment onViewCreated previousTitle = $previousTitle")
 
         //обеспечивает установку обложки при открытии CoverChangeFragment и замене обложки через pickImage
         viewModel.coverImageUri.observe(viewLifecycleOwner) { uri ->
@@ -131,6 +137,29 @@ class CoverChangeFragment : Fragment() {
 
             binding.coverImageView.layoutParams = params
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Устанавливаем заголовок
+        updateToolbarTitle("Замена обложки")
+    }
+
+    override fun onDestroyView() {
+        // Восстанавливаем предыдущий заголовок при уходе с фрагмента
+        restorePreviousTitle()
+        _binding = null
+        super.onDestroyView()
+    }
+
+    private fun restorePreviousTitle() {
+        if (previousTitle.isNotEmpty()) {
+            (requireActivity() as? MainActivity)?.updateToolbarTitle(previousTitle)
+        }
+    }
+
+    private fun updateToolbarTitle(title: String) {
+        (requireActivity() as? MainActivity)?.updateToolbarTitle(title)
     }
 
     private fun openFlickrSearch() {

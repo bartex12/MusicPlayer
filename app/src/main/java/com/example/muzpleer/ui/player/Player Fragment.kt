@@ -250,10 +250,8 @@ class PlayerFragment : Fragment() {
     }
 
     override fun onDestroyView() {
-
         // Восстанавливаем предыдущий заголовок при уходе с фрагмента
         restorePreviousTitle()
-
         // Показать нижний плеер при закрытии фрагмента
         showActivityPlayer()
         _binding = null
