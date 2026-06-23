@@ -1,6 +1,7 @@
 package com.example.muzpleer.ui.local.frags
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -8,8 +9,10 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
+import com.example.muzpleer.MainActivity
 import com.example.muzpleer.databinding.FragmentEditSongBinding
 import com.example.muzpleer.model.Song
+import com.example.muzpleer.ui.local.frags.CoverChangeFragment.Companion.TAG
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 
 class EditSongFragment : Fragment() {
@@ -17,6 +20,7 @@ class EditSongFragment : Fragment() {
     private val binding get() = _binding!!
     private val viewModel: SharedViewModel by activityViewModels()
     private var currentSong: Song? = null
+    private var previousTitle: String = "" // Сохраняем предыдущий заголовок
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -29,6 +33,10 @@ class EditSongFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        // Сохраняем текущий заголовок перед сменой
+        previousTitle = (requireActivity() as? MainActivity)?.getCurrentTitle() ?: "Музыка на ладони"
+        Log.d(TAG, "5*** EditSongFragment onViewCreated previousTitle = $previousTitle")
 
         // Получаем текущую песню
         currentSong = viewModel.getSelectedSong()
@@ -50,6 +58,30 @@ class EditSongFragment : Fragment() {
             saveSongInfo()
         }
     }
+
+    override fun onResume() {
+        super.onResume()
+        // Устанавливаем заголовок
+        updateToolbarTitle("Редактирование трека")
+    }
+
+    override fun onDestroyView() {
+        // Восстанавливаем предыдущий заголовок при уходе с фрагмента
+        restorePreviousTitle()
+        _binding = null
+        super.onDestroyView()
+    }
+
+    private fun restorePreviousTitle() {
+        if (previousTitle.isNotEmpty()) {
+            (requireActivity() as? MainActivity)?.updateToolbarTitle(previousTitle)
+        }
+    }
+
+    private fun updateToolbarTitle(title: String) {
+        (requireActivity() as? MainActivity)?.updateToolbarTitle(title)
+    }
+
 
     private fun saveSongInfo() {
         currentSong?.let { song ->
@@ -78,10 +110,4 @@ class EditSongFragment : Fragment() {
             findNavController().navigateUp()
         }
     }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
-    }
-
 }
