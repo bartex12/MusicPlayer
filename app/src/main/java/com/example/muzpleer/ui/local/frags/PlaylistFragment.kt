@@ -55,6 +55,8 @@ class PlaylistFragment():Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        viewModel.setAppBarTitle("Плейлисты")
+
         adapter = PlaylistAdapter (viewModel){ playlist ->
             //здесь setPlaylist и setSongAndPlaylist не делаем, так как здесь нет песен
 

@@ -49,17 +49,14 @@ class SongsSelectionFragment : Fragment() {
             SelectionType.ALBUM ->{
                 val albumId = arguments?.getLong("albumId") ?: -1
                 viewModel.loadAlbumSongsForAdding(albumId)
-                title = "Альбом"
             }
             SelectionType.ARTIST ->{
                 val artistId = arguments?.getLong("artistId") ?: -1
                 viewModel.loadArtistSongsForAdding(artistId)
-                title = "Исполнитель"
             }
             SelectionType.FOLDER ->{
                 val folderPath = arguments?.getString("folderPath") ?: ""
                 viewModel.loadFolderSongsForAdding(folderPath)
-                title = "Папка"
             }
         }
         setupRecyclerView()
@@ -80,30 +77,38 @@ class SongsSelectionFragment : Fragment() {
         when (selectionType) {
             SelectionType.ALL_SONGS -> {
                 viewModel.songs.observe(viewLifecycleOwner) { songs ->
+                    viewModel.setAppBarTitle(title)
                     adapter.data = getSortedDataSong(songs)
                     updateSelectionCount(0)
                 }
             }
             SelectionType.FAVORITES -> {
                 viewModel.favoriteSongs.observe(viewLifecycleOwner) { songs ->
+                    viewModel.setAppBarTitle(title)
                     adapter.data = songs  //не сортируем, чтобы менять порядок
                     updateSelectionCount(0)
                 }
             }
             SelectionType.ALBUM ->{
                 viewModel.listAlbumSong.observe(viewLifecycleOwner) { songs ->
+                    title = "Выберите песни"
+                    viewModel.setAppBarTitle(title)
                     adapter.data = getSortedDataSong(songs)
                     updateSelectionCount(0)
                 }
             }
             SelectionType.ARTIST ->{
                 viewModel.listArtistSong.observe(viewLifecycleOwner) { songs ->
+                    title = "Выберите песни"
+                    viewModel.setAppBarTitle(title)
                     adapter.data = getSortedDataSong(songs)
                     updateSelectionCount(0)
                 }
             }
             SelectionType.FOLDER ->{
                 viewModel.listFolderSong.observe(viewLifecycleOwner) { folderSongs ->
+                    title = "Выберите песни"
+                    viewModel.setAppBarTitle(title)
                     adapter.data = getSortedDataSong(folderSongs)
                     updateSelectionCount(0)
                 }

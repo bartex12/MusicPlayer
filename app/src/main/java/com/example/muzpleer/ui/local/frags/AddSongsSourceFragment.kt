@@ -35,6 +35,8 @@ class AddSongsSourceFragment : Fragment() {
         Log.d(TAG, "*!!!* AddSongsSourceFragment onViewCreated playlistId = $playlistId  ")
         //playlistId = arguments?.getLong("playlistId") ?: -1   //если не через Safe Args
 
+        viewModel.setAppBarTitle("Выбор источника")
+
         setupClickListeners()
     }
 

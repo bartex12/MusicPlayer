@@ -38,6 +38,8 @@ class AlbumSelectionFragment: Fragment() {
         selectionType = arguments?.getSerializable("selectionType") as? SelectionType
             ?: SelectionType.ALL_SONGS
 
+        viewModel.setAppBarTitle("Выбрать песни из альбома")
+
         adapter = AlbumsSelectionAdapter (viewModel){ album ->
 
             // Навигация через Bundle

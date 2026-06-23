@@ -37,6 +37,8 @@ class FoldersSelectionFragment: Fragment() {
         playlistId = arguments?.getLong("playlistId") ?: -1
         selectionType = arguments?.getSerializable("selectionType") as? SelectionType
             ?: SelectionType.ALL_SONGS
+        
+        viewModel.setAppBarTitle("Выбрать песни из папки")
 
         adapter = FoldersSelectionAdapter (viewModel){ folder ->
 
