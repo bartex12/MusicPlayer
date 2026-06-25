@@ -180,7 +180,6 @@ class SongsAdapter(
                     true
                 }
                 R.id.action_add_to_playlist -> {
-                    //showChoosePlaylistDialog(context, song)
                     // 🔧 Навигация к фрагменту с передачей параметров через Bundle
                     navigateToChoosePlaylistFragment(context, song)
                     true
@@ -246,7 +245,7 @@ class SongsAdapter(
         dialog.setCancelable(true)
 
         val recyclerView = dialog.findViewById<RecyclerView>(R.id.rvPlaylists)
-        val adapter = PlaylistChooseAdapter { playlist ->
+        val adapter = PlaylistChooseAdapter(viewModel) { playlist ->
             // Добавляем песню в выбранный плейлист
             viewModel.addSongToPlaylist(song.id, playlist.id)
 

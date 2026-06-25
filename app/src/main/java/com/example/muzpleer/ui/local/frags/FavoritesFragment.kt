@@ -20,6 +20,8 @@ import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
+import androidx.navigation.NavController
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.viewpager.widget.ViewPager
@@ -42,6 +44,7 @@ class FavoritesFragment: Fragment() {
     private lateinit var itemTouchHelper: ItemTouchHelper
     private var isEditMode = false
     private var totalSongsCount = 0  // Храним общее количество песен (не отфильтрованных)
+    private lateinit var navController: NavController
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -57,8 +60,9 @@ class FavoritesFragment: Fragment() {
 
         // Сброс режима редактирования при каждом открытии фрагмента
         resetEditModeOnStart()
+        navController = findNavController()
 
-        adapter=FavoritesAdapter(viewModel) { song ->
+        adapter = FavoritesAdapter(viewModel, navController) { song ->
             //устанавливаем список песен как плейлист
             val playlist=viewModel.getFavoriteSongs()
             viewModel.setPlaylist(playlist) //устанавливаем список песен как плейлист

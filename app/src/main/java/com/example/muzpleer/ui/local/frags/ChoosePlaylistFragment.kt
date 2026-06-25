@@ -70,7 +70,7 @@ class ChoosePlaylistFragment :Fragment()  {
         updateToolbarTitle("Выбор плейлиста")
 
         // Настройка адаптера
-        adapter = PlaylistChooseAdapter { playlist ->
+        adapter = PlaylistChooseAdapter(viewModel) { playlist ->
             viewModel.addSongToPlaylist(songId, playlist.id)
             Toast.makeText(
                 requireContext(),

@@ -18,12 +18,14 @@ import com.bumptech.glide.request.RequestListener
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.ItemPlaylistChooseBinding
 import com.example.muzpleer.model.Playlist
+import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 import com.example.muzpleer.util.isContentProviderUri
 import com.example.muzpleer.util.isContentProviderUriPicker
 import java.io.File
 
 //для диалога выбора плейлиста для песни
 class PlaylistChooseAdapter(
+    private val viewModel:SharedViewModel,
     private val onPlaylistClick: (Playlist) -> Unit
 ) : RecyclerView.Adapter<PlaylistChooseAdapter.PlaylistViewHolder>() {
 
@@ -66,14 +68,23 @@ class PlaylistChooseAdapter(
                 try {
                     if (isContentProviderUri(artUri.toString())){
                         // Загрузка обложки из  content:/com.android.providers.downloads
-                        showImageWithGlide(binding.root.context, artUri, binding.ivPlaylistArt, playlist.playlistName, binding )
+                        showImageWithGlide(binding.root.context, artUri, binding.ivPlaylistArt, playlist.playlistName){
+                            // При ошибке сбрасываем в БД
+                            viewModel.updatePlaylistArtUri(binding.root.context, playlist)
+                        }
                     }else  if (isContentProviderUriPicker(artUri.toString())){
                         // Загрузка обложки из picker
                         val  photoPickerUri =artUri.toString().toUri()
-                        showImageWithGlide(binding.root.context, photoPickerUri, binding.ivPlaylistArt, playlist.playlistName, binding)
+                        showImageWithGlide(binding.root.context, photoPickerUri, binding.ivPlaylistArt, playlist.playlistName){
+                            // При ошибке сбрасываем в БД
+                            viewModel.updatePlaylistArtUri(binding.root.context, playlist)
+                        }
                     }else{
                         // Загрузка обложки из кэша приложения
-                        showImageWithGlide(binding.root.context, File(artUri.toString()), binding.ivPlaylistArt, playlist.playlistName, binding)
+                        showImageWithGlide(binding.root.context, File(artUri.toString()), binding.ivPlaylistArt, playlist.playlistName){
+                            // При ошибке сбрасываем в БД
+                            viewModel.updatePlaylistArtUri(binding.root.context, playlist)
+                        }
                     }
                 } catch (e: Exception) {
                     Log.e(TAG, "❌PlaylistChooseAdapter exception when loading: ${e.message}")
@@ -87,7 +98,7 @@ class PlaylistChooseAdapter(
         }
     }
 
-    fun showImageWithGlide(context: Context, artUri: Any, imageView: ImageView, title:String, binding: ItemPlaylistChooseBinding){
+    fun showImageWithGlide(context: Context, artUri: Any, imageView: ImageView, title:String, onError:((Exception?)-> Unit)?= null){
         // Загрузка обложки
         Glide.with(context)
             .load(artUri)
@@ -101,8 +112,9 @@ class PlaylistChooseAdapter(
                     target: com.bumptech.glide.request.target.Target<Drawable?>,
                     isFirstResource: Boolean
                 ): Boolean {
-                    Log.e(TAG, " ❌PlaylistChooseAdapter Glide load failed for title: $title URI: $artUri", e)
-                    binding.ivPlaylistArt.setImageResource(R.drawable.muz_player2)
+                    Log.e(TAG, "❌PlaylistChooseAdapter Glide load failed for title: $title URI: $artUri", e)
+                    onError?.invoke(e)
+                    //binding.ivPlaylistArt.setImageResource(R.drawable.muz_player2)
                     return false
                 }
 

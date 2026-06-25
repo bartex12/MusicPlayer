@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.drawable.Drawable
+import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent
@@ -19,6 +20,7 @@ import androidx.appcompat.widget.PopupMenu
 import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import androidx.lifecycle.LifecycleOwner
+import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -43,6 +45,7 @@ import java.util.Collections
 
 class FavoritesAdapter(
     private val viewModel: SharedViewModel,
+    private val navController: NavController,
     private val onItemClick: (Song) -> Unit,
 ) : RecyclerView.Adapter<FavoritesAdapter.MusicViewHolder>(),
     ItemTouchHelperAdapter {
@@ -196,7 +199,8 @@ class FavoritesAdapter(
                     true
                 }
                 R.id.action_add_to_playlist -> {
-                    showChoosePlaylistDialog(context, song)
+                    // 🔧 Навигация к фрагменту с передачей параметров через Bundle
+                    navigateToChoosePlaylistFragment(context, song)
                     true
                 }
                 R.id.action_change_cover -> {  //сменить обложку
@@ -228,6 +232,25 @@ class FavoritesAdapter(
         popup.show()
     }
 
+    /**
+     * 🔧 Навигация к ChoosePlaylistFragment с передачей параметров
+     */
+    private fun navigateToChoosePlaylistFragment(context:Context, song: Song) {
+        try {
+            // Создаём Bundle с параметрами
+            val bundle = Bundle().apply {
+                putLong("song_id", song.id)
+                putString("song_title", song.title)
+            }
+            // Навигация с Bundle
+            navController.navigate(R.id.choosePlaylistFragment,bundle )
+        } catch (e: Exception) {
+            Log.e(TAG, "❌FavoritesAdapter navigateToChoosePlaylistFragment Ошибка навигации: ${e.message}")
+            // Fallback на диалог
+            showChoosePlaylistDialog(context, song)
+        }
+    }
+
     private fun showChoosePlaylistDialog(context: Context, song: Song) {
         val dialog = Dialog(context)
         dialog.setContentView(R.layout.dialog_choose_playlist)
@@ -239,7 +262,7 @@ class FavoritesAdapter(
         dialog.setCancelable(true)
 
         val recyclerView = dialog.findViewById<RecyclerView>(R.id.rvPlaylists)
-        val adapter = PlaylistChooseAdapter{ playlist ->
+        val adapter = PlaylistChooseAdapter(viewModel){ playlist ->
             // Добавляем песню в выбранный плейлист
             viewModel.addSongToPlaylist(song.id, playlist.id)
 
