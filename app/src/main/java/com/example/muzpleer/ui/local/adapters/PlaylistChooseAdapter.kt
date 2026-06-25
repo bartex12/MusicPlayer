@@ -8,6 +8,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.core.net.toUri
+import androidx.lifecycle.ViewModel
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
@@ -56,20 +57,23 @@ class PlaylistChooseAdapter(
             binding.tvPlaylistName.text = playlist.playlistName
             binding.tvSongsCount.text = "${playlist.songCount} песен"
 
+            // 🔧 Добавляем логирование
+            Log.d(TAG, "**%%** PlaylistChooseAdapter bind Playlist: ${playlist.playlistName}, artUri: ${playlist.playlistArtUri}")
+
             playlist.playlistArtUri?.let{artUri->
                 Log.d(TAG, "PlaylistChooseAdapter bind artUri toString: $artUri")
                 // Загружаем изображение
                 try {
                     if (isContentProviderUri(artUri.toString())){
                         // Загрузка обложки из  content:/com.android.providers.downloads
-                        showImageWithGlide(binding.root.context, artUri, binding.ivPlaylistArt)
+                        showImageWithGlide(binding.root.context, artUri, binding.ivPlaylistArt, playlist.playlistName, binding )
                     }else  if (isContentProviderUriPicker(artUri.toString())){
                         // Загрузка обложки из picker
                         val  photoPickerUri =artUri.toString().toUri()
-                        showImageWithGlide(binding.root.context, photoPickerUri, binding.ivPlaylistArt)
+                        showImageWithGlide(binding.root.context, photoPickerUri, binding.ivPlaylistArt, playlist.playlistName, binding)
                     }else{
                         // Загрузка обложки из кэша приложения
-                        showImageWithGlide(binding.root.context, File(artUri.toString()), binding.ivPlaylistArt)
+                        showImageWithGlide(binding.root.context, File(artUri.toString()), binding.ivPlaylistArt, playlist.playlistName, binding)
                     }
                 } catch (e: Exception) {
                     Log.e(TAG, "❌PlaylistChooseAdapter exception when loading: ${e.message}")
@@ -83,7 +87,7 @@ class PlaylistChooseAdapter(
         }
     }
 
-    fun showImageWithGlide(context: Context, artUri: Any, imageView: ImageView){
+    fun showImageWithGlide(context: Context, artUri: Any, imageView: ImageView, title:String, binding: ItemPlaylistChooseBinding){
         // Загрузка обложки
         Glide.with(context)
             .load(artUri)
@@ -97,7 +101,8 @@ class PlaylistChooseAdapter(
                     target: com.bumptech.glide.request.target.Target<Drawable?>,
                     isFirstResource: Boolean
                 ): Boolean {
-                    Log.e(TAG, " ❌PlaylistChooseAdapter Glide load failed for URI: $artUri", e)
+                    Log.e(TAG, " ❌PlaylistChooseAdapter Glide load failed for title: $title URI: $artUri", e)
+                    binding.ivPlaylistArt.setImageResource(R.drawable.muz_player2)
                     return false
                 }
 
@@ -108,7 +113,7 @@ class PlaylistChooseAdapter(
                     dataSource: DataSource,
                     isFirstResource: Boolean
                 ): Boolean {
-                    Log.d(TAG, "✅PlaylistChooseAdapter Glide load success for URI: $artUri")
+                    Log.d(TAG, "✅PlaylistChooseAdapter Glide load success for title: $title URI: $artUri")
                     Log.d(TAG, "✅PlaylistChooseAdapter DataSource: $dataSource") // 👈 Важно! Покажет откуда загружено
                     return false
                 }
@@ -119,5 +124,4 @@ class PlaylistChooseAdapter(
     companion object{
         const val TAG = "33333"
     }
-
 }

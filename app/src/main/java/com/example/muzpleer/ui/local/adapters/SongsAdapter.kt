@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.drawable.Drawable
 import android.net.Uri
+import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -18,7 +19,10 @@ import android.widget.Toast
 import androidx.appcompat.widget.PopupMenu
 import androidx.core.content.FileProvider
 import androidx.core.net.toUri
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.Observer
+import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -29,6 +33,7 @@ import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.ItemMusicBinding
+import com.example.muzpleer.model.Playlist
 import com.example.muzpleer.model.Song
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 import com.example.muzpleer.util.formatAsTime
@@ -41,7 +46,8 @@ import java.io.File
 
 class SongsAdapter(
     private val viewModel: SharedViewModel,
-    private val onItemClick: (Song) -> Unit,
+    private val navController: NavController,
+    private val onItemClick: (Song) -> Unit
 ) : RecyclerView.Adapter<SongsAdapter.MusicViewHolder>() {
 
     companion object{
@@ -174,7 +180,9 @@ class SongsAdapter(
                     true
                 }
                 R.id.action_add_to_playlist -> {
-                    showChoosePlaylistDialog(context, song)
+                    //showChoosePlaylistDialog(context, song)
+                    // 🔧 Навигация к фрагменту с передачей параметров через Bundle
+                    navigateToChoosePlaylistFragment(context, song)
                     true
                 }
                 R.id.action_change_cover -> {  //сменить обложку
@@ -206,7 +214,28 @@ class SongsAdapter(
         popup.show()
     }
 
+    /**
+     * 🔧 Навигация к ChoosePlaylistFragment с передачей параметров
+     */
+    private fun navigateToChoosePlaylistFragment(context:Context, song: Song) {
+        try {
+            // Создаём Bundle с параметрами
+            val bundle = Bundle().apply {
+                putLong("song_id", song.id)
+                putString("song_title", song.title)
+            }
+            // Навигация с Bundle
+            navController.navigate(R.id.choosePlaylistFragment,bundle )
+        } catch (e: Exception) {
+            Log.e(TAG, "❌SongAdapter navigateToChoosePlaylistFragment Ошибка навигации: ${e.message}")
+            // Fallback на диалог
+            showChoosePlaylistDialog(context, song)
+        }
+    }
+
+
     private fun showChoosePlaylistDialog(context: Context, song: Song) {
+        Log.d(TAG, "//**// SongsAdapter showChoosePlaylistDialog песня  = ${song.title}")
         val dialog = Dialog(context)
         dialog.setContentView(R.layout.dialog_choose_playlist)
         dialog.window?.setLayout(
@@ -234,9 +263,24 @@ class SongsAdapter(
         recyclerView.layoutManager = LinearLayoutManager(context)
         recyclerView.adapter = adapter
 
-        // Загружаем список плейлистов
-        viewModel.filteredPlaylists.observe(context as LifecycleOwner) { playlists ->
-            adapter.playlists = playlists.filter { it.id != -1L } // Исключаем "Все песни"
+//        // Загружаем список плейлистов
+//        //используется context as LifecycleOwner для наблюдения за filteredPlaylists,
+//        // но диалог не является LifecycleOwner! Наблюдатель никогда не получает
+//        // обновлений, поэтому adapter.playlists остаётся пустым.
+//        viewModel.filteredPlaylists.observe(context as LifecycleOwner) { playlists ->
+//            adapter.playlists = playlists.filter { it.id != -1L } // Исключаем "Все песни"
+//        }
+
+        // 🔧 ИСПРАВЛЕНИЕ: Используем observeForever с ручной отпиской
+        val observer = Observer<List<Playlist>> { playlists ->
+            adapter.playlists = playlists.filter { it.id != -1L }
+        }
+
+        viewModel.filteredPlaylists.observeForever(observer)
+
+        // Отписываемся при закрытии диалога
+        dialog.setOnDismissListener {
+            viewModel.filteredPlaylists.removeObserver(observer)
         }
 
         dialog.show()

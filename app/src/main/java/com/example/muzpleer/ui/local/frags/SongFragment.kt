@@ -10,6 +10,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
+import androidx.navigation.NavController
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.viewpager.widget.ViewPager
 import com.example.muzpleer.R
@@ -30,6 +32,7 @@ class SongFragment : Fragment() {
     private lateinit var adapter: SongsAdapter
     private var currentSearchQuery = ""
     private lateinit var appPreferences: IPreferenceHelper
+    private lateinit var navController: NavController
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,8 +52,9 @@ class SongFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         appPreferences =PreferenceHelperImpl(App.instance)
+        navController = findNavController()
 
-        adapter = SongsAdapter(viewModel) { song ->
+        adapter = SongsAdapter(viewModel, navController) { song ->
             //устанавливаем список песен как плейлист
             val playlist=getSortedDataSong(viewModel.getSongs())
             viewModel.setPlaylist(playlist) //устанавливаем список песен как плейлист

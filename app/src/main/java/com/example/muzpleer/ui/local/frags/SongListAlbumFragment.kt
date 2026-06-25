@@ -20,6 +20,8 @@ import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
+import androidx.navigation.NavController
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.muzpleer.MainActivity
 import com.example.muzpleer.R
@@ -40,6 +42,7 @@ class SongListAlbumFragment:Fragment() {
     private val viewModel: SharedViewModel by activityViewModel()
     private var totalSongsCount = 0  // Храним общее количество песен (не отфильтрованных)
     private var albumName: String? = null //Название альбома
+    private lateinit var navController: NavController
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,10 +64,11 @@ class SongListAlbumFragment:Fragment() {
         //viewModel.setAppBarTitle("Альбом: $albumName") //можно и так
         // Устанавливаем заголовок
         updateToolbarTitle("Альбом: $albumName")
+        navController = findNavController()
 
         initMenu()
 
-        adapter = SongsAdapter(viewModel) { song ->
+        adapter = SongsAdapter(viewModel, navController) { song ->
             val playlist=viewModel.getPlaylist()
 
             viewModel.setSongAndPlaylist(

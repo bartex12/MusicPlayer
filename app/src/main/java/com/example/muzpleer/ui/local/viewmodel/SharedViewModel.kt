@@ -733,7 +733,7 @@ class SharedViewModel(
     }
 
     //для плейлиста
-   fun  saveCoverLevelToDatabase(uri: Uri, levelId:Long){
+  fun  saveCoverLevelToDatabase(uri: Uri, levelId:Long){
        Log.d(TAG, "6--- SharedViewModel saveCoverLevelToDatabase uri = $uri levelId = $levelId")
        viewModelScope.launch {
            playlistRepository.updatePlaylistArtUri(levelId, uri.toString())

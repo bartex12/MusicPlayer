@@ -14,7 +14,9 @@
         android:id="@+id/songFragment"
         android:name="com.example.muzpleer.ui.local.frags.SongFragment"
         android:label="Музыкальные треки"
-        tools:layout="@layout/fragment_songs"/>
+        tools:layout="@layout/fragment_songs">
+    </fragment>
+
     <fragment
         android:id="@+id/settingsFragment"
         android:name="com.example.muzpleer.setting.SettingsFragment"
@@ -36,6 +38,9 @@
         <action
             android:id="@+id/action_tabLocalFragment_to_removeSongsFromPlaylistFragment"
             app:destination="@id/removeSongsFromPlaylistFragment" />
+        <action
+            android:id="@+id/action_showChoosePlaylistFragment"
+            app:destination="@id/choosePlaylistFragment"/>
     </fragment>
 
     <fragment
@@ -233,5 +238,11 @@
             android:id="@+id/action_songListFolderFragment_to_playerFragment"
             app:destination="@id/playerFragment" />
     </fragment>
+
+    <fragment
+        android:id="@+id/choosePlaylistFragment"
+        android:name="com.example.muzpleer.ui.local.frags.ChoosePlaylistFragment"
+        android:label="Выбор плейлиста"
+        tools:layout="@layout/fragment_choose_playlist" />
 
 </navigation>

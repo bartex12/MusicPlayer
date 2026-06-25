@@ -239,7 +239,7 @@ class FavoritesAdapter(
         dialog.setCancelable(true)
 
         val recyclerView = dialog.findViewById<RecyclerView>(R.id.rvPlaylists)
-        val adapter = PlaylistChooseAdapter { playlist ->
+        val adapter = PlaylistChooseAdapter{ playlist ->
             // Добавляем песню в выбранный плейлист
             viewModel.addSongToPlaylist(song.id, playlist.id)
 
