@@ -96,6 +96,27 @@ class PlayerFragment : Fragment() {
             viewModel.seekRelative(15000) // +15 секунд
         }
 
+        // Новые кнопки перемотки
+        binding.btnRewind30.setOnClickListener {
+            viewModel.seekRelative(-30000) // -30 секунд
+        }
+        binding.btnRewind10.setOnClickListener {
+            viewModel.seekRelative(-10000) // -10 секунд
+        }
+        binding.btnRewind5.setOnClickListener {
+            viewModel.seekRelative(-5000) // -5 секунд
+        }
+        binding.btnForward5.setOnClickListener {
+            viewModel.seekRelative(5000) // +5 секунд
+        }
+        binding.btnForward10.setOnClickListener {
+            viewModel.seekRelative(10000) // +10 секунд
+        }
+        binding.btnForward30.setOnClickListener {
+            viewModel.seekRelative(30000) // +30 секунд
+        }
+
+
         binding.seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
                 if (fromUser) {
