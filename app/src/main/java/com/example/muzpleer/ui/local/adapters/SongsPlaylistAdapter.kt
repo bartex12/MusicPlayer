@@ -126,14 +126,14 @@ class SongsPlaylistAdapter(   private val viewModel: SharedViewModel,
                 try {
                     if (isContentProviderUri(artUri.toString())){
                         // Загрузка обложки из  content:/com.android.providers.downloads
-                        showImageWithGlide(binding.root.context, artUri, binding.trackArtworkPlaylist)
+                        showImageWithGlide(binding.root.context, artUri, binding.trackArtworkPlaylist, track.title)
                     }else  if (isContentProviderUriPicker(artUri.toString())){
                         // Загрузка обложки из picker
                         val  photoPickerUri =artUri.toString().toUri()
-                        showImageWithGlide(binding.root.context, photoPickerUri, binding.trackArtworkPlaylist)
+                        showImageWithGlide(binding.root.context, photoPickerUri, binding.trackArtworkPlaylist, track.title)
                     }else{
                         // Загрузка обложки из кэша приложения
-                        showImageWithGlide(binding.root.context, File(artUri.toString()), binding.trackArtworkPlaylist)
+                        showImageWithGlide(binding.root.context, File(artUri.toString()), binding.trackArtworkPlaylist, track.title)
                     }
                 } catch (e: Exception) {
                     Log.e(TAG, "❌SongsPlaylistAdapter exception when loading: ${e.message}")
@@ -350,13 +350,13 @@ class SongsPlaylistAdapter(   private val viewModel: SharedViewModel,
     }
 
     override fun onDrop() {
+        Log.d(TAG, "--**-- SongsPlaylistAdapter onDrop")
         // Сохраняем окончательный порядок
         data = dragData.toList()
-        Log.d(TAG, "SongsPlaylistAdapter onDrop data.first().title = ${data.first().title}")
         viewModel.updatePlaylistSongsOrder(data)
     }
 
-    fun showImageWithGlide(context: Context, artUri: Any, imageView: ImageView){
+    fun showImageWithGlide(context: Context, artUri: Any, imageView: ImageView, title:String){
         // Загрузка обложки
         Glide.with(context)
             .load(artUri)
@@ -370,7 +370,7 @@ class SongsPlaylistAdapter(   private val viewModel: SharedViewModel,
                     target: com.bumptech.glide.request.target.Target<Drawable?>,
                     isFirstResource: Boolean
                 ): Boolean {
-                    Log.e(TAG, " ❌SongsPlaylistAdapter Glide load failed for URI: $artUri", e)
+                    Log.e(TAG, " ❌SongsPlaylistAdapter Glide load failed for title = $title URI: $artUri", e)
                     return false
                 }
 
@@ -381,7 +381,7 @@ class SongsPlaylistAdapter(   private val viewModel: SharedViewModel,
                     dataSource: DataSource,
                     isFirstResource: Boolean
                 ): Boolean {
-                    Log.d(TAG, "✅SongsPlaylistAdapter Glide load success for URI: $artUri")
+                    Log.d(TAG, "✅SongsPlaylistAdapter Glide load success for title = $title URI: $artUri")
                     Log.d(TAG, "✅SongsPlaylistAdapter DataSource: $dataSource") // 👈 Важно! Покажет откуда загружено
                     return false
                 }

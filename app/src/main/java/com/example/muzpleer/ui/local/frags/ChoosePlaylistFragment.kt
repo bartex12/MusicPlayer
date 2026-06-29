@@ -91,6 +91,11 @@ class ChoosePlaylistFragment :Fragment()  {
             adapter.playlists = playlists.filter { it.id != -1L }
         }
 
+        viewModel.coverImageUriLevel.observe(viewLifecycleOwner) {uri->
+            //последняя изменённая обложка плейлиста
+            Log.d(TAG, " //**// ChoosePlaylistFragment onViewCreated:  uri = $uri")
+        }
+
         // Кнопка закрытия
         binding.btnClose.setOnClickListener {
             findNavController().navigateUp()

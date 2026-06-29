@@ -223,9 +223,9 @@ class PlaylistRepository(
 
             callback()
 
-            Log.d(TAG, "Порядок песен в плейлисте $playlistId сохранен")
+            Log.d(TAG, "--**-- PlaylistRepository savePlaylistSongsOrder Порядок песен в плейлисте $playlistId сохранен")
         } catch (e: Exception) {
-            Log.e(TAG, "Ошибка при сохранении порядка песен: ${e.message}", e)
+            Log.e(TAG, "--**-- PlaylistRepository savePlaylistSongsOrder Ошибка при сохранении порядка песен: ${e.message}", e)
             throw e
         }
     }

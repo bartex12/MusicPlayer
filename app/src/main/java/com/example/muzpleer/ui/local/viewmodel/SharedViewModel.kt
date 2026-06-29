@@ -1294,7 +1294,7 @@ class SharedViewModel(
     }
 
     fun setCurrentPlaylist(playlist: Playlist){
-
+        _currentPlaylist.value = playlist
     }
 
     // Удаление песни из плейлиста
@@ -1454,11 +1454,10 @@ class SharedViewModel(
                     _currentPlaylist.value = _currentPlaylist.value?.copy(
                         playlistSongs = orderedSongs
                     )
-                    Log.d(TAG, "Порядок песен сохранен")
+                    Log.d(TAG, "--**-- ShareViewModel updatePlaylistSongsOrder Порядок песен сохранен")
                 }
-
             } catch (e: Exception) {
-                Log.e(TAG, "Ошибка при сохранении порядка песен", e)
+                Log.e(TAG, "❌--**-- ShareViewModel updatePlaylistSongsOrder Ошибка при сохранении порядка песен", e)
             }
         }
     }
