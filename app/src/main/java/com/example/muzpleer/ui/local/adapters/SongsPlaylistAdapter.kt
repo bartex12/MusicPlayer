@@ -353,7 +353,17 @@ class SongsPlaylistAdapter(   private val viewModel: SharedViewModel,
         Log.d(TAG, "--**-- SongsPlaylistAdapter onDrop")
         // Сохраняем окончательный порядок
         data = dragData.toList()
-        viewModel.updatePlaylistSongsOrder(data)
+
+        //обновляем в базе
+        viewModel.updatePlaylistSongsOrder(data) { success ->
+            if (success) {
+                Log.d(TAG, "✅ Порядок плейлиста успешно обновлен")
+                // Если нужно, обновляем текущий плейлист с новым порядком
+                viewModel.refreshCurrentPlaylist()
+            } else {
+                Log.e(TAG, "❌ Ошибка обновления порядка плейлиста")
+            }
+        }
     }
 
     fun showImageWithGlide(context: Context, artUri: Any, imageView: ImageView, title:String){

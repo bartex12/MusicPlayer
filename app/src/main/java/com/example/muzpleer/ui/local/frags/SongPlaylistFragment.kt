@@ -148,6 +148,13 @@ class SongPlaylistFragment:Fragment() {
             requireActivity().invalidateOptionsMenu()
         }
 
+        // Также подписываемся на изменения текущего плейлиста
+        viewModel.currentPlaylist.observe(viewLifecycleOwner) { playlistWithSongs ->
+            playlistWithSongs?.let {
+                adapter.data = it.playlistSongs
+            }
+        }
+
         initMenu()
     }
 

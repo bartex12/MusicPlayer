@@ -32,6 +32,7 @@ import com.example.muzpleer.room.entity.FolderFile
 import com.example.muzpleer.room.entity.SongFile
 import com.example.muzpleer.room.utils.fromSongFileToSong
 import com.example.muzpleer.service.MusicServiceHandler
+import com.example.muzpleer.ui.local.frags.SongPlaylistFragment
 import com.example.muzpleer.ui.local.helper.IPreferenceHelper
 import com.example.muzpleer.util.getSortedDataSong
 import kotlinx.coroutines.Dispatchers
@@ -1441,7 +1442,7 @@ class SharedViewModel(
         }
     }
     // запомнить новый порядок перен в плейлисте
-    fun updatePlaylistSongsOrder(orderedSongs: List<Song>) {
+    fun updatePlaylistSongsOrder(orderedSongs: List<Song>, callback: (Boolean) -> Unit ) {
         viewModelScope.launch {
             try {
                 val playlistId = getCurrentPlaylist()?.id ?: return@launch
@@ -1456,8 +1457,10 @@ class SharedViewModel(
                     )
                     Log.d(TAG, "--**-- ShareViewModel updatePlaylistSongsOrder Порядок песен сохранен")
                 }
+                callback(true)
             } catch (e: Exception) {
                 Log.e(TAG, "❌--**-- ShareViewModel updatePlaylistSongsOrder Ошибка при сохранении порядка песен", e)
+                callback(false)
             }
         }
     }
@@ -1709,6 +1712,28 @@ class SharedViewModel(
             songFile?. let{songFile->
                 callback(fromSongFileToSong(songFile))
             }
+        }
+    }
+
+    // Метод для обновления текущего плейлиста
+    fun refreshCurrentPlaylist() {
+        val playlistSongs=
+            getCurrentPlaylist()?.playlistSongs ?: listOf()
+        //можно было взять и из currentFilteredPlaylistSongs
+        Log.d(TAG, "!@#@ SongPlaylistFragment размер плейлиста = " +
+                    "${playlistSongs.size} имя первой песни плейлиста " +
+                    "= ${playlistSongs.first().title} "
+        )
+        val currentSong = getCurrentSong()
+
+        if (currentSong!= null && currentSong in playlistSongs){
+            setSongAndPlaylist(
+                SongAndPlaylist(
+                    song=currentSong,
+                    playlist=playlistSongs
+                )
+            )
+            setCurrentSong(currentSong)
         }
     }
 }
