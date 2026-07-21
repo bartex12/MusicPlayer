@@ -27,7 +27,7 @@ class MusicRepository(
         const val TAG = "33333"
     }
 
-    private var songs = mutableListOf<Song>()
+   // private var songs = mutableListOf<Song>()
 
      suspend fun loadMusicFromMemory():List<Song> {
         return (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -124,15 +124,16 @@ class MusicRepository(
                             Log.d(TAG, " #%# MusicRepository scanMusicApi29Plus при изменениях embeddedArtUri = $embeddedArtUri ")
                             val finalArtUri = embeddedArtUri ?: existingFile.artUri // Если нет встроенной, оставляем старую
                             Log.d(TAG, " #%# MusicRepository scanMusicApi29Plus при изменениях finalArtUri = $finalArtUri ")
+                            //Добавляем в список для обновления
                             filesToUpdate.add(
                                 SongFile(
                                     mediaStoreId = id,
-                                    path = path,
-                                    lastModified = lastModified,
-                                    title = title,
-                                    artist = artist,
+                                    path = existingFile.path,
+                                    lastModified = existingFile.lastModified,
+                                    title = existingFile.title,
+                                    artist = existingFile.artist,
                                     artistId = artist.hashCode().toLong(),
-                                    album = album,
+                                    album =  existingFile.album,
                                     albumId = albumId,
                                     duration = duration,
                                     isLocal = true,
@@ -213,7 +214,7 @@ class MusicRepository(
         val songList = fromSongFileListToSongList(songDao.getAllFiles())
         Log.d(TAG, "#%# MusicRepository scanMusicApi29Plus songList.size = ${songList.size}")
 
-        songs = songList.toMutableList()
+        //songs = songList.toMutableList()
         return songList
     }
 
@@ -303,14 +304,15 @@ class MusicRepository(
 
             if (embeddedPicture != null) {
                 // Сохраняем изображение в кэш и возвращаем URI
-                saveArtworkToCache(filePath, embeddedPicture)
+                val  uri = saveArtworkToCache(filePath, embeddedPicture)
+                uri
             } else {
                 null
             }
         } catch (e: Exception) {
             Log.e(TAG, "❌ Error extracting embedded artwork: ${e.message}")
             null
-        }
+        }.toString()
     }
 
     private fun saveArtworkToCache(filePath: String, imageData: ByteArray): String? {
