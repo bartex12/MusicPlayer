@@ -71,6 +71,8 @@ dependencies {
     implementation(libs.androidx.navigation.ui.ktx)
     // Network
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    //Splash Screen
+    implementation ("androidx.core:core-splashscreen:1.2.0") // или последнюю версию
 
     //room
     implementation ("androidx.room:room-runtime:2.6.1") // Актуальная версия на момент 2024
