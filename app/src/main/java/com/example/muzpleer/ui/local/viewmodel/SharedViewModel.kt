@@ -206,7 +206,9 @@ class SharedViewModel(
 
      fun scanMedia(afterLoad:()->Unit) {
         viewModelScope.launch {
+            _loading.value = true
             initParamsSong(repository.loadMusicFromMemory())
+            _loading.value = false
             afterLoad.invoke()
         }
     }

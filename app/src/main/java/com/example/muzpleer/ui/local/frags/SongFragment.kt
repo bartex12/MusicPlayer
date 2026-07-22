@@ -78,8 +78,13 @@ class SongFragment : Fragment() {
             //вывод заголовков всех песен
             //Log.d( TAG,"32 SongsFragment onViewCreated sortedData = ${sortedData.map{it.title}} ")
             //Log.d( TAG,"32 SongsFragment onViewCreated sortedData.size = ${sortedData.size} ")
-            if (viewModel.getSongs().isEmpty()) binding.progressBar.visibility = View.VISIBLE else binding.progressBar.visibility = View.GONE
-            if (filteredSongs.isEmpty()) binding.imageHolder3.visibility = View.VISIBLE else binding.imageHolder3.visibility = View.GONE
+            if (filteredSongs.isEmpty()) {
+                binding.progressBar.visibility = View.VISIBLE
+                binding.imageHolder3.visibility = View.VISIBLE
+            } else {
+                binding.progressBar.visibility = View.GONE
+                binding.imageHolder3.visibility = View.GONE
+            }
         }
 
         //обновление обложки при её замене
@@ -91,6 +96,16 @@ class SongFragment : Fragment() {
            }
             adapter.notifyDataSetChanged()
         }
+
+//        viewModel.loading.observe (viewLifecycleOwner) {loading->
+//            if(loading){
+//                binding.progressBar.visibility = View.VISIBLE
+//                binding.imageHolder3.visibility = View.VISIBLE
+//            } else {
+//                binding.progressBar.visibility = View.GONE
+//                binding.imageHolder3.visibility = View.GONE
+//            }
+//        }
     }
 
     override fun onResume() {
