@@ -36,6 +36,7 @@ import com.example.muzpleer.ui.local.frags.SongPlaylistFragment
 import com.example.muzpleer.ui.local.helper.IPreferenceHelper
 import com.example.muzpleer.util.getSortedDataSong
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -1736,6 +1737,13 @@ class SharedViewModel(
                 )
             )
             setCurrentSong(currentSong)
+        }
+    }
+
+    fun startSplash(startSplash: () -> Unit) {
+        viewModelScope.launch {
+            delay(1000)
+            startSplash.invoke()
         }
     }
 }
