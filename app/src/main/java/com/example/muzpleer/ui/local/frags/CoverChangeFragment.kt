@@ -195,8 +195,8 @@ class CoverChangeFragment : Fragment() {
                     dataSource: DataSource,
                     isFirstResource: Boolean
                 ): Boolean {
-                    Log.d(PlayerFragment.Companion.TAG, "✅CoverChangeFragment Glide load success for URI: $artUri")
-                    Log.d(PlayerFragment.Companion.TAG, "✅CoverChangeFragment DataSource: $dataSource") // 👈 Важно! Покажет откуда загружено
+                    Log.d(TAG, "✅CoverChangeFragment Glide load success for URI: $artUri")
+                    Log.d(TAG, "✅CoverChangeFragment DataSource: $dataSource") // 👈 Важно! Покажет откуда загружено
                     return false
                 }
             })

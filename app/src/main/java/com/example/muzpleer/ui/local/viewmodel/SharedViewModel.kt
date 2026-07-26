@@ -714,7 +714,7 @@ class SharedViewModel(
                     repository.updateCoverPath(selectedSong.id, path)
                 }?: repository.updateCoverPath(selectedSong.id, uri.toString())
 
-                _coverImageUri.value = coverPath?.toUri()
+                _coverImageUri.value = coverPath?.toUri() //повторно? перезаписываем _coverImageUri
 
                 // Обновляем песню в основном списке песен - нужны оба - _songs и _filteredSongs
                 _songs.value = _songs.value?.map {s->
