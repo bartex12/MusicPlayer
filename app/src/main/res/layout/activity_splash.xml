@@ -1,28 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/colorPrimaryBlack">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@color/colorPrimaryBlack"
+    android:fitsSystemWindows="true">
 
-    <ImageView
-        android:id="@+id/logo"
+<!--    <ImageView-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="match_parent"-->
+<!--        android:src="@drawable/king5"-->
+<!--        android:scaleType="centerCrop" />-->
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/image_view_splash"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:src="@drawable/muz_player16"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:layout_gravity="center"
+        app:srcCompat="@drawable/king5" />
 
-    <ProgressBar
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-       app:layout_constraintTop_toTopOf="@id/logo"
-        android:layout_marginTop="32dp"/>
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+<!--    &lt;!&ndash; Можно добавить прогресс-бар снизу, если нужно &ndash;&gt;-->
+<!--    <ProgressBar-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_gravity="top|center_horizontal"-->
+<!--        android:layout_marginTop="64dp"-->
+<!--        android:indeterminate="true" />-->
+</FrameLayout>

@@ -19,20 +19,26 @@
         <item name="windowNoTitle">true</item>
     </style>
 
-    <style name="Theme.App.Starting" parent="Theme.SplashScreen">
-        <!-- Цвет фона заставки -->
-        <item name="windowSplashScreenBackground">@color/colorPrimaryBlack</item>
-        <!-- Иконка в центре -->
-        <item name="windowSplashScreenAnimatedIcon">@drawable/muz_player16</item>
-        <!-- Цвет иконки (для Android 12+) -->
-        <item name="windowSplashScreenIconBackgroundColor">@color/colorPrimary</item>
-        <!-- Длительность показа -->
-        <item name="windowSplashScreenAnimationDuration">1000</item>
-        <!-- Пост-заставка (можно оставить как фон) -->
-        <item name="postSplashScreenTheme">@style/Theme.MuzPleer.NoActionBar</item>
-    </style>
+<!--    <style name="Theme.App.Starting" parent="Theme.SplashScreen">-->
+<!--        &lt;!&ndash; Цвет фона заставки &ndash;&gt;-->
+<!--        <item name="windowSplashScreenBackground">@color/colorPrimaryBlack</item>-->
+<!--        &lt;!&ndash; Иконка в центре &ndash;&gt;-->
+<!--        <item name="windowSplashScreenAnimatedIcon">@drawable/muz_player16</item>-->
+<!--        &lt;!&ndash; Цвет иконки (для Android 12+) &ndash;&gt;-->
+<!--        <item name="windowSplashScreenIconBackgroundColor">@color/colorPrimary</item>-->
+<!--        &lt;!&ndash; Длительность показа &ndash;&gt;-->
+<!--        <item name="windowSplashScreenAnimationDuration">1000</item>-->
+<!--        &lt;!&ndash; Пост-заставка (можно оставить как фон) &ndash;&gt;-->
+<!--        <item name="postSplashScreenTheme">@style/Theme.MuzPleer.NoActionBar</item>-->
+<!--    </style>-->
 
     <style name="Theme.MuzPleer.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
-
     <style name="Theme.MuzPleer.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+
+    <style name="Theme.Splash" parent="Theme.AppCompat.NoActionBar">
+        <item name="android:windowBackground">@drawable/splash_background</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowTranslucentStatus">true</item>
+    </style>
 </resources>
