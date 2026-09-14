@@ -6,18 +6,12 @@
     android:background="@color/colorPrimaryBlack"
     android:fitsSystemWindows="true">
 
-<!--    <ImageView-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="match_parent"-->
-<!--        android:src="@drawable/king5"-->
-<!--        android:scaleType="centerCrop" />-->
-
     <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/image_view_splash"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        app:srcCompat="@drawable/king5" />
+        app:srcCompat="@drawable/rose" />
 
 <!--    &lt;!&ndash; Можно добавить прогресс-бар снизу, если нужно &ndash;&gt;-->
 <!--    <ProgressBar-->

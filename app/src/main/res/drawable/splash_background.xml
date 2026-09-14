@@ -10,10 +10,10 @@
     <!-- Картинка с центрированием и обрезанием -->
     <item>
         <bitmap
-            android:src="@drawable/king5"
+            android:src="@drawable/rose"
             android:gravity="center" />
         <clip
-            android:drawable="@drawable/king5"
+            android:drawable="@drawable/rose"
             android:gravity="fill" />
     </item>
 </layer-list>
