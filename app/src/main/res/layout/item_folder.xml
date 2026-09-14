@@ -32,7 +32,7 @@
             android:layout_height="wrap_content"
             android:ellipsize="end"
             android:maxLines="2"
-            android:textSize="14sp"
+            android:textSize="16sp"
             android:textStyle="bold"
             android:text="Название папки  может быть длинным и даже очень длинным и занимать две строки"
             android:textColor="@color/song_text_color"

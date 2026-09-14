@@ -35,6 +35,9 @@ import com.example.muzpleer.util.toast
 import com.google.android.material.textfield.TextInputLayout
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 
+//Фрагмент SongListFolderFragment – макет  fragment_alltracks - адаптер SongsAdapter -- Список
+//песен конкретной  папки
+
 class SongListFolderFragment:Fragment() {
     private var _binding: FragmentAlltracksBinding? = null
     private val binding get() = _binding!!

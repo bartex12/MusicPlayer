@@ -13,11 +13,12 @@
         android:layout_width="64dp"
         android:layout_height="64dp"
         android:scaleType="centerCrop"
+        android:src="@drawable/placeholder2"
         android:contentDescription="@string/album_art_description"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
-        tools:src="@drawable/placeholder1024" />
+         />
 
     <!-- Название альбома -->
     <TextView
@@ -27,28 +28,28 @@
         android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
         android:ellipsize="end"
-        android:maxLines="1"
-        android:textColor="@color/album_text_color"
+        android:maxLines="2"
         android:textStyle="bold"
+        android:text="Название альбома может быть длинным и даже очень длинным и занимать две строки"
+        android:textColor="@color/album_text_color"
         android:textSize="16sp"
         app:layout_constraintEnd_toStartOf="@id/album_dragHandle"
         app:layout_constraintStart_toEndOf="@id/albumArt"
-        app:layout_constraintTop_toTopOf="@+id/albumArt"
-        tools:text="Название альбома" />
+        app:layout_constraintTop_toTopOf="@+id/albumArt" />
 
     <TextView
         android:id="@+id/albumArtist"
-        android:layout_width="wrap_content"
-        android:layout_height="0dp"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:ellipsize="end"
         android:maxLines="1"
+        android:text="Исполнитель песни очень известный и популярный"
         android:textAppearance="@style/TextAppearance.AppCompat.Caption"
+        app:layout_constraintEnd_toEndOf="@+id/albumTitle"
         app:layout_constraintStart_toEndOf="@id/tracksCount"
-
-        app:layout_constraintTop_toBottomOf="@+id/albumTitle"
-        tools:text="Исполнитель" />
+        app:layout_constraintTop_toBottomOf="@+id/albumTitle" />
 
     <TextView
         android:id="@+id/tracksCount"
