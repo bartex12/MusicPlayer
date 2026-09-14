@@ -37,6 +37,33 @@
 
     </LinearLayout>
 
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/input_layout_search_selection"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        android:hint="@string/search_favorite"
+        android:visibility="gone"
+        app:boxCornerRadiusBottomEnd="20dp"
+        app:boxCornerRadiusTopStart="20dp"
+        app:counterEnabled="true"
+        app:counterMaxLength="30"
+        app:endIconCheckable="true"
+        app:endIconDrawable="@drawable/baseline_search_24"
+        app:endIconMode="custom"
+        app:helperText="Найдите песню в списке песен"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:visibility="visible">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/input_edit_text_search"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </com.google.android.material.textfield.TextInputLayout>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/songsRecyclerView"
         android:layout_width="match_parent"

@@ -3,8 +3,13 @@ package com.example.muzpleer.ui.local.frags
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.widget.SearchView
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
@@ -22,6 +27,12 @@ class FoldersSelectionFragment: Fragment() {
     private lateinit var adapter: FoldersSelectionAdapter
     private var playlistId: Long = -1
     private var selectionType: SelectionType = SelectionType.ALL_SONGS
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setHasOptionsMenu(true)
+    }
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -70,6 +81,30 @@ class FoldersSelectionFragment: Fragment() {
 
         //восстанавливаем позицию списка после поворота или возвращения на экран
         binding.folderSelectionRecyclerView.layoutManager?.scrollToPosition(viewModel.getPositionFolder())
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.menu_other3, menu)
+
+        val searchItem: MenuItem = menu.findItem(R.id.search_toolbar_other3)
+        val searchView =searchItem.actionView as SearchView
+
+        //значок лупы слева в развёрнутом сост и сворачиваем строку поиска (true)
+        searchView.setIconifiedByDefault(true)
+        //пишем подсказку в строке поиска
+        searchView.queryHint = getString(R.string.search_folder)
+        //устанавливаем в панели действий кнопку ( > )для отправки поискового запроса
+        //searchView.isSubmitButtonEnabled = true
+        //устанавливаем слушатель
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?) = false
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                viewModel.filterFolders(newText.orEmpty())
+                return true
+            }
+        })
+        super.onCreateOptionsMenu(menu, inflater)
     }
 
 }

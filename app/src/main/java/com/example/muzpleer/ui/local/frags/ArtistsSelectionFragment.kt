@@ -3,11 +3,15 @@ package com.example.muzpleer.ui.local.frags
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
+import androidx.appcompat.widget.SearchView
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentArtistSelectionBinding
@@ -22,6 +26,11 @@ class ArtistsSelectionFragment: Fragment() {
     private lateinit var adapter: ArtistSelectionAdapter
     private var playlistId: Long = -1
     private var selectionType: SelectionType = SelectionType.ALL_SONGS
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setHasOptionsMenu(true)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -70,6 +79,29 @@ class ArtistsSelectionFragment: Fragment() {
 
         //восстанавливаем позицию списка после поворота или возвращения на экран
         binding.artistSelectionRecyclerView.layoutManager?.scrollToPosition(viewModel.getPositionArtist())
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.menu_other3, menu)
+
+        val searchItem: MenuItem = menu.findItem(R.id.search_toolbar_other3)
+        val searchView =searchItem.actionView as SearchView
+        //значок лупы слева в развёрнутом сост и сворачиваем строку поиска (true)
+        searchView.setIconifiedByDefault(true)
+        //пишем подсказку в строке поиска
+        searchView.queryHint = getString(R.string.search_artist)
+        //устанавливаем в панели действий кнопку ( > )для отправки поискового запроса
+        searchView.isSubmitButtonEnabled = true
+        //устанавливаем слушатель
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?) = false
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                viewModel.filterArtists(newText.orEmpty())
+                return true
+            }
+        })
+        super.onCreateOptionsMenu(menu, inflater)
     }
 
 }
