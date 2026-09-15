@@ -145,6 +145,17 @@
                 android:name="selectionType"
                 app:argType="com.example.muzpleer.ui.local.frags.SelectionType"/>
         </action>
+
+        <action
+            android:id="@+id/action_addSongsSourceFragment_to_playlistsSelectionFragment"
+            app:destination="@id/playlistsSelectionFragment" >
+        <argument
+            android:name="playlistId"
+            app:argType="long"/>
+        <argument
+            android:name="selectionType"
+            app:argType="com.example.muzpleer.ui.local.frags.SelectionType"/>
+        </action>
     </fragment>
 
     <fragment
@@ -244,5 +255,9 @@
         android:name="com.example.muzpleer.ui.local.frags.ChoosePlaylistFragment"
         android:label="Выбор плейлиста"
         tools:layout="@layout/fragment_choose_playlist" />
+    <fragment
+        android:id="@+id/playlistsSelectionFragment"
+        android:name="com.example.muzpleer.ui.local.frags.PlaylistsSelectionFragment"
+        android:label="PlaylistsSelectionFragment" />
 
 </navigation>

@@ -18,10 +18,10 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentSongsSelectionBinding
+import com.example.muzpleer.model.Song
 import com.example.muzpleer.ui.local.adapters.SongSelectionAdapter
 import com.example.muzpleer.ui.local.frags.SongListFolderFragment.Companion.TAG
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
-import com.example.muzpleer.util.getSortedDataSong
 import com.example.muzpleer.util.toast
 import com.google.android.material.textfield.TextInputLayout
 
@@ -68,6 +68,11 @@ class SongsSelectionFragment : Fragment() {
             SelectionType.FOLDER ->{
                 val folderPath = arguments?.getString("folderPath") ?: ""
                 viewModel.loadFolderSongsForAdding(folderPath)
+            }
+
+            SelectionType.PLAYLISTS -> {
+                val selectedPlaylistId =  arguments?.getLong("selectedPlaylistId") ?: -1
+                viewModel.loadPlaylistSongsForAdding(selectedPlaylistId)
             }
         }
         setupRecyclerView()
@@ -138,6 +143,19 @@ class SongsSelectionFragment : Fragment() {
                     //adapter.data = getSortedDataSong(folderSongs)
                     updateSelectionCount(0)
                 }
+            }
+
+            SelectionType.PLAYLISTS -> {
+               viewModel.currentPlaylistSongs.observe(viewLifecycleOwner) {playlistSong->
+                   title = "Выберите песни"
+                   viewModel.setAppBarTitle(title)
+                   viewModel.setListSelectedSong(playlistSong)
+                   if (playlistSong != null) {
+                       adapter.data = playlistSong
+                   } else {
+                       adapter.data = emptyList<Song>()
+                   }
+               }
             }
         }
     }

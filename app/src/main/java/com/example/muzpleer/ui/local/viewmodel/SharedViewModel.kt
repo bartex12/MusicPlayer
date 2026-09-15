@@ -32,7 +32,6 @@ import com.example.muzpleer.room.entity.FolderFile
 import com.example.muzpleer.room.entity.SongFile
 import com.example.muzpleer.room.utils.fromSongFileToSong
 import com.example.muzpleer.service.MusicServiceHandler
-import com.example.muzpleer.ui.local.frags.SongPlaylistFragment
 import com.example.muzpleer.ui.local.helper.IPreferenceHelper
 import com.example.muzpleer.util.getSortedDataSong
 import kotlinx.coroutines.Dispatchers
@@ -1313,6 +1312,12 @@ class SharedViewModel(
         }
     }
 
+    fun loadPlaylistSongsForAdding(playlistId:Long){
+        viewModelScope.launch {
+            _currentPlaylistSongs.value = playlistRepository.getPlaylistSongsOnly(playlistId)
+        }
+    }
+
     fun renamePlaylist(playlistId: Long, newName: String) {
         viewModelScope.launch {
             playlistRepository.renamePlaylist(playlistId, newName)
@@ -1771,9 +1776,12 @@ class SharedViewModel(
         }
     }
 
-    fun setListSelectedSong(songs: List<Song>) {
-        _listSelectedSong.value =songs
-        _filteredListSelectedSong.value = songs
-        Log.d(TAG, "✅SharedViewModel setListSelectedSong songs.size = ${songs.size} songs.first = ${songs.first()} }")
+    fun setListSelectedSong(songs: List<Song>?) {
+        songs?. let{
+            _listSelectedSong.value =songs
+            _filteredListSelectedSong.value = songs
+        }
+        Log.d(TAG, "✅SharedViewModel setListSelectedSong songs.size =" +
+                " ${songs?.size} songs.first = ${songs?.first()} }")
     }
 }

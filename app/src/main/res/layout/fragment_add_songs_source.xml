@@ -58,4 +58,15 @@
         android:padding="16dp"
         android:drawableStart="@drawable/twotone_find_replace_24"
         android:drawablePadding="8dp"/>
+
+    <TextView
+        android:id="@+id/playlistsOption"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textStyle="bold"
+        android:textSize="16sp"
+        android:text="Просмотреть плейлисты"
+        android:padding="16dp"
+        android:drawableStart="@drawable/twotone_find_replace_24"
+        android:drawablePadding="8dp"/>
 </LinearLayout>

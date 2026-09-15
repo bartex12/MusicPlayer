@@ -60,6 +60,11 @@ class AddSongsSourceFragment : Fragment() {
         binding.favoritesOption.setOnClickListener {
             navigateToSongsSelection(SelectionType.FAVORITES)
         }
+
+        binding.playlistsOption.setOnClickListener {
+            navigateToPlaylistsSelection()
+        }
+
     }
 
     private fun navigateToSongsSelection(selectionType: SelectionType) {
@@ -94,6 +99,14 @@ class AddSongsSourceFragment : Fragment() {
         findNavController().navigate(action)
     }
 
+    private fun navigateToPlaylistsSelection(){
+        val action = AddSongsSourceFragmentDirections.actionAddSongsSourceFragmentToPlaylistsSelectionFragment(
+            playlistId = playlistId,
+            selectionType = SelectionType.PLAYLISTS
+        )
+        findNavController().navigate(action)
+    }
+
     companion object{
         const val TAG = "33333"
     }
@@ -101,5 +114,5 @@ class AddSongsSourceFragment : Fragment() {
 
 
 enum class SelectionType {
-    ALL_SONGS, FAVORITES, ALBUM, ARTIST, FOLDER
+    ALL_SONGS, FAVORITES, ALBUM, ARTIST, FOLDER, PLAYLISTS
 }
