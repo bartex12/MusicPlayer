@@ -201,6 +201,12 @@ class SharedViewModel(
     private val _appBarTitle = MutableLiveData<String>()  //отфильтрованный поиском список песен конкретного плейлиста
     val appBarTitle: LiveData<String> = _appBarTitle
 
+    private val _listSelectedSong = MutableLiveData<List<Song>>()
+    val listSelectedSong: LiveData<List<Song>> = _listSelectedSong
+
+    private val _filteredListSelectedSong = MutableLiveData<List<Song>>()
+    val filteredListSelectedSong: LiveData<List<Song>> = _filteredListSelectedSong
+
     fun setAppBarTitle(title:String){
         _appBarTitle.value = title
     }
@@ -505,6 +511,24 @@ class SharedViewModel(
             }
         }
         _currentFilteredPlaylistSongs.value = filteredSongsList
+    }
+
+    internal fun filterListSelectedSongs(query: String) {
+        val originalListSelected: MutableList<Song> =  (listSelectedSong.value ?: listOf()).toMutableList()
+        val filteredListSelected: MutableList<Song> = (filteredListSelectedSong.value ?: listOf()).toMutableList()
+        filteredListSelected.clear()
+        if (query.isEmpty()) {
+            filteredListSelected.addAll(originalListSelected)
+        } else {
+            val searchQuery = query.lowercase(Locale.getDefault())
+            for (selectedSong in originalListSelected) {
+                if (selectedSong.title.lowercase(Locale.getDefault()).contains(searchQuery)||
+                    selectedSong.artist.lowercase(Locale.getDefault()).contains(searchQuery))  {
+                    filteredListSelected.add(selectedSong)
+                }
+            }
+        }
+        _filteredListSelectedSong.value = filteredListSelected
     }
 
 
@@ -1745,5 +1769,11 @@ class SharedViewModel(
             delay(1000)
             startSplash.invoke()
         }
+    }
+
+    fun setListSelectedSong(songs: List<Song>) {
+        _listSelectedSong.value =songs
+        _filteredListSelectedSong.value = songs
+        Log.d(TAG, "✅SharedViewModel setListSelectedSong songs.size = ${songs.size} songs.first = ${songs.first()} }")
     }
 }

@@ -43,8 +43,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="8dp"
-        android:hint="@string/search_favorite"
-        android:visibility="gone"
+        android:hint="@string/search_song"
+
         app:boxCornerRadiusBottomEnd="20dp"
         app:boxCornerRadiusTopStart="20dp"
         app:counterEnabled="true"
