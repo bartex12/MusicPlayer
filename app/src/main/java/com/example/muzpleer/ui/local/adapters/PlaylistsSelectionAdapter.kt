@@ -16,9 +16,7 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.example.muzpleer.R
-import com.example.muzpleer.databinding.ItemAlbumSelectionBinding
 import com.example.muzpleer.databinding.ItemPlaylistSelectionBinding
-import com.example.muzpleer.model.Folder
 import com.example.muzpleer.model.Playlist
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 import com.example.muzpleer.util.getTracksCountString
