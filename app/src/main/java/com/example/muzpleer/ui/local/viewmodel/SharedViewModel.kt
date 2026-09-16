@@ -1783,6 +1783,6 @@ class SharedViewModel(
             _filteredListSelectedSong.value = songs
         }
         Log.d(TAG, "✅SharedViewModel setListSelectedSong songs.size =" +
-                " ${songs?.size} songs.first = ${songs?.first()} }")
+                songs?.size?.let { "songs.first = ${ if(it > 0) songs?.first()?.title ?: "" else "" }" })
     }
 }
