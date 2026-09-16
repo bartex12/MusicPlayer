@@ -28,6 +28,7 @@ import com.bumptech.glide.request.RequestListener
 import com.example.muzpleer.MainActivity
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentCoverChangeLevelBinding
+import com.example.muzpleer.di.App
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 import com.example.muzpleer.util.isContentProviderUri
 import com.example.muzpleer.util.isContentProviderUriPicker
@@ -117,8 +118,12 @@ class CoverChangeLevelFragment: Fragment() {
             openFlickrSearch()
         }
 
+        fun getDefaultCoverUri(): Uri {
+            return "android.resource://${(App.instance).packageName}/${R.drawable.muz_player3}".toUri()
+        }
+
         binding.restoreDefaultLevel.setOnClickListener {
-            val uri:Uri = "android.resource://${context?.packageName}/${R.drawable.muz_player5}".toUri()
+            val uri:Uri = getDefaultCoverUri()
            when(levelType){
                 LevelType.PLAYLIST ->{ viewModel.updateCoverImageLevelAndSave(uri, levelId)}
                 LevelType.ALBUM ->{viewModel.updateCoverImageAlbumAndSave(uri, levelId)}
@@ -137,7 +142,7 @@ class CoverChangeLevelFragment: Fragment() {
                     LevelType.FOLDER -> { viewModel.updateCoverImageFolderAndSave(curUri, levelId) } //+
                 }
             }
-            findNavController().navigateUp()
+            findNavController().navigateUp() // переходим  назад, откуда пришли
         }
 
         binding.coverImageViewLevel.setOnClickListener {
@@ -214,8 +219,9 @@ class CoverChangeLevelFragment: Fragment() {
                     target: com.bumptech.glide.request.target.Target<Drawable?>,
                     isFirstResource: Boolean
                 ): Boolean {
-                    binding.coverImageViewLevel.setImageResource(R.drawable.muz_player2)
-                    Log.e(TAG, " ❌ CoverChangeLevelFragment Glide load failed for URI: $artUri", e)
+                    // крэш, нужно binding вводить в функцию, как сделано в PlaylistsSelectionAdapter
+                   // binding.coverImageViewLevel.setImageResource(R.drawable.muz_player3)
+                    Log.d(TAG, "❌CoverChangeLevelFragment Glide load failed for URI: $artUri? ${e?.message}")
                     return false
                 }
 
