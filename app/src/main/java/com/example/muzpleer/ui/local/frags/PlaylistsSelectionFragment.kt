@@ -20,6 +20,11 @@ import com.example.muzpleer.ui.local.adapters.PlaylistsSelectionAdapter
 import com.example.muzpleer.ui.local.frags.AlbumFragment.Companion.TAG
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 
+//Фрагмент PlaylistsSelectionFragment – макет fragment_playlist_selection –
+// Адаптер PlaylistsSelectionAdapter  с макетом строки item_playlist_selection
+// Экран списка папок  для источника (плейлисты) добавления песен в плейлист.
+// Далее по щелчку на строке списка папок - переход в список песен SongsSelectionFragment
+
 class PlaylistsSelectionFragment:Fragment()  {
     private lateinit var binding: FragmentPlaylistSelectionBinding
     private val viewModel: SharedViewModel by activityViewModels()
@@ -46,7 +51,7 @@ class PlaylistsSelectionFragment:Fragment()  {
 
         playlistId = arguments?.getLong("playlistId") ?: -1
         selectionType = arguments?.getSerializable("selectionType") as? SelectionType
-            ?: SelectionType.ALL_SONGS
+            ?: SelectionType.PLAYLISTS
 
         viewModel.setAppBarTitle("Выбрать песни из плейлистов")
 
@@ -54,8 +59,8 @@ class PlaylistsSelectionFragment:Fragment()  {
 
             // Навигация через Bundle
             val bundle = Bundle().apply {
-                putLong("playlistId", playlistId)
-                putLong("selectedPlaylistId", playlist.id)
+                putLong("playlistId", playlistId)  // id  плейлиста, куда добавляем песни
+                putLong("selectedPlaylistId", playlist.id) // id  плейлиста, откуда добавляем песни
                 putSerializable("selectionType", selectionType)
                 Log.d(TAG,"PlaylistsSelectionFragment onViewCreated bundle: selectionType =$selectionType " +
                         "selectedPlaylistId = ${playlist.id}  playlistId = $playlistId ")
@@ -76,14 +81,15 @@ class PlaylistsSelectionFragment:Fragment()  {
                 binding.imageHolder3PlaylistSelection.visibility = View.GONE
             //val sortedData =getSortedDataFolder(filteredPlaylists) //сортировка другая
 
+            //удаляем из списка плейлист, куда добавляем песни и удаляем пустые плейлисты
             val newPlaylists :MutableList<Playlist> = mutableListOf()
             filteredPlaylists.forEach {currentPlaylist->
-                if(currentPlaylist.id != playlistId) {
+                if(currentPlaylist.id != playlistId && currentPlaylist.playlistSongs.isNotEmpty()) {
                     newPlaylists.add(currentPlaylist)
                 }
             }
             adapter.playlists = newPlaylists  //передаём данные в адаптер
-            Log.d(TAG, "!!№№%% PlaylistsSelectionFragment onViewCreated filteredPlaylists.observe" +
+            Log.d(TAG, "!! PlaylistsSelectionFragment onViewCreated filteredPlaylists.observe" +
                     " filteredPlaylists.size = ${filteredPlaylists.size} newPlaylists.size = ${newPlaylists.size} ")
         }
         //восстанавливаем позицию списка после поворота или возвращения на экран

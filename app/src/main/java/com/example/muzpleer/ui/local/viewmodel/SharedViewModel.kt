@@ -1570,6 +1570,7 @@ class SharedViewModel(
 
         // Если файл уже был сохранен ранее, просто возвращаем путь
         if (destinationFile.exists()) {
+            Log.d(TAG, "!! SharedViewModel saveResourceToCache - файл уже был сохранен ранее")
             return destinationFile.absolutePath
         }
 

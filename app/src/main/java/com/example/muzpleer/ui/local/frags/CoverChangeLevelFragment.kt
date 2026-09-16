@@ -33,6 +33,11 @@ import com.example.muzpleer.util.isContentProviderUri
 import com.example.muzpleer.util.isContentProviderUriPicker
 import java.io.File
 
+
+//Фрагмент CoverChangeLevelFragment с макетом fragment_cover_change_level -
+// экран для замены обложки с выбором места загрузки картинки обложки
+// и сохранения в кэш диска и в базу для  альбомов, папок, артистов, плейлистов?
+
 class CoverChangeLevelFragment: Fragment() {
     private var _binding: FragmentCoverChangeLevelBinding? = null
     private val binding get() = _binding!!
@@ -79,7 +84,7 @@ class CoverChangeLevelFragment: Fragment() {
         previousTitle = (requireActivity() as? MainActivity)?.getCurrentTitle() ?: "Музыка на ладони"
         Log.d(TAG, "5*** CoverChangeLevelFragment onViewCreated previousTitle = $previousTitle")
 
-        //обеспечивает установку обложки при открытии CoverChangeFragment и замене обложки через pickImage
+        //обеспечивает установку обложки при открытии CoverChangeLevelFragment и замене обложки через pickImage
         viewModel.coverImageUriLevel.observe(viewLifecycleOwner) { uri ->
             Log.d(TAG, "3--- CoverChangeLevelFragment coverImageUriLevel.observe: uri = $uri ")
 

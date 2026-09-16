@@ -70,17 +70,20 @@ class PlaylistsSelectionAdapter (
                 try {
                     if (isContentProviderUri(artUri.toString())){
                         // Загрузка обложки из  content:/com.android.providers.downloads
-                        showImageWithGlide(binding.root.context, artUri, binding.playlistArtSelection)
+                        Log.d(TAG, "!! PlaylistSelectionAdapter bind Glide - Загрузка обложки из  content:/com.android.providers.downloads")
+                        showImageWithGlide(binding.root.context, artUri, binding.playlistArtSelection, playlist, binding)
                     }else  if (isContentProviderUriPicker(artUri.toString())){
                         // Загрузка обложки из picker
+                        Log.d(TAG, "!! PlaylistSelectionAdapter bind Glide - Загрузка обложки из  picker")
                         val  photoPickerUri =artUri.toString().toUri()
-                        showImageWithGlide(binding.root.context, photoPickerUri, binding.playlistArtSelection)
+                        showImageWithGlide(binding.root.context, photoPickerUri, binding.playlistArtSelection, playlist, binding)
                     }else{
                         // Загрузка обложки из кэша приложения
-                        showImageWithGlide(binding.root.context, File(artUri.toString()), binding.playlistArtSelection)
+                        Log.d(TAG, "!! PlaylistSelectionAdapter bind Glide - Загрузка обложки из кэша приложения")
+                        showImageWithGlide(binding.root.context, File(artUri.toString()), binding.playlistArtSelection, playlist, binding)
                     }
                 } catch (e: Exception) {
-                    Log.e(TAG, "❌PlaylistsSelectionAdapter exception when loading: ${e.message}")
+                    Log.e(TAG, "❌PlaylistsSelectionAdapter exception when loading: playlist = ${playlist.playlistName} ")
                     binding.playlistArtSelection.setImageResource(R.drawable.muz_player3)
                 }
             }?: binding.playlistArtSelection.setImageResource(R.drawable.muz_player3)
@@ -96,7 +99,8 @@ class PlaylistsSelectionAdapter (
         const val TAG = "33333"
     }
 
-    fun showImageWithGlide(context: Context, artUri: Any, imageView: ImageView){
+    fun showImageWithGlide(context: Context, artUri: Any, imageView: ImageView,
+                           playlist:Playlist, binding: ItemPlaylistSelectionBinding){
         // Загрузка обложки
         Glide.with(context)
             .load(artUri)
@@ -110,7 +114,9 @@ class PlaylistsSelectionAdapter (
                     target: com.bumptech.glide.request.target.Target<Drawable?>,
                     isFirstResource: Boolean
                 ): Boolean {
-                    Log.e(TAG, " ❌PlaylistsSelectionAdapter Glide load failed for URI: $artUri", e)
+                    Log.d(TAG, "❌PlaylistsSelectionAdapter Glide load failed for" +
+                            " playlistName = ${playlist.playlistName} URI: $artUri")
+                    viewModel.updatePlaylistArtUri(binding.root.context, playlist)
                     return false
                 }
 
@@ -121,7 +127,7 @@ class PlaylistsSelectionAdapter (
                     dataSource: DataSource,
                     isFirstResource: Boolean
                 ): Boolean {
-                    Log.d(TAG, "✅PlaylistsSelectionAdapter Glide load success for URI: $artUri")
+                    Log.d(TAG, "✅PlaylistsSelectionAdapter Glide load success for playlistName =$playlist.playlistName URI: $artUri")
                     Log.d(TAG, "✅PlaylistsSelectionAdapter DataSource: $dataSource") // 👈 Важно! Покажет откуда загружено
                     return false
                 }

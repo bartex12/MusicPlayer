@@ -101,7 +101,7 @@ class AddSongsSourceFragment : Fragment() {
 
     private fun navigateToPlaylistsSelection(){
         val action = AddSongsSourceFragmentDirections.actionAddSongsSourceFragmentToPlaylistsSelectionFragment(
-            playlistId = playlistId,
+            playlistId = playlistId, // id плейлиста, в который добавляем песни
             selectionType = SelectionType.PLAYLISTS
         )
         findNavController().navigate(action)

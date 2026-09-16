@@ -38,8 +38,8 @@ class CoverChangeFragment : Fragment() {
     private val binding get() = _binding!!
     private var isExpanded = false
     private var previousTitle: String = "" // Сохраняем предыдущий заголовок
-
     private val viewModel: SharedViewModel by activityViewModels()
+
     private val pickImage =
         registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         uri?.let {
