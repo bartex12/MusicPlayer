@@ -74,4 +74,10 @@
         <item>Настройки приложения</item>
     </string-array>
 
+    <!-- Messages Preferences -->
+    <string name="splash">Экран загрузки</string>
+    <string name="show_hide">Показать/скрыть.</string>
+    <string name="show_screen">Показываем экран загрузки</string>
+    <string name="hide_screen">Не показываем экран загрузки</string>
+
 </resources>

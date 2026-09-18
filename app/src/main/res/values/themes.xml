@@ -36,9 +36,10 @@
     <style name="Theme.MuzPleer.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 
     <style name="Theme.Splash" parent="Theme.AppCompat.NoActionBar">
-        <item name="android:windowBackground">@drawable/splash_background</item>
-        <item name="android:windowFullscreen">true</item>
-        <item name="android:windowNoTitle">true</item>
-        <item name="android:windowTranslucentStatus">true</item>
-    </style>
-</resources>
+         <item name="android:windowBackground">@drawable/splash_background</item>
+         <item name="android:windowFullscreen">true</item>
+         <item name="android:windowNoTitle">true</item>
+         <item name="android:windowTranslucentStatus">true</item>
+     </style>
+ </resources>
+
