@@ -53,6 +53,7 @@ class RemoveSongsFromPlaylistFragment : Fragment() {
 
     private fun setupRecyclerView() {
         adapter = SongSelectionAdapter(
+            sharedViewModel = viewModel,
             onSelectionChanged = { selectedSongs ->
                 // Обновляем текст кнопки
                 val count = selectedSongs.size

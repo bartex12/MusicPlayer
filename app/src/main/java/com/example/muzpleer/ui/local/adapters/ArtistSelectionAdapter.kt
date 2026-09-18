@@ -71,14 +71,14 @@ class ArtistSelectionAdapter(
                 try {
                     if (isContentProviderUri(artUri.toString())){
                         // Загрузка обложки из  content:/com.android.providers.downloads
-                        showImageWithGlide(binding.root.context, artUri, binding.albumArtSelection)
+                        showImageWithGlide(binding.root.context, artUri, binding.albumArtSelection, artist, binding)
                     }else  if (isContentProviderUriPicker(artUri.toString())){
                         // Загрузка обложки из picker
                         val  photoPickerUri =artUri.toString().toUri()
-                        showImageWithGlide(binding.root.context, photoPickerUri, binding.albumArtSelection)
+                        showImageWithGlide(binding.root.context, photoPickerUri, binding.albumArtSelection, artist, binding)
                     }else{
                         // Загрузка обложки из кэша приложения
-                        showImageWithGlide(binding.root.context, File(artUri.toString()), binding.albumArtSelection)
+                        showImageWithGlide(binding.root.context, File(artUri.toString()), binding.albumArtSelection, artist, binding)
                     }
                 } catch (e: Exception) {
                     Log.e(TAG, "❌ArtistSelectionAdapter exception when loading: ${e.message}")
@@ -97,7 +97,8 @@ class ArtistSelectionAdapter(
         const val TAG = "33333"
     }
 
-    fun showImageWithGlide(context: Context, artUri: Any, imageView: ImageView){
+    fun showImageWithGlide(context: Context, artUri: Any, imageView: ImageView,
+                           artist: Artist, binding: ItemAlbumSelectionBinding){
         // Загрузка обложки
         Glide.with(context)
             .load(artUri)
@@ -111,7 +112,9 @@ class ArtistSelectionAdapter(
                     target: com.bumptech.glide.request.target.Target<Drawable?>,
                     isFirstResource: Boolean
                 ): Boolean {
-                    Log.e(TAG, " ❌ArtistSelectionAdapter Glide load failed for URI: $artUri", e)
+                    Log.d(TAG, "❌ArtistSelectionAdapter Glide load failed for" +
+                            " artist Name = ${artist.name} URI: $artUri")
+                    viewModel.updateArtistArtUri(binding.root.context, artist)
                     return false
                 }
 

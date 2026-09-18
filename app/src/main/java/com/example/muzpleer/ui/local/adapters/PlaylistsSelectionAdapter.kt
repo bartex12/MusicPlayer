@@ -36,7 +36,6 @@ class PlaylistsSelectionAdapter (
         notifyDataSetChanged()
     }
 
-
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PlaylistsViewHolder {
         val binding = ItemPlaylistSelectionBinding.inflate(
             LayoutInflater.from(parent.context),

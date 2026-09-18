@@ -17,6 +17,7 @@ import com.bumptech.glide.request.RequestListener
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.ItemSongSelectionBinding
 import com.example.muzpleer.model.Song
+import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
 import com.example.muzpleer.util.formatDuration
 import com.example.muzpleer.util.isContentProviderUri
 import com.example.muzpleer.util.isContentProviderUriPicker
@@ -24,6 +25,7 @@ import java.io.File
 
 //адаптер для песен, из которых будут выбираться песни для добавления в плейлист
 class SongSelectionAdapter (
+    private val sharedViewModel: SharedViewModel,
     private val onSelectionChanged: (List<Song>) -> Unit
 ) : RecyclerView.Adapter<SongSelectionAdapter.SongSelectionViewHolder>() {
 
@@ -87,14 +89,14 @@ class SongSelectionAdapter (
                 try {
                     if (isContentProviderUri(artUri.toString())){
                         // Загрузка обложки из  content:/com.android.providers.downloads
-                        showImageWithGlide(binding.root.context, artUri, binding.songArtwork)
+                        showImageWithGlide(binding.root.context, artUri, binding.songArtwork, song, binding)
                     }else  if (isContentProviderUriPicker(artUri.toString())){
                         // Загрузка обложки из picker
                         val  photoPickerUri =artUri.toString().toUri()
-                        showImageWithGlide(binding.root.context, photoPickerUri, binding.songArtwork)
+                        showImageWithGlide(binding.root.context, photoPickerUri, binding.songArtwork, song, binding)
                     }else{
                         // Загрузка обложки из кэша приложения
-                        showImageWithGlide(binding.root.context, File(artUri.toString()), binding.songArtwork)
+                        showImageWithGlide(binding.root.context, File(artUri.toString()), binding.songArtwork, song, binding)
                     }
                 } catch (e: Exception) {
                     Log.e(TAG, "❌SongSelectionAdapter exception when loading: ${e.message}")
@@ -121,7 +123,8 @@ class SongSelectionAdapter (
         }
     }
 
-fun showImageWithGlide(context: Context, artUri: Any, imageView: ImageView){
+fun showImageWithGlide(context: Context, artUri: Any, imageView: ImageView,
+                       song: Song, binding: ItemSongSelectionBinding){
     // Загрузка обложки
     Glide.with(context)
         .load(artUri)
@@ -135,7 +138,9 @@ fun showImageWithGlide(context: Context, artUri: Any, imageView: ImageView){
                 target: com.bumptech.glide.request.target.Target<Drawable?>,
                 isFirstResource: Boolean
             ): Boolean {
-                Log.e(TAG, " ❌SongSelectionAdapter Glide load failed for URI: $artUri", e)
+                Log.d(TAG, "❌SongSelectionAdapter Glide load failed for" +
+                        " song title = ${song.title} URI: $artUri")
+                sharedViewModel.updateSongArtUri(binding.root.context, song)
                 return false
             }
 

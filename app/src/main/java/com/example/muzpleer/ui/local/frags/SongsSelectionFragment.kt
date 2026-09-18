@@ -87,10 +87,13 @@ class SongsSelectionFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
-        adapter = SongSelectionAdapter { selectedSongs ->
+        adapter = SongSelectionAdapter(
+            sharedViewModel = viewModel,
+        onSelectionChanged =  { selectedSongs ->
             updateSelectionCount(selectedSongs.size)
             updateAddButtonState(selectedSongs.isNotEmpty())
-        }
+            }
+        )
         binding.songsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.songsRecyclerView.adapter = adapter
     }

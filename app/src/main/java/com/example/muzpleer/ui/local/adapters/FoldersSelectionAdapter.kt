@@ -71,14 +71,14 @@ class FoldersSelectionAdapter (
                 try {
                     if (isContentProviderUri(artUri.toString())){
                         // Загрузка обложки из  content:/com.android.providers.downloads
-                        showImageWithGlide(binding.root.context, artUri, binding.albumArtSelection)
+                        showImageWithGlide(binding.root.context, artUri, binding.albumArtSelection, folder, binding)
                     }else  if (isContentProviderUriPicker(artUri.toString())){
                         // Загрузка обложки из picker
                         val  photoPickerUri =artUri.toString().toUri()
-                        showImageWithGlide(binding.root.context, photoPickerUri, binding.albumArtSelection)
+                        showImageWithGlide(binding.root.context, photoPickerUri, binding.albumArtSelection, folder, binding)
                     }else{
                         // Загрузка обложки из кэша приложения
-                        showImageWithGlide(binding.root.context, File(artUri.toString()), binding.albumArtSelection)
+                        showImageWithGlide(binding.root.context, File(artUri.toString()), binding.albumArtSelection, folder, binding)
                     }
                 } catch (e: Exception) {
                     Log.e(TAG, "❌FoldersSelectionAdapter exception when loading: ${e.message}")
@@ -97,7 +97,8 @@ class FoldersSelectionAdapter (
         const val TAG = "33333"
     }
 
-    fun showImageWithGlide(context: Context, artUri: Any, imageView: ImageView){
+    fun showImageWithGlide(context: Context, artUri: Any, imageView: ImageView,
+                           folder:Folder, binding: ItemAlbumSelectionBinding){
         // Загрузка обложки
         Glide.with(context)
             .load(artUri)
@@ -111,7 +112,9 @@ class FoldersSelectionAdapter (
                     target: com.bumptech.glide.request.target.Target<Drawable?>,
                     isFirstResource: Boolean
                 ): Boolean {
-                    Log.e(TAG, " ❌FoldersSelectionAdapter Glide load failed for URI: $artUri", e)
+                    Log.d(TAG, "❌FoldersSelectionAdapter Glide load failed for" +
+                            " folder Name = ${folder.name} URI: $artUri")
+                    viewModel.updateFolderArtUri(binding.root.context, folder)
                     return false
                 }
 
