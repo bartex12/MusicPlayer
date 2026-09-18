@@ -28,7 +28,6 @@ import com.example.muzpleer.MainActivity
 import com.example.muzpleer.R
 import com.example.muzpleer.databinding.FragmentCoverChangeBinding
 import com.example.muzpleer.ui.local.viewmodel.SharedViewModel
-import com.example.muzpleer.ui.player.PlayerFragment
 import com.example.muzpleer.util.isContentProviderUri
 import com.example.muzpleer.util.isContentProviderUriPicker
 import java.io.File

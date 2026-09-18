@@ -18,12 +18,12 @@ class SplashActivity: AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        binding = ActivitySplashBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
         val  isShowScreen = PreferenceManager.getDefaultSharedPreferences(this)
             .getBoolean("cbScreen", true)
         if(isShowScreen){
-            binding = ActivitySplashBinding.inflate(layoutInflater)
-            setContentView(binding.root)
-
             Handler(Looper.getMainLooper()).postDelayed({
                 binding.imageViewSplash.animate()
                     .scaleY(2f)
