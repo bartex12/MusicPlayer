@@ -50,6 +50,7 @@ class TabLocalFragment: Fragment()  {
         tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab?) {
                 val title = tab?.text?.toString() ?: ""
+                Log.d(TAG, "#!# TabLocalFragment onViewCreated onTabSelected title = $title  ")
                 (requireActivity() as? MainActivity)?.updateToolbarTitle(title)
             }
             override fun onTabUnselected(tab: TabLayout.Tab?) {
