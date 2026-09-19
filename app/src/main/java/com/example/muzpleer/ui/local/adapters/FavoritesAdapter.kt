@@ -118,25 +118,16 @@ class FavoritesAdapter(
                 try {
                     if (isContentProviderUri(artUri.toString())){
                         // Загрузка обложки из  content:/com.android.providers.downloads
-                        showImageWithGlide(binding.root.context, artUri, binding.trackArtwork, track.title){
-                            // При ошибке сбрасываем в БД
-                            viewModel.updateFavoriteArtUri(binding.root.context, track)
-                        }
+                        showImageWithGlide(binding.root.context, artUri, binding.trackArtwork, track, binding)
                         Log.d(TAG, "✅ FavoritesAdapter bind Glide load success for Favorite = ${track.title} URI: $artUri")
                     }else  if (isContentProviderUriPicker(artUri.toString())){
                         // Загрузка обложки из picker
                         val  photoPickerUri =artUri.toString().toUri()
-                        showImageWithGlide(binding.root.context, photoPickerUri, binding.trackArtwork, track.title){
-                            // При ошибке сбрасываем в БД
-                            viewModel.updateFavoriteArtUri(binding.root.context, track)
-                        }
+                        showImageWithGlide(binding.root.context, photoPickerUri, binding.trackArtwork, track, binding)
                         Log.d(TAG, "✅✅ FavoritesAdapter bind Glide load success for Favorite = ${track.title} URI: $artUri")
                     }else{
                         // Загрузка обложки из кэша приложения
-                        showImageWithGlide(binding.root.context, File(artUri.toString()), binding.trackArtwork, track.title){
-                            // При ошибке сбрасываем в БД
-                            viewModel.updateFavoriteArtUri(binding.root.context, track)
-                        }
+                        showImageWithGlide(binding.root.context, File(artUri.toString()), binding.trackArtwork, track, binding)
                         Log.d(TAG, "✅✅✅ FavoritesAdapter bind Glide load success for Favorite = ${track.title} URI: $artUri")
                     }
                 } catch (e: Exception) {
@@ -409,7 +400,8 @@ class FavoritesAdapter(
         // Не используется, но должен быть реализован
     }
 
-    fun showImageWithGlide(context: Context, artUri: Any, imageView: ImageView, title:String, onError:((Exception?)->Unit)?=null){
+    fun showImageWithGlide(context: Context, artUri: Any, imageView: ImageView,
+                           track: Song, binding: ItemMusicBinding){
         // Загрузка обложки
         Glide.with(context)
             .load(artUri)
@@ -423,7 +415,9 @@ class FavoritesAdapter(
                     target: com.bumptech.glide.request.target.Target<Drawable?>,
                     isFirstResource: Boolean
                 ): Boolean {
-                    Log.e(TAG, " ❌FavoritesAdapter Glide load failed for title = $title URI: $artUri", e)
+                    Log.d(TAG, "❌FavoritesAdapter Glide load failed for" +
+                            " track title = ${track.title} URI: $artUri")
+                    viewModel.updateFavoriteArtUri(binding.root.context, track)
                     return false
                 }
 
@@ -434,7 +428,7 @@ class FavoritesAdapter(
                     dataSource: DataSource,
                     isFirstResource: Boolean
                 ): Boolean {
-                    Log.d(TAG, "✅FavoritesAdapter Glide load success for title = $title URI: $artUri")
+                    Log.d(TAG, "✅FavoritesAdapter Glide load success for title = ${track.title} URI: $artUri")
                     Log.d(TAG, "✅FavoritesAdapter DataSource: $dataSource") // 👈 Важно! Покажет откуда загружено
                     return false
                 }
