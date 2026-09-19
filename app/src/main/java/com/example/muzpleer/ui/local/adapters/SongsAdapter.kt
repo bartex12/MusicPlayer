@@ -123,24 +123,15 @@ class SongsAdapter(
                 try {
                     if (isContentProviderUri(artUri)){
                         // Загрузка обложки из  content:/com.android.providers.downloads
-                        showImageWithGlide(binding.root.context, artUri, binding.trackArtwork, track.title) {
-                            // При ошибке сбрасываем в БД
-                            viewModel.updateSongArtUri(binding.root.context, track)
-                        }
+                        showImageWithGlide(binding.root.context, artUri, binding.trackArtwork, track, binding)
                         Log.d(TAG,"WWW 3 SongAdapter bind  title = ${track.title}")
                     }else  if (isContentProviderUriPicker(artUri.toString())){
                         // Загрузка обложки из picker
                         val  photoPickerUri =artUri.toString().toUri()
-                        showImageWithGlide(binding.root.context, photoPickerUri, binding.trackArtwork, track.title){
-                            // При ошибке сбрасываем в БД
-                            viewModel.updateSongArtUri(binding.root.context, track)
-                        }
+                        showImageWithGlide(binding.root.context, photoPickerUri, binding.trackArtwork, track, binding)
                     }else{
                         // Загрузка обложки из кэша приложения
-                        showImageWithGlide(binding.root.context, File(artUri), binding.trackArtwork, track.title){
-                            // При ошибке сбрасываем в БД
-                            viewModel.updateSongArtUri(binding.root.context, track)
-                        }
+                        showImageWithGlide(binding.root.context, File(artUri), binding.trackArtwork, track, binding)
                     }
                 }catch (e: Exception){
                     Log.e(TAG, " ❌SongsAdapter Glide load failed in SongsAdapter for URI: $artUri", e)
@@ -366,7 +357,8 @@ class SongsAdapter(
         }
     }
 
-    fun showImageWithGlide(context:Context, artUri: Any, imageView: ImageView, title:String, onError:((Exception?)-> Unit)?= null){
+    fun showImageWithGlide(context:Context, artUri: Any, imageView: ImageView,
+                           track: Song, binding: ItemMusicBinding){
         // Загрузка обложки
         Glide.with(context)
             .load(artUri)
@@ -380,8 +372,9 @@ class SongsAdapter(
                     target: com.bumptech.glide.request.target.Target<Drawable?>,
                     isFirstResource: Boolean
                 ): Boolean {
-                    Log.e(TAG, " ❌SongsAdapter Glide load failed in SongsAdapter for title: $title URI: $artUri", e)
-                    onError?.invoke(e)
+                    Log.d(TAG, "❌SongAdapter Glide load failed for" +
+                            " track title = ${track.title} URI: $artUri")
+                    viewModel.updateSongArtUri(binding.root.context, track)
                     return false
                 }
 
@@ -392,7 +385,7 @@ class SongsAdapter(
                     dataSource: DataSource,
                     isFirstResource: Boolean
                 ): Boolean {
-                    Log.d(TAG, "✅SongsAdapter Glide load success in SongsAdapter  for title: $title URI: $artUri")
+                    Log.d(TAG, "✅SongsAdapter Glide load success in SongsAdapter  for title: ${track.title} URI: $artUri")
                     Log.d(TAG, "✅SongsAdapter DataSource in SongsAdapter : $dataSource") // 👈 Важно! Покажет откуда загружено
                     return false
                 }

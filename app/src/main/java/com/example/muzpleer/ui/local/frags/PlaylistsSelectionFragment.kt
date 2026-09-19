@@ -75,10 +75,8 @@ class PlaylistsSelectionFragment:Fragment()  {
 
         viewModel.filteredPlaylists.observe(viewLifecycleOwner) { filteredPlaylists ->
             Log.d(TAG,"PlaylistSelectionFragment onViewCreated filteredPlaylists.observe: filteredPlaylists.size= ${filteredPlaylists.size} ")
-            if (viewModel.getSongs().isEmpty()) binding.progressBarPlaylistSelection.visibility = View.VISIBLE else
+            if (filteredPlaylists.isEmpty()) binding.progressBarPlaylistSelection.visibility = View.VISIBLE else
                 binding.progressBarPlaylistSelection.visibility = View.GONE
-            if (filteredPlaylists.isEmpty()) binding.imageHolder3PlaylistSelection.visibility = View.VISIBLE else
-                binding.imageHolder3PlaylistSelection.visibility = View.GONE
             //val sortedData =getSortedDataFolder(filteredPlaylists) //сортировка другая
 
             //удаляем из списка плейлист, куда добавляем песни и удаляем пустые плейлисты
@@ -88,6 +86,8 @@ class PlaylistsSelectionFragment:Fragment()  {
                     newPlaylists.add(currentPlaylist)
                 }
             }
+            if (newPlaylists.isEmpty()) binding.imageHolder3PlaylistSelection.visibility = View.VISIBLE else
+                binding.imageHolder3PlaylistSelection.visibility = View.GONE
             adapter.playlists = newPlaylists  //передаём данные в адаптер
             Log.d(TAG, "!! PlaylistsSelectionFragment onViewCreated filteredPlaylists.observe" +
                     " filteredPlaylists.size = ${filteredPlaylists.size} newPlaylists.size = ${newPlaylists.size} ")

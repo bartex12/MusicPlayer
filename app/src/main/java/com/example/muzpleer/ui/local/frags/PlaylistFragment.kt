@@ -90,10 +90,11 @@ class PlaylistFragment():Fragment() {
 
         viewModel.filteredPlaylists.observe(viewLifecycleOwner) { filteredPlaylists ->
             Log.d(TAG,"53 PlaylistFragment onViewCreated filteredPlaylists.observe: filteredPlaylists.size= ${filteredPlaylists.size} ")
+            if  (viewModel.getSongs().isEmpty()) binding.emptyImageViewPlaylists.visibility = View.VISIBLE else  View.GONE
+            if (filteredPlaylists.isEmpty()) binding.tvEmptyPlaylists.visibility = View.VISIBLE else View.GONE
             //здесь нельзя делать сортировку, иначе собьётся перемещение папок
             adapter.playlist = filteredPlaylists  //передаём данные в адаптер
-            if (filteredPlaylists.isEmpty()) binding.emptyImageViewPlaylists.visibility = View.VISIBLE else  View.GONE
-            if (filteredPlaylists.isEmpty()) binding.tvEmptyPlaylists.visibility = View.VISIBLE else View.GONE
+
         }
     }
 
