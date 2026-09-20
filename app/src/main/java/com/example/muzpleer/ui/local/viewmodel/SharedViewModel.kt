@@ -1785,4 +1785,12 @@ class SharedViewModel(
         Log.d(TAG, "✅SharedViewModel setListSelectedSong songs.size =" +
                 songs?.size?.let { "songs.first = ${ if(it > 0) songs?.first()?.title ?: "" else "" }" })
     }
+
+    fun setPlaybackMode(): Boolean {
+        // Меняем состояние на противоположное
+        val newShuffleState = !playerHandler.isShuffleMode
+        playerHandler.isShuffleMode = newShuffleState
+        return newShuffleState
+    }
+
 }

@@ -8,6 +8,7 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
 import androidx.navigation.NavController
@@ -205,6 +206,19 @@ class SongFragment : Fragment() {
                     }
                     Log.d(TAG, "###SongFragment onMenuItemSelected currentSong = ${currentSong?.title} ")
                 }
+                return  true
+            }
+            R.id.action_shuffle->{
+                val newShuffleState = viewModel.setPlaybackMode()
+                // Меняем иконку в зависимости от состояния
+                if (newShuffleState) {
+                    item.setIcon(R.drawable.icons8_shuffle_white_24) // подсвеченная иконка
+                    Toast.makeText(context, "Случайный порядок включен", Toast.LENGTH_SHORT).show()
+                } else {
+                    item.setIcon(R.drawable.icons8_data_white_24) // обычная иконка
+                    Toast.makeText(context, "Прямой порядок включен", Toast.LENGTH_SHORT).show()
+                }
+                return   true
             }
         }
         return false
