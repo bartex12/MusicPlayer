@@ -14,6 +14,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
+import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.os.bundleOf
 import androidx.core.view.MenuHost
@@ -338,7 +339,7 @@ class SongListFolderFragment:Fragment() {
                             val folderSongs = viewModel.listFolderSong.value //список песен артиста
                             val currentSong = viewModel.getCurrentSong()
                             if (folderSongs!=null){
-                                val indexOfSong = getSortedDataSong(folderSongs).indexOfFirst { it.mediaUri == currentSong?.mediaUri }
+                                val indexOfSong = folderSongs.indexOfFirst { it.mediaUri == currentSong?.mediaUri }
                                 Log.d(TAG, "3$$$ SongListFolderFragment onMenuItemSelected indexOfSong = $indexOfSong")
                                 (binding.alltracksRecyclerView.layoutManager as LinearLayoutManager).let{
                                     if(indexOfSong >= 0 ) it.scrollToPositionWithOffset(indexOfSong, 0) else it.scrollToPosition(0)
@@ -346,6 +347,18 @@ class SongListFolderFragment:Fragment() {
                             }
                         }
                         return true
+                    }
+                    R.id.action_shuffle->{
+                        val newShuffleState = viewModel.setPlaybackMode()
+                        // Меняем иконку в зависимости от состояния
+                        if (newShuffleState) {
+                            menuItem.setIcon(R.drawable.icons8_shuffle_white_24) // подсвеченная иконка
+                            Toast.makeText(context, "Случайный порядок включен", Toast.LENGTH_SHORT).show()
+                        } else {
+                            menuItem.setIcon(R.drawable.icons8_data_white_24) // обычная иконка
+                            Toast.makeText(context, "Прямой порядок включен", Toast.LENGTH_SHORT).show()
+                        }
+                        return   true
                     }
                 }
                 return false
